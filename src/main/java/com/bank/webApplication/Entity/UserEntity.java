@@ -20,7 +20,6 @@ public class UserEntity {
             strategy = "org.hibernate.id.UUIDGenerator"
     )
     @Column(name = "id" , updatable = false,nullable = false)
-
     private UUID id;
     private String name;
     private String email;
