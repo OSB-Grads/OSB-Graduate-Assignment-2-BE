@@ -22,8 +22,20 @@ public class TransactionEntity {
     )
     @Column(name = "transactionId" , updatable = false,nullable = false, columnDefinition = "VARCHAR(20)")
     private UUID transactionId;
-    private String fromAccount;
-    private String toAccount;
+
+    @ManyToOne
+    @JoinColumn(
+            name = "fromAccount",
+            referencedColumnName = "account_number"
+    )
+    private AccountEntity fromAccount;
+
+    @ManyToOne
+    @JoinColumn(
+            name="toAccount",
+            referencedColumnName = "account_number"
+    )
+    private AccountEntity toAccount;
     private double amount;
     private String description;
     private String createdAt;
