@@ -23,8 +23,8 @@ public class AuthEntity {
             name="UUID",
             strategy = "org.hibernate.id.UUIDGenerator"
     )
-    @Column(name = "id" , updatable = false,nullable = false)
-    private UUID id;
+    @Column(name = "id" , updatable = false,nullable = false,columnDefinition = "VARCHAR(25)")
+    private String id;
     @Column(name="UserName",updatable = false,nullable = false,unique = true)
     private String UserName;
     @Column(name="PassWord",nullable = false)
