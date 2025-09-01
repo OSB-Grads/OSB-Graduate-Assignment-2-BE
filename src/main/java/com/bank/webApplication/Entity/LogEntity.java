@@ -25,7 +25,7 @@ public class LogEntity {
             strategy = "org.hibernate.id.UUIDGenerator"
     )
     @Column(name = "id" , updatable = false,nullable = false,columnDefinition = "VARCHAR(25)")
-    private UUID id;
+    private String id;
     private String user_id;
     @Enumerated(EnumType.STRING)
     private Action action;
