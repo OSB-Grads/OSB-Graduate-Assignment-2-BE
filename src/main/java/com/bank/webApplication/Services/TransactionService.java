@@ -36,9 +36,9 @@ public class TransactionService {
 
             account.setBalance(amount + account.getBalance());
             try {
-                log.info("[Deposit operation] account balance updation Failed ");
+                //log.info("[Deposit operation] Account Balance Updation Failed ");
                 accountRepository.save(account);
-                log.info("[Deposit operation] account balance updated successfully ");
+                log.info("[Deposit operation] Account Balance Updation successful ");
                 return true;
             } catch (RuntimeException e) {
                 return false;
@@ -74,7 +74,7 @@ public class TransactionService {
             if (account.getBalance() < amount) throw new  RuntimeException();
             account.setBalance(account.getBalance() - amount);
             try {
-                log.info("[Debit operation] account balance updation Failed ");
+                //log.info("[Debit operation] account balance updation Failed ");
                 accountRepository.save(account);
                 log.info("[Debit operation] account balance updated successfully ");
                 return true;
@@ -90,21 +90,6 @@ public class TransactionService {
         }
     }
 
-//    public void saveTransaction( TransactionEntity transaction) throws SQLException{
-//        String sql = String.format(
-//                "INSERT INTO transactions (transaction_id, from_account_id, to_account_id, transaction_type, amount, description, status) " +
-//                        "VALUES (%s, %s, %s, '%s', %f, '%s', '%s')",
-//                transaction.getTransaction_id(),
-//                transaction.getFrom_account_id(),
-//                transaction.getTo_account_id(),
-//                transaction.getTransaction_type(),
-//                transaction.getAmount(),
-//                transaction.getDescription(),
-//                transaction.getStatus()
-////                transaction.getCreatedAt().toString()
-//        );
-//        dm.query(sql);
-//    }
     public void saveTransaction( String fromAccount, String toAccount , double amount,String description,TransactionEntity.type type,TransactionEntity.status status){
     TransactionEntity transactionEntity = new TransactionEntity();
 
@@ -116,6 +101,5 @@ public class TransactionService {
     transactionEntity.setDescription(description);
     transactionEntity.setCreatedAt(LocalDateTime.now().toString());
     }
-
 
 }
