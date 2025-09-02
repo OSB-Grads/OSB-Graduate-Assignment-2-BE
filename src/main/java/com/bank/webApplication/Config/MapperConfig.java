@@ -15,8 +15,8 @@ public class MapperConfig {
         ModelMapper mapper = new ModelMapper();
 
 
-        mapper.typeMap(AccountEntity.class, AccountDto.class)
-                .addMapping(src -> src.getUser().getId(), AccountDto::setUserId);
+//        mapper.typeMap(AccountEntity.class, AccountDto.class)
+//                .addMapping(src -> src.getUser().getId(), AccountDto::setUserId);
 
         return mapper;
     }
