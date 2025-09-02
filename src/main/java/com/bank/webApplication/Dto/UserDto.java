@@ -12,6 +12,6 @@ import java.util.UUID;
 public class UserDto {
     private String name;
     private String email;
-    private int phone;
+    private String phone;
     private UserEntity.Role role;
 }

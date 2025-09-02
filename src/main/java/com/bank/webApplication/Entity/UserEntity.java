@@ -19,7 +19,7 @@ public class UserEntity {
     private UUID id;
     private String name;
     private String email;
-    private int phone;
+    private String phone;
     private String created_At;
     private String updated_At;
 

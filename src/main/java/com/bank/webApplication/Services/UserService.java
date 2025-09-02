@@ -5,6 +5,7 @@ import com.bank.webApplication.Config.MapperConfig;
 import com.bank.webApplication.Dto.UserDto;
 import com.bank.webApplication.Entity.UserEntity;
 import com.bank.webApplication.Repository.UserRepository;
+import com.bank.webApplication.Util.DtoEntityMapper;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +21,7 @@ import java.util.UUID;
 public class UserService {
     @Autowired
     private final UserRepository userRepository;
-    private final ModelMapper modelMapper;
+    private final DtoEntityMapper mapper;
 
     // Common formatter for createdAt and updatedAt
 
@@ -37,7 +38,7 @@ public class UserService {
     // Method To Create A New User
 
     public UserDto CreateUser( UUID auth,UserDto userDto){
-        UserEntity userEntity=modelMapper.map(userDto, UserEntity.class);
+        UserEntity userEntity= mapper.convertToEntity(userDto, UserEntity.class);
 
         String now = getCurrentTimestampString();
         userEntity.setCreated_At(now);
@@ -45,7 +46,7 @@ public class UserService {
         userEntity.setId(auth);
 
         UserEntity savedUSer=userRepository.save(userEntity);
-        return (modelMapper.map(savedUSer, UserDto.class));
+        return (mapper.convertToDto(savedUSer, UserDto.class));
     }
 
 
@@ -62,7 +63,7 @@ public class UserService {
         existing.setUpdated_At(getCurrentTimestampString());
 
         UserEntity updated=userRepository.save(existing);
-        return(modelMapper.map(updated, UserDto.class));
+        return(mapper.convertToDto(updated, UserDto.class));
 
     }
 
@@ -73,7 +74,7 @@ public class UserService {
         UserEntity getUser=userRepository.findById(id)
                 .orElseThrow( ()-> new RuntimeException("User Not Found With Id : " +id));
 
-        return(modelMapper.map(getUser, UserDto.class));
+        return(mapper.convertToDto(getUser, UserDto.class));
    }
 
 }
