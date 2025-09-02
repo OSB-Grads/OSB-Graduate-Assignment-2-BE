@@ -26,7 +26,13 @@ public class LogEntity {
     )
     @Column(name = "id" , updatable = false,nullable = false,columnDefinition = "VARCHAR(25)")
     private UUID id;
-    private String user_id;
+
+    @ManyToOne
+    @JoinColumn(
+            name = "user_id",
+            referencedColumnName = "id"
+    )
+    private UserEntity userEntity;
     @Enumerated(EnumType.STRING)
     private Action action;
     private String details;

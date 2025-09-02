@@ -13,7 +13,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class LogDTO {
     private UUID id;
-    private String user_id;
+    private UUID user_id;
     private LogEntity.Action action;           // enum: Profile Management, Authentication, Transactions, Creation Management
     private String details;
     private String ipAddress;
