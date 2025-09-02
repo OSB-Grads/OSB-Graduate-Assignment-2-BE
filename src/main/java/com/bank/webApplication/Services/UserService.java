@@ -21,6 +21,8 @@ import java.util.UUID;
 public class UserService {
     @Autowired
     private final UserRepository userRepository;
+
+    @Autowired
     private final DtoEntityMapper mapper;
 
     // Common formatter for createdAt and updatedAt
