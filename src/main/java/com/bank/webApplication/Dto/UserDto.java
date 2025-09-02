@@ -10,8 +10,8 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class UserDto {
-    private UUID id;
     private String name;
     private String email;
+    private String phone;
     private UserEntity.Role role;
 }

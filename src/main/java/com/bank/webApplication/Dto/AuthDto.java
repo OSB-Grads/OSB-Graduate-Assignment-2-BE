@@ -9,7 +9,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class AuthDto {
-    private UUID id;
+
     private String UserName;
     private String PassWord;
 }
