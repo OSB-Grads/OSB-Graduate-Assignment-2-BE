@@ -9,6 +9,7 @@ import com.bank.webApplication.Repository.AccountRepository;
 import com.bank.webApplication.Repository.ProductRepository;
 import com.bank.webApplication.Repository.UserRepository;
 import com.bank.webApplication.Util.DtoEntityMapper;
+import org.hibernate.NonUniqueResultException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -35,7 +36,9 @@ public class AccountService {
     private ProductRepository productRepository;
 
     public AccountDto CreateAccount(AccountDto accountDto,String userId,String productId ) throws SQLException {
-        UserEntity user=userRepository.findById(userId);
+        UUID id=UUID.fromString(userId);
+        UserEntity user=userRepository.findById(id)
+                .orElseThrow(() -> new NullPointerException("User not found exception"));
         ProductEntity product=productRepository.findByProductId(productId);
 
         boolean created = false;
@@ -79,7 +82,7 @@ public class AccountService {
     }
 
     public AccountDto getOneAccounts(String accountNumber){
-        AccountEntity accountEntity=accountRepository.findByAccount(accountNumber);
+        AccountEntity accountEntity=accountRepository.findByAccountNumber(accountNumber);
         double accountInterest =accountEntity.getProduct().getInterestRate();
 
         AccountDto dto=dtoEntityMapper.convertToDto(accountEntity,AccountDto.class);
@@ -89,7 +92,9 @@ public class AccountService {
     }
 
     public List<AccountDto> getAllAccountsByAccountNo(String  userId){
-        List<AccountEntity>accounts=accountRepository.findbyUserUserId(userId);
+        UUID id=UUID.fromString(userId);
+
+        List<AccountEntity>accounts=accountRepository.findAllByUserId(id);
 
 
         List<AccountDto>accountDtos=accounts.stream()
