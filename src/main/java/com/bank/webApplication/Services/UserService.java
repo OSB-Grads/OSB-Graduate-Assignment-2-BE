@@ -39,13 +39,13 @@ public class UserService {
 
     // Method To Create A New User
 
-    public UserDto CreateUser( UUID auth,UserDto userDto){
+    public UserDto CreateUser( String auth,UserDto userDto){
         UserEntity userEntity= mapper.convertToEntity(userDto, UserEntity.class);
 
         String now = getCurrentTimestampString();
         userEntity.setCreated_At(now);
         userEntity.setUpdated_At(now);
-        userEntity.setId(auth);
+        userEntity.setId(UUID.fromString(auth));
 
         UserEntity savedUSer=userRepository.save(userEntity);
         return (mapper.convertToDto(savedUSer, UserDto.class));
@@ -54,8 +54,8 @@ public class UserService {
 
     // Update  User Details
 
-    public UserDto UpdateUser(UUID id , UserDto userDto){
-        UserEntity existing= userRepository.findById(id)
+    public UserDto UpdateUser(String id , UserDto userDto){
+        UserEntity existing= userRepository.findById(UUID.fromString(id))
                 .orElseThrow (() -> new RuntimeException("User Not Found With Id :  " + id));
 
         existing.setName(userDto.getName());
@@ -72,8 +72,8 @@ public class UserService {
 
     //Display User Details
 
-   public UserDto getUserById(UUID id){
-        UserEntity getUser=userRepository.findById(id)
+   public UserDto getUserById(String id){
+        UserEntity getUser=userRepository.findById(UUID.fromString(id))
                 .orElseThrow( ()-> new RuntimeException("User Not Found With Id : " +id));
 
         return(mapper.convertToDto(getUser, UserDto.class));
