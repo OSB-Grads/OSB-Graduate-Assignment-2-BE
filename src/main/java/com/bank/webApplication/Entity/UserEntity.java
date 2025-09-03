@@ -32,8 +32,8 @@ public class UserEntity {
         USER,
     }
 
-    @OneToOne
-    @MapsId
-    @JoinColumn(name = "id")
-    private AuthEntity auth;
+//    @OneToOne
+//    @MapsId
+//    @JoinColumn(name = "id")
+//    private AuthEntity auth;
 }

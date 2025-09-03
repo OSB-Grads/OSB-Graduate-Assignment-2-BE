@@ -3,6 +3,7 @@ package com.bank.webApplication.Services;
 
 import com.bank.webApplication.Config.MapperConfig;
 import com.bank.webApplication.Dto.UserDto;
+import com.bank.webApplication.Entity.LogEntity;
 import com.bank.webApplication.Entity.UserEntity;
 import com.bank.webApplication.Repository.UserRepository;
 import com.bank.webApplication.Util.DtoEntityMapper;
@@ -24,6 +25,7 @@ public class UserService {
 
     @Autowired
     private final DtoEntityMapper mapper;
+    private final LogService logService;
 
     // Common formatter for createdAt and updatedAt
 
@@ -39,17 +41,24 @@ public class UserService {
 
     // Method To Create A New User
 
-    public UserDto CreateUser( String auth,UserDto userDto){
+    public UserDto CreateUser( String id,UserDto userDto){
         UserEntity userEntity= mapper.convertToEntity(userDto, UserEntity.class);
 
         String now = getCurrentTimestampString();
         userEntity.setCreated_At(now);
         userEntity.setUpdated_At(now);
-        userEntity.setId(UUID.fromString(auth));
+        userEntity.setId(UUID.fromString(id));
 
         UserEntity savedUSer=userRepository.save(userEntity);
+
+        //LOGGING
+
+        logService.logintoDB(UUID.fromString(id), LogEntity.Action.PROFILE_MANAGEMENT,"New User Created",String.valueOf(id), LogEntity.Status.SUCCESS);
+
         return (mapper.convertToDto(savedUSer, UserDto.class));
     }
+
+
 
 
     // Update  User Details
@@ -65,9 +74,15 @@ public class UserService {
         existing.setUpdated_At(getCurrentTimestampString());
 
         UserEntity updated=userRepository.save(existing);
+
+        //LOGGING
+        logService.logintoDB(UUID.fromString(id), LogEntity.Action.PROFILE_MANAGEMENT," User Updated",String.valueOf(id), LogEntity.Status.SUCCESS);
+
         return(mapper.convertToDto(updated, UserDto.class));
 
     }
+
+
 
 
     //Display User Details
@@ -75,6 +90,9 @@ public class UserService {
    public UserDto getUserById(String id){
         UserEntity getUser=userRepository.findById(UUID.fromString(id))
                 .orElseThrow( ()-> new RuntimeException("User Not Found With Id : " +id));
+
+       //LOGGING
+       logService.logintoDB(UUID.fromString(id), LogEntity.Action.PROFILE_MANAGEMENT,"User Details Displayed",String.valueOf(id), LogEntity.Status.SUCCESS);
 
         return(mapper.convertToDto(getUser, UserDto.class));
    }

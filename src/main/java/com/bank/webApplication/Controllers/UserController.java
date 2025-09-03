@@ -6,6 +6,7 @@ import com.bank.webApplication.Entity.AuthEntity;
 import com.bank.webApplication.Entity.UserEntity;
 import com.bank.webApplication.Repository.AuthRepository;
 import com.bank.webApplication.Repository.UserRepository;
+import com.bank.webApplication.Services.LogService;
 import com.bank.webApplication.Services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,19 +22,15 @@ import java.util.UUID;
 public class UserController {
 
     private final UserService userService;
-    private final AuthRepository authRepository;
+
 
     // Get UserProfile By id
 
     @GetMapping
     public ResponseEntity<UserDto> getUserById(){
 
-        String userName= SecurityContextHolder.getContext().getAuthentication().getName();
-        AuthEntity authEntity =authRepository.findByUsername(userName)
-                .orElseThrow(()->new RuntimeException("user not found " +userName));
-
-        UserDto userDto=userService.getUserById(String.valueOf(authEntity.getId()));
-
+        String userId= SecurityContextHolder.getContext().getAuthentication().getName();
+        UserDto userDto=userService.getUserById(userId);
         return ResponseEntity.ok(userDto);
 
     }
@@ -43,12 +40,9 @@ public class UserController {
     @PutMapping
     public ResponseEntity<UserDto> createUser( @RequestBody UserDto userDto){
 
-        String userName= SecurityContextHolder.getContext().getAuthentication().getName();
-       AuthEntity authEntity =authRepository.findByUsername(userName)
-                .orElseThrow(()->new RuntimeException("user not found " +userName));
-
-       UserDto Created= userService.CreateUser(String.valueOf(authEntity.getId()),userDto);
-       return ResponseEntity.ok(Created);
+        String userId= SecurityContextHolder.getContext().getAuthentication().getName();
+        UserDto Created= userService.CreateUser(userId, userDto);
+        return ResponseEntity.ok(Created);
 
     }
 
@@ -57,13 +51,9 @@ public class UserController {
     @PatchMapping
     public ResponseEntity<UserDto> updateUserDetails( @RequestBody UserDto userDto){
 
-        String userName= SecurityContextHolder.getContext().getAuthentication().getName();
-        AuthEntity authEntity =authRepository.findByUsername(userName)
-                .orElseThrow(()->new RuntimeException("user not found " +userName));
-
-         UserDto Updated=userService.UpdateUser(String.valueOf(authEntity.getId()),userDto);
-
-         return ResponseEntity.ok(userDto);
+         String userId= SecurityContextHolder.getContext().getAuthentication().getName();
+         UserDto Updated=userService.UpdateUser(userId,userDto);
+         return ResponseEntity.ok(Updated);
     }
 
 
