@@ -31,7 +31,7 @@ public class LogService {
 
 
     public void logintoDB(UUID user_id, LogEntity.Action action, String details, String ip_address, LogEntity.Status status){
-        UserEntity userEntity=userRepository.findById(user_id).orElse(null);
+        UserEntity userEntity=userRepository.findById(user_id).orElseThrow(()->new NullPointerException("User Not Found"));
         if(userEntity!=null) {
             LogEntity logEntity = new LogEntity();
             logEntity.setUserEntity(userEntity);
