@@ -3,12 +3,14 @@ package com.bank.webApplication.Services;
 
 import com.bank.webApplication.Dto.AccountDto;
 import com.bank.webApplication.Entity.AccountEntity;
+import com.bank.webApplication.Entity.LogEntity;
 import com.bank.webApplication.Entity.ProductEntity;
 import com.bank.webApplication.Entity.UserEntity;
 import com.bank.webApplication.Repository.AccountRepository;
 import com.bank.webApplication.Repository.ProductRepository;
 import com.bank.webApplication.Repository.UserRepository;
 import com.bank.webApplication.Util.DtoEntityMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +20,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+
+@Slf4j
 @Service
 public class AccountService {
     @Autowired
@@ -31,6 +35,9 @@ public class AccountService {
 
     @Autowired
     private ProductRepository productRepository;
+
+    @Autowired
+    private LogService logService;
 
     public AccountDto CreateAccount(AccountDto accountDto,String userId,String productId ) throws SQLException {
         UUID id=UUID.fromString(userId);
@@ -58,6 +65,9 @@ public class AccountService {
 
 
                 accountRepository.save(accountEntity);
+                log.info("[Account Handler] Account Creation Operation Successful :) ");
+                logService.logintoDB(id, LogEntity.Action.TRANSACTIONS, "Account Created  Successful", String.valueOf(userId), LogEntity.Status.SUCCESS);
+                log.info("[Account Handler]  Saved Successfully in Logs");
 
                 created = true;
                 System.out.println("Account created successfully! Account Number: " + accountNumber);
@@ -78,17 +88,23 @@ public class AccountService {
         return String.valueOf(Math.abs(UUID.randomUUID().getMostSignificantBits())).substring(0, 10);
     }
 
-    public AccountDto getOneAccounts(String accountNumber){
+    public AccountDto getOneAccount(String accountNumber){
         AccountEntity accountEntity=accountRepository.findByAccountNumber(accountNumber);
         double accountInterest =accountEntity.getProduct().getInterestRate();
 
+        UUID id= accountEntity.getUser().getId();
+
+
         AccountDto dto=dtoEntityMapper.convertToDto(accountEntity,AccountDto.class);
+        log.info("[Account Handler] Account Information Displayed Successfully :) ");
+        logService.logintoDB(id, LogEntity.Action.TRANSACTIONS, "Account Created  Successful", String.valueOf(id), LogEntity.Status.SUCCESS);
+        log.info("[Account Handler]  Saved Successfully in Logs");
 
         return dto;
 
     }
 
-    public List<AccountDto> getAllAccountsByAccountNo(String  userId){
+    public List<AccountDto> getAllAccountsByUserId(String  userId){
         UUID id=UUID.fromString(userId);
 
         List<AccountEntity>accounts=accountRepository.findAllByUserId(id);
@@ -97,6 +113,10 @@ public class AccountService {
         List<AccountDto>accountDtos=accounts.stream()
                 .map(account->dtoEntityMapper.convertToDto(account,AccountDto.class))
                 .collect(Collectors.toList());
+
+        log.info(" Accounts Information Displayed Successfully ");
+        logService.logintoDB(id, LogEntity.Action.TRANSACTIONS, "Account Created  Successful", String.valueOf(userId), LogEntity.Status.SUCCESS);
+        log.info("[Account Handler]  Saved Successfully in Logs");
 
 
         return  accountDtos;
