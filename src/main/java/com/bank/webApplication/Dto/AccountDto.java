@@ -13,10 +13,9 @@ import java.util.UUID;
 
 public class AccountDto {
     private String accountNumber;
-    private UUID userId; // Only the user's UUID
-    private AccountEntity.account_type accountType;
+//    private UUID userId; // Only the user's UUID
+    private AccountEntity.accountType accountType;
     private double balance;
-    private boolean locked;
     private String accountCreated;
     private String accountUpdated;
 

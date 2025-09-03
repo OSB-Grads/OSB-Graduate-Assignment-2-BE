@@ -19,7 +19,7 @@ public class AccountEntity {
 
 
     @Id
-    private String account_number;
+    private String accountNumber;
 
     @ManyToOne
     @JoinColumn(
@@ -36,17 +36,15 @@ public class AccountEntity {
     private ProductEntity product;
 
     @Enumerated(EnumType.STRING)
-    private account_type account_type;
+    private accountType accountType;
 
     private double balance;
 
-    private boolean is_locked;
-
-    private String  account_created;
-    private String  account_updated;
+    private String  accountCreated;
+    private String  accountUpdated;
 
 
-    public enum account_type{
+    public enum accountType{
         SAVINGS,
         FIXED_DEPOSIT
     }
