@@ -81,9 +81,10 @@ public class AccountService {
         return String.valueOf(Math.abs(UUID.randomUUID().getMostSignificantBits())).substring(0, 10);
     }
 
-    public AccountDto getOneAccounts(String accountNumber){
+    public AccountDto getOneAccount(String accountNumber){
         AccountEntity accountEntity=accountRepository.findByAccountNumber(accountNumber);
         double accountInterest =accountEntity.getProduct().getInterestRate();
+
 
         AccountDto dto=dtoEntityMapper.convertToDto(accountEntity,AccountDto.class);
 
@@ -91,7 +92,7 @@ public class AccountService {
 
     }
 
-    public List<AccountDto> getAllAccountsByAccountNo(String  userId){
+    public List<AccountDto> getAllAccountsByUserId(String  userId){
         UUID id=UUID.fromString(userId);
 
         List<AccountEntity>accounts=accountRepository.findAllByUserId(id);
