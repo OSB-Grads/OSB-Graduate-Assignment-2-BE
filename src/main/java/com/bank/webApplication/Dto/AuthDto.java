@@ -10,6 +10,6 @@ import java.util.UUID;
 @Builder
 public class AuthDto {
 
-    private String UserName;
-    private String PassWord;
+    private String username;
+    private String password;
 }
