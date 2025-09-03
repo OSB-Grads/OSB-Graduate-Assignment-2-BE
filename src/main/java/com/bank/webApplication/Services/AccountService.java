@@ -1,4 +1,4 @@
-package com.bank.webApplication.Service;
+package com.bank.webApplication.Services;
 
 
 import com.bank.webApplication.Dto.AccountDto;
@@ -9,15 +9,12 @@ import com.bank.webApplication.Repository.AccountRepository;
 import com.bank.webApplication.Repository.ProductRepository;
 import com.bank.webApplication.Repository.UserRepository;
 import com.bank.webApplication.Util.DtoEntityMapper;
-import org.hibernate.NonUniqueResultException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
