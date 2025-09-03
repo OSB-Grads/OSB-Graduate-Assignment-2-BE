@@ -64,4 +64,9 @@ public class GlobalExceptionHandler{
     public ResponseEntity<Object> handleGenericException(Exception ex) {
         return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred");
     }
+    //Error-409
+    @ExceptionHandler(UserAlreadyExistException.class)
+    public ResponseEntity<Object> handleUserAlreadyExistException(Exception ex){
+        return buildResponse(HttpStatus.CONFLICT, ex.getMessage());
+    }
 }

@@ -12,7 +12,7 @@ public class JWTUtil {
     private final String SECRET="supersecretkey";
     private final long EXPIRATION_TIME=1000*60*15;
     private final Key key=Keys.hmacShaKeyFor(SECRET.getBytes());
-
+    //method to generate JwtToken
     public String generateToken(String username) throws IllegalArgumentException,JwtException{
         return Jwts.builder()
                 .setSubject(username)
@@ -21,6 +21,7 @@ public class JWTUtil {
                 .signWith(key,SignatureAlgorithm.HS256)
                 .compact();
     }
+    //method to extract UserName from the JwtToken
     public String extractUsername(String token){
         return Jwts.parserBuilder()
                 .setSigningKey(key)
@@ -29,9 +30,11 @@ public class JWTUtil {
                 .getBody()
                 .getSubject();
     }
+    //method to validate JwtToken
     public boolean validateToken(String Token, UserDetails UserName){
         return UserName.equals(extractUsername(Token)) && !isTokenExpired(Token);
     }
+    //method to check expiration of the token
     public boolean isTokenExpired(String Token){
         return Jwts.parserBuilder()
                 .setSigningKey(key)
