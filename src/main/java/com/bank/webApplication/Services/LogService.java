@@ -5,6 +5,7 @@ import com.bank.webApplication.Entity.LogEntity;
 import com.bank.webApplication.Entity.UserEntity;
 import com.bank.webApplication.Repository.LogRepository;
 import com.bank.webApplication.Repository.UserRepository;
+import com.bank.webApplication.Util.SensitiveDataValidator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -22,16 +23,22 @@ public class LogService {
 
     private LogRepository logRepository;
     private UserRepository userRepository;
+    private SensitiveDataValidator sensitiveDataValidator;
 
     @Autowired
-    public LogService(LogRepository logRepository,UserRepository userRepository){
+    public LogService(LogRepository logRepository,UserRepository userRepository,SensitiveDataValidator sensitiveDataValidator){
         this.logRepository=logRepository;
         this.userRepository=userRepository;
+        this.sensitiveDataValidator=sensitiveDataValidator;
     }
 
 
     public void logintoDB(UUID user_id, LogEntity.Action action, String details, String ip_address, LogEntity.Status status){
         UserEntity userEntity=userRepository.findById(user_id).orElseThrow(()->new NullPointerException("User Not Found"));
+        if(sensitiveDataValidator.containsSensitiveData(details)){
+            details="Log Has Been [SENSITIVE DATA]";
+        }
+        if(sensitiveDataValidator.containsSensitiveData(ip_address))ip_address="Log Has Been [SENSITIVE DATA]";
         if(userEntity!=null) {
             LogEntity logEntity = new LogEntity();
             logEntity.setUserEntity(userEntity);

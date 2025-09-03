@@ -47,9 +47,5 @@ public class TransactionController {
         return ResponseEntity.ok(transactions);
     }
 
-    @GetMapping(path = "/{userId}")
-    public ResponseEntity<?> getTransactionsForUser(@PathVariable ("userId") UUID userId){
-        List<TransactionDTO> userTransactions = transactionService.get
-    }
 }
 
