@@ -24,7 +24,7 @@ public class ProductController {
         this.productService=productService;
     }
 
-    @GetMapping("/fetch")
+    @GetMapping("/fetchById")
     public ResponseEntity<?> fetchProductDetailsById(@RequestParam("productId") String productId){
         ProductDto productInfo=productService.getProduct(productId);
         return ResponseEntity.status(HttpStatus.OK).body(productInfo);

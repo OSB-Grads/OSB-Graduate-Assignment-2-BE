@@ -30,7 +30,7 @@ public class BankUserDetailService implements UserDetailsService {
                 .orElseThrow(()->new UsernameNotFoundException("User Not Found"));
         GrantedAuthority authority=new SimpleGrantedAuthority(user.getRole().name());
         return new org.springframework.security.core.userdetails.User(
-               auth.getId().toString() , auth.getPassWord(), Collections.singletonList(authority)//instead of sending username changed it to userId
+               auth.getId().toString() , auth.getPassword(), Collections.singletonList(authority)//instead of sending username changed it to userId
         );
     }
 }

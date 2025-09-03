@@ -9,7 +9,7 @@ import java.util.Date;
 
 @Component
 public class JWTUtil {
-    private final String SECRET="supersecretkey";
+    private final String SECRET="supersecretkeybgjhrebgjreborebjrebvjkfnbjbtjnbtjnbktjnbjtnbjtnbjtnbkjtnbkjrtnbjiktbfrhijbgvgjrhbvjhrbvjkrbvjrbvj";
     private final long EXPIRATION_TIME=1000*60*15;
     private final Key key=Keys.hmacShaKeyFor(SECRET.getBytes());
     //method to generate JwtToken

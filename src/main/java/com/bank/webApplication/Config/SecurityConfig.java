@@ -34,7 +34,8 @@ private final JwtFilter jwtFilter;
         http
                 .csrf(csrf -> csrf.disable()) // disable CSRF
                 .authorizeHttpRequests(auth->auth
-                        .requestMatchers("").permitAll()
+                        .requestMatchers("/api/v1/accounts/**").permitAll()
+                        .requestMatchers("/api/v1/auth/register").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

@@ -24,8 +24,8 @@ public class AuthEntity {
     @Column(name = "id" , updatable = false,nullable = false,columnDefinition = "VARCHAR(25)")
     private UUID id;
     @Column(name="UserName",updatable = false,nullable = false,unique = true)
-    private String UserName;
+    private String username;
     @Column(name="PassWord",nullable = false)
-    private String PassWord;
+    private String password;
 
 }
