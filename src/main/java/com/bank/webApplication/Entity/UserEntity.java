@@ -15,7 +15,6 @@ import java.util.UUID;
 public class UserEntity {
     @Id
     @Column(name = "id" , updatable = false,nullable = false ,columnDefinition = "VARCHAR(36)")
-
     private UUID id;
     private String name;
     private String email;
@@ -32,8 +31,8 @@ public class UserEntity {
         USER,
     }
 
-    @OneToOne
-    @MapsId
-    @JoinColumn(name = "id")
-    private AuthEntity auth;
+//    @OneToOne
+//    @MapsId
+//    @JoinColumn(name = "id")
+//    private AuthEntity auth;
 }
