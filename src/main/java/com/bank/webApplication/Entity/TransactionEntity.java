@@ -26,14 +26,14 @@ public class TransactionEntity {
     @ManyToOne
     @JoinColumn(
             name = "fromAccount",
-            referencedColumnName = "account_number"
+            referencedColumnName = "accountNumber"
     )
     private AccountEntity fromAccount;
 
     @ManyToOne
     @JoinColumn(
             name="toAccount",
-            referencedColumnName = "account_number"
+            referencedColumnName = "accountNumber"
     )
     private AccountEntity toAccount;
     private double amount;
