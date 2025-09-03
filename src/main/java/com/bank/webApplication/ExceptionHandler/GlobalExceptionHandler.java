@@ -39,7 +39,7 @@ public class GlobalExceptionHandler{
    //Error-409
     @ExceptionHandler(InsufficientFundsException.class)
     public ResponseEntity<Object> handleInsufficientFunds(InsufficientFundsException ex) {
-        return buildResponse(HttpStatus.CONFLICT, ex.getMessage());
+        return buildResponse(HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE, ex.getMessage());
     }
    //Error-400
     @ExceptionHandler(InvalidAccountTypeException.class)
