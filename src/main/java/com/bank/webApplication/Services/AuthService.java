@@ -5,6 +5,7 @@ import com.bank.webApplication.CustomException.UserAlreadyExistException;
 import com.bank.webApplication.Dto.AuthDto;
 import com.bank.webApplication.Dto.JwtResponseDto;
 import com.bank.webApplication.Entity.AuthEntity;
+import com.bank.webApplication.Entity.LogEntity;
 import com.bank.webApplication.Repository.AuthRepository;
 import com.bank.webApplication.Util.JWTUtil;
 import com.bank.webApplication.Util.PasswordHash;
@@ -17,6 +18,8 @@ import com.bank.webApplication.Util.DtoEntityMapper;
 @Service
 @AllArgsConstructor
 public class AuthService {
+    @Autowired
+    public final LogService logService;
     @Autowired
     public final AuthRepository authrepository;
     @Autowired
@@ -32,6 +35,8 @@ public class AuthService {
         }
         //Generates JwtToken for valid authenticated user
         String token= jwtUtil.generateToken(user.getUserName());
+        //Invoke LogService
+        logService.logintoDB(user.getId(), LogEntity.Action.AUTHENTICATION,"User Logged in Successfully",user.getId().toString(),LogEntity.Status.SUCCESS);
         return new JwtResponseDto(token);
     }
     public JwtResponseDto Signup(AuthDto authdto){
@@ -49,7 +54,8 @@ public class AuthService {
         authrepository.save(user);
         //generates JwtToken
         String token =jwtUtil.generateToken(user.getUserName());
+        //Invoke LogService
+        logService.logintoDB(user.getId(), LogEntity.Action.AUTHENTICATION,"User Signup Successfull",user.getId().toString(),LogEntity.Status.SUCCESS);
         return new JwtResponseDto(token);
     }
-
 }
