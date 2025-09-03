@@ -1,4 +1,5 @@
 package com.bank.webApplication.Util;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import io.jsonwebtoken.*;
@@ -9,7 +10,9 @@ import java.util.Date;
 
 @Component
 public class JWTUtil {
-    private final String SECRET="supersecretkey";
+
+    @Value("${spring.jwt.secret}")
+    private  String SECRET;
     private final long EXPIRATION_TIME=1000*60*15;
     private final Key key=Keys.hmacShaKeyFor(SECRET.getBytes());
     //method to generate JwtToken
