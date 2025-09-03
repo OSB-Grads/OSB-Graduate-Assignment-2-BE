@@ -10,12 +10,14 @@ import com.bank.webApplication.Repository.AuthRepository;
 import com.bank.webApplication.Util.JWTUtil;
 import com.bank.webApplication.Util.PasswordHash;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class AuthService {
     @Autowired
     public LogService logService;
@@ -46,15 +48,21 @@ public class AuthService {
         //creates the hash of the password given by the user
         String hashedPassword= PasswordHash.HashPass(authdto.getPassword());
         //registers username and hashed password into database
+        log.info("Password Successfully hashed");
         AuthEntity user=AuthEntity.builder()
                 .username(authdto.getUsername())
                 .password(hashedPassword)
                 .build();
+        log.info("User Entity Successful");
         authrepository.save(user);
         //generates JwtToken
+        log.info("Save Successful");
         String token =jwtUtil.generateToken(user.getUsername());
+
+        // Need to User ENtity to update at same time
+        log.info("Token Generation Succesful");
         //Invoke LogService
-        logService.logintoDB(user.getId(), LogEntity.Action.AUTHENTICATION,"User Signup Successfull",user.getId().toString(),LogEntity.Status.SUCCESS);
+//        logService.logintoDB(user.getId(), LogEntity.Action.AUTHENTICATION,"User Signup Successfull",user.getId().toString(),LogEntity.Status.SUCCESS);
         return new JwtResponseDto(token);
     }
 }

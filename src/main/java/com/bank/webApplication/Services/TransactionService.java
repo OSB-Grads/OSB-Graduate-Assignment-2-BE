@@ -139,9 +139,10 @@ public class TransactionService {
 
     public List<TransactionDTO> getTransactionsByAccountNumber(String accountNumber){
 
-        List<TransactionEntity> resultTransactions = transactionRepository.findAllByAccountNumber(accountNumber);
-
-        return resultTransactions.stream().map((transactionEntity)->dtoEntityMapper.convertToDto(transactionEntity, TransactionDTO.class)).collect(Collectors.toList());
+        List<TransactionEntity> resultFromTransactions = transactionRepository.findAllByFromAccountAccountNumber(accountNumber);
+        List<TransactionEntity> resultToTransactions=transactionRepository.findAllByToAccountAccountNumber(accountNumber);
+        List<TransactionEntity> result=Stream.concat(resultFromTransactions.stream(),resultToTransactions.stream()).toList();
+        return result.stream().map((transactionEntity)->dtoEntityMapper.convertToDto(transactionEntity, TransactionDTO.class)).collect(Collectors.toList());
     }
     
 
