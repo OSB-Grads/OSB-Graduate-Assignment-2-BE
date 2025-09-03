@@ -21,14 +21,14 @@ public class ProductService {
     @Autowired
     private DtoEntityMapper dtoEntityMapper;
 
-    public ProductDto GetProduct(String  productId){
+    public ProductDto getProduct(String  productId){
         ProductEntity product=productRepository.findById(productId)
                 .orElseThrow(()->new NullPointerException("not found"));
 
         ProductDto productDto=dtoEntityMapper.convertToDto(product,ProductDto.class);
         return productDto;
     }
-    public List<ProductDto> GetAllProducts(){
+    public List<ProductDto> getAllProducts(){
         List<ProductEntity> products=productRepository.findAll();
 
         List<ProductDto>productsdto=products.stream()
