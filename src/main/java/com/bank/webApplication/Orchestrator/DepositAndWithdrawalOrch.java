@@ -1,5 +1,6 @@
 package com.bank.webApplication.Orchestrator;
 
+import com.bank.webApplication.Dto.DepositWithdrawDTO;
 import com.bank.webApplication.Entity.LogEntity;
 import com.bank.webApplication.Entity.TransactionEntity;
 import com.bank.webApplication.Services.LogService;
@@ -26,35 +27,35 @@ public class DepositAndWithdrawalOrch {
     }
 
     @Transactional
-    public boolean depositHandler(UUID userId, String accountNumber, double amount) {
-        boolean depositOperation = transactionService.depositAmount(accountNumber,amount);
-        if (depositOperation) {
+    public DepositWithdrawDTO depositHandler(UUID userId, String accountNumber, double amount) {
+        DepositWithdrawDTO depositOperation = transactionService.depositAmount(accountNumber,amount);
+        if (depositOperation != null ) {
             transactionService.saveTransaction(null, accountNumber, amount, "Deposit Transaction Save Successful :)", TransactionEntity.type.DEPOSIT, TransactionEntity.status.COMPLETED);
             log.info("[Deposit Handler] Deposit Operation Successful :) ");
             logService.logintoDB(userId, LogEntity.Action.TRANSACTIONS, "Deposit Successful", String.valueOf(userId), LogEntity.Status.SUCCESS);
             log.info("[Deposit Handler] Transaction Saved Successfully in Logs");
-            return true;
+            return depositOperation;
         } else {
             log.error("[Deposit Handler] Deposit Operation Failed. Please Try Again");
             logService.logintoDB(userId, LogEntity.Action.TRANSACTIONS, "Deposit Failed", String.valueOf(userId), LogEntity.Status.FAILURE);
-            return false;
+            return depositOperation;
         }
     }
 
     @Transactional
-    public boolean WithdrawalHandler(UUID userId, String accountNumber, double amount){
-        boolean withdrawOperation = transactionService.withdrawAmount(accountNumber, amount);
-        if (withdrawOperation){
+    public DepositWithdrawDTO WithdrawalHandler(UUID userId, String accountNumber, double amount){
+        DepositWithdrawDTO withdrawOperation = transactionService.withdrawAmount(accountNumber, amount);
+        if (withdrawOperation != null){
             transactionService.saveTransaction(accountNumber,null, amount, "Withdrawal Transaction save Successful :)", TransactionEntity.type.WITHDRAWAL, TransactionEntity.status.COMPLETED);
             log.info("[Withdrawal Handler] Withdraw Operation Successful :) ");
             logService.logintoDB(userId, LogEntity.Action.TRANSACTIONS, "Withdrawal Successful", String.valueOf(userId), LogEntity.Status.SUCCESS);
             log.info("[Withdrawal Handler] Transaction Saved Successfully in Logs");
-            return true;
+            return withdrawOperation;
         }
         else {
             log.error("[Withdrawal Handler] Withdraw Operation Failed. Please Try Again ");
             logService.logintoDB(userId, LogEntity.Action.TRANSACTIONS, "Withdrawal Failed", String.valueOf(userId),LogEntity.Status.FAILURE );
-            return false;
+            return withdrawOperation;
         }
     }
 
