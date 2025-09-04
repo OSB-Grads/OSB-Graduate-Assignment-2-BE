@@ -1,7 +1,6 @@
-package com.bank.webApplication;
+package com.bank.webApplication.Repository;
 
 import com.bank.webApplication.Entity.UserEntity;
-import com.bank.webApplication.Repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
