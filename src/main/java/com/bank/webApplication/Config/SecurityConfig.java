@@ -36,7 +36,6 @@ private final JwtFilter jwtFilter;
                 .authorizeHttpRequests(auth->auth
                         .requestMatchers("/api/v1/accounts/**").permitAll()
                         .requestMatchers("/api/v1/auth/register").permitAll()
-                        .requestMatchers("/api/v1/logs").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
