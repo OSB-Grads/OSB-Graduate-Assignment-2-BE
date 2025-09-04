@@ -1,7 +1,9 @@
 package com.bank.webApplication.Controllers;
 
 import com.bank.webApplication.Dto.DepositWithdrawDTO;
+import com.bank.webApplication.Dto.DepositWithdrawRequestDTO;
 import com.bank.webApplication.Dto.TransactionDTO;
+import com.bank.webApplication.Dto.TransactionRequestDTO;
 import com.bank.webApplication.Entity.AccountEntity;
 import com.bank.webApplication.Entity.UserEntity;
 import com.bank.webApplication.Orchestrator.DepositAndWithdrawalOrch;
@@ -9,6 +11,7 @@ import com.bank.webApplication.Orchestrator.TransactOrchestrator;
 import com.bank.webApplication.Services.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
@@ -23,20 +26,23 @@ public class TransactionController {
 
 
     @PostMapping (path = "/deposit")
-    public ResponseEntity<?> deposit(@RequestBody UUID userId, String accountNumber, double amount){
-        DepositWithdrawDTO depositWithdrawDTO = depositAndWithdrawalOrch.depositHandler(userId , accountNumber, amount);
+    public ResponseEntity<?> deposit(@RequestBody DepositWithdrawRequestDTO depositWithdrawRequestDTO){
+        String userId= SecurityContextHolder.getContext().getAuthentication().getName();
+        DepositWithdrawDTO depositWithdrawDTO = depositAndWithdrawalOrch.depositHandler(UUID.fromString(userId),depositWithdrawRequestDTO.getAccountnumber(), depositWithdrawRequestDTO.getAmount());
         return ResponseEntity.ok(depositWithdrawDTO );
     }
 
     @PostMapping (path = "/withdraw")
-    public ResponseEntity<?> withdraw(@RequestBody UUID userId, String accountNumber, double amount){
-        DepositWithdrawDTO depositWithdrawDTO = depositAndWithdrawalOrch.depositHandler(userId , accountNumber, amount);
+    public ResponseEntity<?> withdraw(@RequestBody DepositWithdrawRequestDTO depositWithdrawRequestDTO){
+        String userId= SecurityContextHolder.getContext().getAuthentication().getName();
+        DepositWithdrawDTO depositWithdrawDTO = depositAndWithdrawalOrch.depositHandler(UUID.fromString(userId), depositWithdrawRequestDTO.getAccountnumber(), depositWithdrawRequestDTO.getAmount());
         return ResponseEntity.ok(depositWithdrawDTO );
     }
 
     @PostMapping (path = "/transfer")
-    public ResponseEntity<?> transfer(@RequestBody UUID userId, String fromAccountNumber, String toAccountNumber, double amount){
-        TransactionDTO transactionDTO = transactOrchestrator.transactionBetweenAccounts(userId, fromAccountNumber, toAccountNumber, amount);
+    public ResponseEntity<?> transfer(@RequestBody TransactionRequestDTO transactionRequestDTO){
+        String userId= SecurityContextHolder.getContext().getAuthentication().getName();
+        TransactionDTO transactionDTO = transactOrchestrator.transactionBetweenAccounts(UUID.fromString(userId),transactionRequestDTO.getFromAccountNumber(),transactionRequestDTO.getToAccountNumber(),transactionRequestDTO.getAmount());
         return ResponseEntity.ok(transactionDTO);
     }
 
