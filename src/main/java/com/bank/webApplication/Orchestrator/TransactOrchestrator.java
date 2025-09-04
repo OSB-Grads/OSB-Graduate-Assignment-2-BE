@@ -10,13 +10,13 @@ import com.bank.webApplication.Services.TransactionService;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.UUID;
 
 @Slf4j
-@Controller
+@Component
 public class TransactOrchestrator {
 
     private TransactionService transactionService;

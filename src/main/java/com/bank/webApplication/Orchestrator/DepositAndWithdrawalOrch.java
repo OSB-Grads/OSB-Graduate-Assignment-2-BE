@@ -11,11 +11,13 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
 @Slf4j
 @Controller
+@Component
 public class DepositAndWithdrawalOrch {
 
     private TransactionService transactionService;

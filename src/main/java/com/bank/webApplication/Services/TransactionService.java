@@ -2,20 +2,28 @@ package com.bank.webApplication.Services;
 
 import com.bank.webApplication.CustomException.AccountNotFoundException;
 import com.bank.webApplication.CustomException.InsufficientFundsException;
+import com.bank.webApplication.CustomException.TransactionFailedException;
 import com.bank.webApplication.Dto.DepositWithdrawDTO;
 import com.bank.webApplication.Dto.TransactionDTO;
 import com.bank.webApplication.Entity.AccountEntity;
 import com.bank.webApplication.Entity.TransactionEntity;
 import com.bank.webApplication.Repository.AccountRepository;
+import com.bank.webApplication.Repository.ProductRepository;
 import com.bank.webApplication.Repository.TransactionRepository;
 import com.bank.webApplication.Util.DtoEntityMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @Slf4j
@@ -131,9 +139,10 @@ public class TransactionService {
 
     public List<TransactionDTO> getTransactionsByAccountNumber(String accountNumber){
 
-        List<TransactionEntity> resultTransactions = transactionRepository.findAllByToAccountAccountNumber(accountNumber);
-
-        return resultTransactions.stream().map((transactionEntity)->dtoEntityMapper.convertToDto(transactionEntity, TransactionDTO.class)).collect(Collectors.toList());
+        List<TransactionEntity> resultFromTransactions = transactionRepository.findAllByFromAccountAccountNumber(accountNumber);
+        List<TransactionEntity> resultToTransactions=transactionRepository.findAllByToAccountAccountNumber(accountNumber);
+        List<TransactionEntity> result=Stream.concat(resultFromTransactions.stream(),resultToTransactions.stream()).toList();
+        return result.stream().map((transactionEntity)->dtoEntityMapper.convertToDto(transactionEntity, TransactionDTO.class)).collect(Collectors.toList());
     }
     
 

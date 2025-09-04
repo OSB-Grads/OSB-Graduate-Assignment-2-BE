@@ -4,7 +4,6 @@ import com.bank.webApplication.CustomException.InvalidCredentialsException;
 import com.bank.webApplication.CustomException.UserAlreadyExistException;
 import com.bank.webApplication.Dto.AuthDto;
 import com.bank.webApplication.Dto.JwtResponseDto;
-import com.bank.webApplication.Dto.UserDto;
 import com.bank.webApplication.Entity.AuthEntity;
 import com.bank.webApplication.Entity.LogEntity;
 import com.bank.webApplication.Entity.Role;
@@ -12,13 +11,14 @@ import com.bank.webApplication.Repository.AuthRepository;
 import com.bank.webApplication.Util.JWTUtil;
 import com.bank.webApplication.Util.PasswordHash;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class AuthService {
     @Autowired
     public LogService logService;
@@ -59,10 +59,7 @@ public class AuthService {
                 .password(hashedPassword)
                 .role(Role.USER)
                 .build();
-
         authrepository.save(user);
-        System.out.println(user.getId());
-
         //generates JwtToken
         String token =jwtUtil.generateToken(String.valueOf(user.getId()),user.getRole().name());
         //Invoke LogService
