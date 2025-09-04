@@ -11,6 +11,11 @@ INSERT OR IGNORE INTO products (
   'FD02', 2, '2 year plan with the interestRate of 6.4', 3, 6.4, '2 year plan', 20
 );
 
+INSERT OR IGNORE INTO products (
+  product_id, description, interest_rate, product_name, cooling_period, funding_window, tenure
+) VALUES (
+  'SAV01', 'saving account with the interestRate of 1', 1, 'Saving Account', 0, 0, 0
+);
 
 INSERT OR IGNORE INTO users (
     id, name, email, phone, created_At, updated_At, role
