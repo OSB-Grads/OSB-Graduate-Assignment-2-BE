@@ -13,6 +13,7 @@ import lombok.Setter;
 public class ProductDto {
 
     private String productId;
+    private String productName;
     private double interestRate;
     private int fundingWindow;
     private int coolingPeriod;
