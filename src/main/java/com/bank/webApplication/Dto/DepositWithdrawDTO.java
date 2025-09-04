@@ -1,5 +1,4 @@
 package com.bank.webApplication.Dto;
-
 import com.bank.webApplication.Entity.TransactionEntity;
 import lombok.*;
 
@@ -8,14 +7,10 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-
-public class TransactionDTO {
-
-    private String fromAccount;
-    private String toAccount;
+public class DepositWithdrawDTO {
+    private String Accountnumber;
     private  String description;
     private double amount;
     private TransactionEntity.status status;
     private TransactionEntity.type type;
 }
-

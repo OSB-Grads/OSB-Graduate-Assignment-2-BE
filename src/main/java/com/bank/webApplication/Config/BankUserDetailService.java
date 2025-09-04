@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Component
 public class BankUserDetailService implements UserDetailsService {
@@ -23,14 +24,13 @@ public class BankUserDetailService implements UserDetailsService {
     @Autowired
     private UserRepository userRepository;
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        AuthEntity auth=authRepository.findByUsername(username)
+    public UserDetails loadUserByUsername(String userId) throws UsernameNotFoundException {
+
+        AuthEntity auth=authRepository.findById(UUID.fromString(userId))
                 .orElseThrow(()->new UsernameNotFoundException("User Not Found"));
-        UserEntity user=userRepository.findById(auth.getId())
-                .orElseThrow(()->new UsernameNotFoundException("User Not Found"));
-        GrantedAuthority authority=new SimpleGrantedAuthority(user.getRole().name());
+        GrantedAuthority authority=new SimpleGrantedAuthority(auth.getRole().name());
         return new org.springframework.security.core.userdetails.User(
-               auth.getId().toString() , auth.getPassWord(), Collections.singletonList(authority)//instead of sending username changed it to userId
+               auth.getId().toString() , auth.getPassword(), Collections.singletonList(authority)//instead of sending username changed it to userId
         );
     }
 }

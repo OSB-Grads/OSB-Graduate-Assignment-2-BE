@@ -1,15 +1,12 @@
 package com.bank.webApplication.Dto;
-
 import lombok.*;
 
-import java.util.UUID;
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class AuthDto {
-
-    private String username;
-    private String password;
+public class DepositWithdrawRequestDTO {
+    private String Accountnumber;
+    private double amount;
 }
