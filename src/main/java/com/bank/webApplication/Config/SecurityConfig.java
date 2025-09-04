@@ -48,7 +48,6 @@ private final JwtFilter jwtFilter;
                                 "/swagger-ui/**",
                                 "/webjars/**",
                                 "/swagger-ui.html").permitAll()
-                        .requestMatchers("/api/v1/accounts/**").permitAll()
                         .requestMatchers("/api/v1/auth/register","/api/v1/auth/login").permitAll()
                         .anyRequest().authenticated()
                 )
