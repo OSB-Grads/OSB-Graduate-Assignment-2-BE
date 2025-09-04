@@ -24,16 +24,6 @@ public class UserEntity {
     private String updated_At;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private Role role;
 
-    public enum Role{
-        ADMIN,
-        USER,
-    }
-
-//    @OneToOne
-//    @MapsId
-//    @JoinColumn(name = "id")
-//    private AuthEntity auth;
 }

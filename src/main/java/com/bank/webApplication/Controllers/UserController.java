@@ -30,6 +30,7 @@ public class UserController {
     public ResponseEntity<UserDto> getUserById(){
 
         String userId= SecurityContextHolder.getContext().getAuthentication().getName();
+        System.out.println("user controller user id "+userId);
         UserDto userDto=userService.getUserById(userId);
         return ResponseEntity.ok(userDto);
 
@@ -41,7 +42,10 @@ public class UserController {
     public ResponseEntity<UserDto> createUser( @RequestBody UserDto userDto){
 
         String userId= SecurityContextHolder.getContext().getAuthentication().getName();
-        UserDto Created= userService.CreateUser(userId, userDto);
+        System.out.println("user controller user id "+userId);
+
+
+        UserDto Created= userService.CreateUser(userDto, userId);
         return ResponseEntity.ok(Created);
 
     }
