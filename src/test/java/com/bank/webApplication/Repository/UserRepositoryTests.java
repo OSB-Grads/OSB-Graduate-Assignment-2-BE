@@ -1,5 +1,6 @@
 package com.bank.webApplication.Repository;
 
+import com.bank.webApplication.Entity.Role;
 import com.bank.webApplication.Entity.UserEntity;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,7 +28,7 @@ public class UserRepositoryTests {
         user.setName("zaid");
         user.setEmail("zargarzaid271@gmail.com");
         user.setPhone("7889689012");
-       // user.setRole(UserEntity.Role.USER);
+        user.setRole(Role.USER);
         user.setCreated_At("2025-09-03");
         user.setUpdated_At("2025-09-03");
 
