@@ -1,6 +1,7 @@
 package com.bank.webApplication.Services;
 
 
+import com.bank.webApplication.CustomException.UserNotFoundException;
 import com.bank.webApplication.Dto.AccountDto;
 import com.bank.webApplication.Entity.AccountEntity;
 import com.bank.webApplication.Entity.LogEntity;
@@ -42,7 +43,7 @@ public class AccountService {
     public AccountDto CreateAccount(AccountDto accountDto,String userId,String productId ) throws SQLException {
         UUID id=UUID.fromString(userId);
         UserEntity user=userRepository.findById(id)
-                .orElseThrow(() -> new NullPointerException("User not found exception"));
+                .orElseThrow(() -> new UserNotFoundException("user not found! create the profile before create the account"));
         ProductEntity product=productRepository.findByProductId(productId);
 
         boolean created = false;

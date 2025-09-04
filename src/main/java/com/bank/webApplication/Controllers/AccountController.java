@@ -21,7 +21,8 @@ import org.springframework.web.bind.annotation.*;
 import java.sql.SQLException;
 import java.util.List;
 
-@RestController("/api/v1/accounts")
+@RestController()
+@RequestMapping("/api/v1/accounts")
 public class AccountController {
 
     @Autowired
@@ -43,8 +44,8 @@ public class AccountController {
     }
 
 
-    @GetMapping
-    public ResponseEntity<List<AccountDto>> GetAllAccounts(@RequestParam String productId){
+    @GetMapping()
+    public ResponseEntity<List<AccountDto>> GetAllAccounts(){
         String userId= SecurityContextHolder.getContext().getAuthentication().getName();
 //        AuthEntity user =authRepository.findByUsername(Username)
 //                .orElseThrow(()->new UserNotFoundException("user not found"));
