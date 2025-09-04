@@ -27,7 +27,7 @@ public class UserRepositoryTests {
         user.setName("zaid");
         user.setEmail("zargarzaid271@gmail.com");
         user.setPhone("7889689012");
-        user.setRole(UserEntity.Role.USER);
+       // user.setRole(UserEntity.Role.USER);
         user.setCreated_At("2025-09-03");
         user.setUpdated_At("2025-09-03");
 

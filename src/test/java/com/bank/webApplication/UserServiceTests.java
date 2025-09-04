@@ -47,7 +47,7 @@ public class UserServiceTests {
         userDto.setName("zaid");
         userDto.setEmail("zargarzaid271@gmail.com");
         userDto.setPhone("9596781234");
-        userDto.setRole(UserEntity.Role.USER);
+       // userDto.setRole(UserEntity.Role.USER);
 
         userEntity=new UserEntity();
         userEntity.setId(id);
@@ -65,7 +65,7 @@ public class UserServiceTests {
         when(userRepository.save(userEntity)).thenReturn(userEntity);
         when(dtoEntityMapper.convertToDto(userEntity,UserDto.class)).thenReturn(userDto);
 
-        UserDto result=userService.CreateUser(String.valueOf(id),userDto);
+        UserDto result=userService.CreateUser(userDto,String.valueOf(id));
 
         assertThat(result).isNotNull();
         assertThat(result.getName()).isEqualTo(userDto.getName());
