@@ -37,23 +37,22 @@ public class UserService {
         return LocalDateTime.now().format(FORMATTER);
     }
 
+    public UserDto CreateUser( UserDto userDto,String userId){
 
-
-    // Method To Create A New User
-
-    public UserDto CreateUser( String id,UserDto userDto){
         UserEntity userEntity= mapper.convertToEntity(userDto, UserEntity.class);
 
+        System.out.println("String userid"+userId);
         String now = getCurrentTimestampString();
         userEntity.setCreated_At(now);
         userEntity.setUpdated_At(now);
-        userEntity.setId(UUID.fromString(id));
+
+        System.out.println("before user service"+userId);
+        UUID userUUID = UUID.fromString(userId);
+        System.out.println("User service"+userUUID);
+        userEntity.setId(userUUID);
 
         UserEntity savedUSer=userRepository.save(userEntity);
-
-        //LOGGING
-
-        logService.logintoDB(UUID.fromString(id), LogEntity.Action.PROFILE_MANAGEMENT,"New User Created",String.valueOf(id), LogEntity.Status.SUCCESS);
+        //logService.logintoDB(userUUID, LogEntity.Action.PROFILE_MANAGEMENT,"New User Created",String.valueOf(id), LogEntity.Status.SUCCESS);
 
         return (mapper.convertToDto(savedUSer, UserDto.class));
     }
@@ -76,7 +75,7 @@ public class UserService {
         UserEntity updated=userRepository.save(existing);
 
         //LOGGING
-        logService.logintoDB(UUID.fromString(id), LogEntity.Action.PROFILE_MANAGEMENT," User Updated",String.valueOf(id), LogEntity.Status.SUCCESS);
+        //logService.logintoDB(UUID.fromString(id), LogEntity.Action.PROFILE_MANAGEMENT," User Updated",String.valueOf(id), LogEntity.Status.SUCCESS);
 
         return(mapper.convertToDto(updated, UserDto.class));
 
@@ -92,7 +91,7 @@ public class UserService {
                 .orElseThrow( ()-> new RuntimeException("User Not Found With Id : " +id));
 
        //LOGGING
-       logService.logintoDB(UUID.fromString(id), LogEntity.Action.PROFILE_MANAGEMENT,"User Details Displayed",String.valueOf(id), LogEntity.Status.SUCCESS);
+       //logService.logintoDB(UUID.fromString(id), LogEntity.Action.PROFILE_MANAGEMENT,"User Details Displayed",String.valueOf(id), LogEntity.Status.SUCCESS);
 
         return(mapper.convertToDto(getUser, UserDto.class));
    }

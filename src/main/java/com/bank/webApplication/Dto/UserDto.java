@@ -1,5 +1,6 @@
 package com.bank.webApplication.Dto;
 
+import com.bank.webApplication.Entity.Role;
 import com.bank.webApplication.Entity.UserEntity;
 import lombok.*;
 
@@ -13,5 +14,5 @@ public class UserDto {
     private String name;
     private String email;
     private String phone;
-    private UserEntity.Role role;
+    private Role role;
 }
