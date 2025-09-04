@@ -42,6 +42,7 @@ public class AccountController {
         return new ResponseEntity<>(account, HttpStatus.OK);
     }
 
+
     @GetMapping
     public ResponseEntity<List<AccountDto>> GetAllAccounts(@RequestParam String productId){
         String Username= SecurityContextHolder.getContext().getAuthentication().getName();
