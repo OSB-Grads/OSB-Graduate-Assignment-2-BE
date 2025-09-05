@@ -1,9 +1,6 @@
-package com.bank.webApplication.Controller;
-import com.bank.webApplication.Controllers.AuthController;
+package com.bank.webApplication.Controllers;
 import com.bank.webApplication.Dto.AuthDto;
 import com.bank.webApplication.Dto.JwtResponseDto;
-import com.bank.webApplication.Entity.AuthEntity;
-import com.bank.webApplication.Entity.Role;
 import com.bank.webApplication.Services.AuthService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,7 +9,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.assertj.core.api.Assertions.assertThat;
 

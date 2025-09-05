@@ -1,7 +1,6 @@
-package com.bank.webApplication.Controller;
+package com.bank.webApplication.Controllers;
 
 
-import com.bank.webApplication.Controllers.AccountController;
 import com.bank.webApplication.CustomException.AccountNotFoundException;
 import com.bank.webApplication.Dto.AccountDto;
 import com.bank.webApplication.Repository.AuthRepository;
