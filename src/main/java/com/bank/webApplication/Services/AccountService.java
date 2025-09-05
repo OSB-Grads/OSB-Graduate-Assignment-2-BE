@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -48,9 +49,15 @@ public class AccountService {
 
         boolean created = false;
         int attempts = 0;
-        String now = LocalDateTime.now().toString();
-        accountDto.setAccountCreated(now);
-        accountDto.setAccountUpdated(now);
+
+
+        LocalDateTime now = LocalDateTime.now();
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String formattedDate = now.format(formatter);
+
+        accountDto.setAccountCreated(formattedDate);
+        accountDto.setAccountUpdated(formattedDate);
 
 
         while (!created && attempts < 5) {
@@ -122,10 +129,7 @@ public class AccountService {
 
         return  accountDtos;
 
-
-
     }
-
 
 }
 
