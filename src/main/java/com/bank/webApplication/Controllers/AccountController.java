@@ -21,7 +21,8 @@ import org.springframework.web.bind.annotation.*;
 import java.sql.SQLException;
 import java.util.List;
 
-@RestController("/api/v1/accounts")
+@RestController()
+@RequestMapping("/api/v1/accounts")
 public class AccountController {
 
     @Autowired
@@ -34,21 +35,21 @@ public class AccountController {
     public ResponseEntity<AccountDto> CreateAccount(@RequestBody AccountDto accountDto
             ,@RequestParam String productId) throws SQLException {
 
-        String Username= SecurityContextHolder.getContext().getAuthentication().getName();
-        AuthEntity user =authRepository.findByUsername(Username)
-                .orElseThrow(()->new UserNotFoundException("user not found"));
-        String userId=user.getId().toString();
+        String userId= SecurityContextHolder.getContext().getAuthentication().getName();
+//        AuthEntity user =authRepository.findByUsername(Username)
+//                .orElseThrow(()->new UserNotFoundException("user not found"));
+//        String userId=user.getId().toString();
         AccountDto account=accountService.CreateAccount(accountDto,userId,productId);
         return new ResponseEntity<>(account, HttpStatus.OK);
     }
 
 
-    @GetMapping
-    public ResponseEntity<List<AccountDto>> GetAllAccounts(@RequestParam String productId){
-        String Username= SecurityContextHolder.getContext().getAuthentication().getName();
-        AuthEntity user =authRepository.findByUsername(Username)
-                .orElseThrow(()->new UserNotFoundException("user not found"));
-        String userId=user.getId().toString();
+    @GetMapping()
+    public ResponseEntity<List<AccountDto>> GetAllAccounts(){
+        String userId= SecurityContextHolder.getContext().getAuthentication().getName();
+//        AuthEntity user =authRepository.findByUsername(Username)
+//                .orElseThrow(()->new UserNotFoundException("user not found"));
+//        String userId=user.getId().toString();
         List<AccountDto> account=accountService.getAllAccountsByUserId(userId);
         return new ResponseEntity<>(account, HttpStatus.OK);
 

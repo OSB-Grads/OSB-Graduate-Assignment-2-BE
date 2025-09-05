@@ -15,9 +15,10 @@ public class ProductEntity {
 
     @Id
     private String productId;
+    private String productName;
     private double interestRate;
     private int fundingWindow;
     private int coolingPeriod;
-    private int Tenure;
+    private int tenure;
     private String description;
 }
