@@ -28,8 +28,19 @@ public class TransactOrchestrator {
         this.logService=logService;
     }
 
+
     @Transactional
     public TransactionDTO transactionBetweenAccounts(UUID user_id, String fromAccountNumber, String ToAccountNumber, double amount){
+
+        if (fromAccountNumber == null || ToAccountNumber == null || fromAccountNumber.equals(ToAccountNumber)) {
+            log.error("[TransactOrchestrator ] Cannot transfer to the same account or account is null");
+            logService.logintoDB(user_id, LogEntity.Action.TRANSACTIONS,
+                    "Transaction Failed", String.valueOf(user_id), LogEntity.Status.FAILURE);
+            return new TransactionDTO(fromAccountNumber, ToAccountNumber,
+                    "Cannot transfer to the same account", amount,
+                    TransactionEntity.status.FAILED, TransactionEntity.type.TRANSFER);
+        }
+
         DepositWithdrawDTO withdrawOperation=transactionService.withdrawAmount(fromAccountNumber,amount);
         if(withdrawOperation != null){
             log.info("[TransactOrchestrator ] Withdraw Operation is Successful ");

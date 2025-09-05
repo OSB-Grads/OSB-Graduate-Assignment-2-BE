@@ -11,8 +11,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
-
 @Service
 public class ProductService {
     @Autowired
@@ -24,7 +22,6 @@ public class ProductService {
     public ProductDto getProduct(String  productId){
         ProductEntity product=productRepository.findById(productId)
                 .orElseThrow(()->new NullPointerException("not found"));
-
         ProductDto productDto=dtoEntityMapper.convertToDto(product,ProductDto.class);
         return productDto;
     }
