@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -22,9 +23,11 @@ import java.util.stream.Stream;
 @Service
 @Slf4j
 public class TransactionService {
-
+    @Autowired
     private final AccountRepository accountRepository;
+    @Autowired
     private final TransactionRepository transactionRepository;
+    @Autowired
     private final DtoEntityMapper dtoEntityMapper;
 
     @Autowired
@@ -40,8 +43,14 @@ public class TransactionService {
      // Checks if account is locked based on creation date, funding window,cooling period, and tenure.
 
     public boolean isLocked(AccountEntity account) {
-        LocalDateTime createdAt = LocalDateTime.parse(account.getAccountCreated());
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        //String formattedDate = now.format(formatter);
+        LocalDateTime createdAt = LocalDateTime.parse(account.getAccountCreated(),formatter);
         LocalDateTime now = LocalDateTime.now();
+
+//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+//        String formattedDate = now.format(formatter);
 
         int tenure = account.getProduct().getTenure();
         int fundingWindow = account.getProduct().getFundingWindow();
@@ -139,8 +148,8 @@ public class TransactionService {
      */
     public void saveTransaction(String fromAccount, String toAccount, double amount, String description, TransactionEntity.type type, TransactionEntity.status status) {
         TransactionEntity transactionEntity = new TransactionEntity();
-        transactionEntity.setFromAccount(accountRepository.findById(fromAccount).get());
-        transactionEntity.setToAccount(accountRepository.findById(toAccount).get());
+        transactionEntity.setFromAccount((fromAccount!=null)?accountRepository.findById(fromAccount).get():null);
+        transactionEntity.setToAccount((toAccount!=null)?accountRepository.findById(toAccount).get():null);
         transactionEntity.setAmount(amount);
         transactionEntity.setTransactionType(type);
         transactionEntity.setTransactionStatus(status);
