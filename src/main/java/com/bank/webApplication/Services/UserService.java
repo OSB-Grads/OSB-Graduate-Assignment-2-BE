@@ -41,18 +41,16 @@ public class UserService {
 
         UserEntity userEntity= mapper.convertToEntity(userDto, UserEntity.class);
 
-        System.out.println("String userid"+userId);
         String now = getCurrentTimestampString();
         userEntity.setCreated_At(now);
         userEntity.setUpdated_At(now);
 
-        System.out.println("before user service"+userId);
         UUID userUUID = UUID.fromString(userId);
-        System.out.println("User service"+userUUID);
+
         userEntity.setId(userUUID);
 
         UserEntity savedUSer=userRepository.save(userEntity);
-        //logService.logintoDB(userUUID, LogEntity.Action.PROFILE_MANAGEMENT,"New User Created",String.valueOf(id), LogEntity.Status.SUCCESS);
+        logService.logintoDB(userUUID, LogEntity.Action.PROFILE_MANAGEMENT,"New User Created",userEntity.getName(), LogEntity.Status.SUCCESS);
 
         return (mapper.convertToDto(savedUSer, UserDto.class));
     }
@@ -75,7 +73,7 @@ public class UserService {
         UserEntity updated=userRepository.save(existing);
 
         //LOGGING
-        //logService.logintoDB(UUID.fromString(id), LogEntity.Action.PROFILE_MANAGEMENT," User Updated",String.valueOf(id), LogEntity.Status.SUCCESS);
+        logService.logintoDB(UUID.fromString(id), LogEntity.Action.PROFILE_MANAGEMENT," User Updated",updated.getName(), LogEntity.Status.SUCCESS);
 
         return(mapper.convertToDto(updated, UserDto.class));
 
@@ -91,7 +89,7 @@ public class UserService {
                 .orElseThrow( ()-> new RuntimeException("User Not Found With Id : " +id));
 
        //LOGGING
-       //logService.logintoDB(UUID.fromString(id), LogEntity.Action.PROFILE_MANAGEMENT,"User Details Displayed",String.valueOf(id), LogEntity.Status.SUCCESS);
+       logService.logintoDB(UUID.fromString(id), LogEntity.Action.PROFILE_MANAGEMENT,"User Details Displayed",getUser.getName(), LogEntity.Status.SUCCESS);
 
         return(mapper.convertToDto(getUser, UserDto.class));
    }
