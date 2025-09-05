@@ -42,7 +42,7 @@ public class AccountRepositoryTests {
         AccountEntity result=accountRepository.findByAccountNumber(testAccountNumber);
 
         assertThat(result).isNotNull();
-        assertThat(result).isEqualTo(result);
+        assertThat(result).isEqualTo(accountEntity);
     }
 
     @Test
