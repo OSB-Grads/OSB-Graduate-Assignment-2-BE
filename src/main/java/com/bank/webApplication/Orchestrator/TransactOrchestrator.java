@@ -18,8 +18,9 @@ import java.util.UUID;
 @Slf4j
 @Component
 public class TransactOrchestrator {
-
+    @Autowired
     private TransactionService transactionService;
+    @Autowired
     private LogService logService;
 
     @Autowired

@@ -21,21 +21,23 @@ import java.util.UUID;
 public class TransactionController {
     @Autowired
     private DepositAndWithdrawalOrch depositAndWithdrawalOrch;
+    @Autowired
     private TransactOrchestrator transactOrchestrator;
+    @Autowired
     private TransactionService transactionService;
 
 
     @PostMapping (path = "/deposit")
     public ResponseEntity<?> deposit(@RequestBody DepositWithdrawRequestDTO depositWithdrawRequestDTO){
         String userId= SecurityContextHolder.getContext().getAuthentication().getName();
-        DepositWithdrawDTO depositWithdrawDTO = depositAndWithdrawalOrch.depositHandler(UUID.fromString(userId),depositWithdrawRequestDTO.getAccountnumber(), depositWithdrawRequestDTO.getAmount());
+        DepositWithdrawDTO depositWithdrawDTO = depositAndWithdrawalOrch.depositHandler(UUID.fromString(userId),depositWithdrawRequestDTO.getAccountNumber(), depositWithdrawRequestDTO.getAmount());
         return ResponseEntity.ok(depositWithdrawDTO );
     }
 
     @PostMapping (path = "/withdraw")
     public ResponseEntity<?> withdraw(@RequestBody DepositWithdrawRequestDTO depositWithdrawRequestDTO){
         String userId= SecurityContextHolder.getContext().getAuthentication().getName();
-        DepositWithdrawDTO depositWithdrawDTO = depositAndWithdrawalOrch.depositHandler(UUID.fromString(userId), depositWithdrawRequestDTO.getAccountnumber(), depositWithdrawRequestDTO.getAmount());
+        DepositWithdrawDTO depositWithdrawDTO = depositAndWithdrawalOrch.WithdrawalHandler(UUID.fromString(userId), depositWithdrawRequestDTO.getAccountNumber(), depositWithdrawRequestDTO.getAmount());
         return ResponseEntity.ok(depositWithdrawDTO );
     }
 
