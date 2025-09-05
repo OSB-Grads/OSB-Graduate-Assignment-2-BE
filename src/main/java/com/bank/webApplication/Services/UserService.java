@@ -52,7 +52,7 @@ public class UserService {
         userEntity.setId(userUUID);
 
         UserEntity savedUSer=userRepository.save(userEntity);
-        //logService.logintoDB(userUUID, LogEntity.Action.PROFILE_MANAGEMENT,"New User Created",String.valueOf(id), LogEntity.Status.SUCCESS);
+        logService.logintoDB(userUUID, LogEntity.Action.PROFILE_MANAGEMENT,"New User Created",userEntity.getName(), LogEntity.Status.SUCCESS);
 
         return (mapper.convertToDto(savedUSer, UserDto.class));
     }
@@ -75,7 +75,7 @@ public class UserService {
         UserEntity updated=userRepository.save(existing);
 
         //LOGGING
-        //logService.logintoDB(UUID.fromString(id), LogEntity.Action.PROFILE_MANAGEMENT," User Updated",String.valueOf(id), LogEntity.Status.SUCCESS);
+        logService.logintoDB(UUID.fromString(id), LogEntity.Action.PROFILE_MANAGEMENT," User Updated",updated.getName(), LogEntity.Status.SUCCESS);
 
         return(mapper.convertToDto(updated, UserDto.class));
 

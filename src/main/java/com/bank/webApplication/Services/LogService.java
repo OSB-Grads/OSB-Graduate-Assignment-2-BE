@@ -2,8 +2,10 @@ package com.bank.webApplication.Services;
 
 
 import com.bank.webApplication.Dto.LogDTO;
+import com.bank.webApplication.Entity.AuthEntity;
 import com.bank.webApplication.Entity.LogEntity;
 import com.bank.webApplication.Entity.UserEntity;
+import com.bank.webApplication.Repository.AuthRepository;
 import com.bank.webApplication.Repository.LogRepository;
 import com.bank.webApplication.Repository.UserRepository;
 import com.bank.webApplication.Util.DtoEntityMapper;
@@ -25,28 +27,28 @@ public class LogService {
 
 
     private LogRepository logRepository;
-    private UserRepository userRepository;
+    private AuthRepository authRepository;
     private DtoEntityMapper dtoEntityMapper;
     private SensitiveDataValidator sensitiveDataValidator;
 
     @Autowired
-    public LogService(LogRepository logRepository,UserRepository userRepository,SensitiveDataValidator sensitiveDataValidator,DtoEntityMapper dtoEntityMapper){
+    public LogService(LogRepository logRepository,AuthRepository authRepository,SensitiveDataValidator sensitiveDataValidator,DtoEntityMapper dtoEntityMapper){
         this.logRepository=logRepository;
-        this.userRepository=userRepository;
+        this.authRepository=authRepository;
         this.sensitiveDataValidator=sensitiveDataValidator;
         this.dtoEntityMapper=dtoEntityMapper;
     }
 
 
     public void logintoDB(UUID user_id, LogEntity.Action action, String details, String ip_address, LogEntity.Status status){
-        UserEntity userEntity=userRepository.findById(user_id).orElseThrow(()->new NullPointerException("User Not Found"));
+        AuthEntity authEntity=authRepository.findById(user_id).orElseThrow(()->new NullPointerException("User Not Found"));
         if(sensitiveDataValidator.containsSensitiveData(details)){
             details="Log Has  [SENSITIVE DATA]";
         }
         if(sensitiveDataValidator.containsSensitiveData(ip_address))ip_address="Log Has [SENSITIVE DATA]";
-        if(userEntity!=null) {
+        if(authEntity!=null) {
             LogEntity logEntity = new LogEntity();
-            logEntity.setUserEntity(userEntity);
+            logEntity.setAuthEntity(authEntity);
             logEntity.setAction(action);
             logEntity.setDetails(details);
             logEntity.setIp_address(ip_address);
