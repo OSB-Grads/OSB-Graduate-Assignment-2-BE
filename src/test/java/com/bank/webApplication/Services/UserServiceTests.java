@@ -68,7 +68,7 @@ public class UserServiceTests {
         assertThat(result).isNotNull();
         assertThat(result.getName()).isEqualTo(userDto.getName());
         verify(logService,times(1)).logintoDB(eq(id),eq(LogEntity.Action.PROFILE_MANAGEMENT),
-                anyString(),eq(id.toString()),eq(LogEntity.Status.SUCCESS));
+                anyString(),eq(result.getName()),eq(LogEntity.Status.SUCCESS));
     }
 
 
@@ -85,7 +85,7 @@ public class UserServiceTests {
          assertThat(result).isNotNull();
          assertThat(result.getName()).isEqualTo(userDto.getName());
          verify(logService,times(1)).logintoDB(eq(id),eq(LogEntity.Action.PROFILE_MANAGEMENT),
-                anyString(),eq(id.toString()),eq(LogEntity.Status.SUCCESS));
+                anyString(),eq(result.getName()),eq(LogEntity.Status.SUCCESS));
     }
 
 
@@ -100,7 +100,8 @@ public class UserServiceTests {
         assertThat(result).isNotNull();
         assertThat(result.getName()).isEqualTo(userDto.getName());
         verify(logService,times(1)).logintoDB(eq(id),eq(LogEntity.Action.PROFILE_MANAGEMENT),
-                anyString(),eq(id.toString()),eq(LogEntity.Status.SUCCESS));
+                anyString(),eq(result.getName()),eq(LogEntity.Status.SUCCESS));
+
 
     }
 
