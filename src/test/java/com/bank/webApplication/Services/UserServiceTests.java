@@ -1,18 +1,15 @@
-package com.bank.webApplication;
+package com.bank.webApplication.Services;
 
 import com.bank.webApplication.Dto.UserDto;
 import com.bank.webApplication.Entity.LogEntity;
 import com.bank.webApplication.Entity.Role;
 import com.bank.webApplication.Entity.UserEntity;
 import com.bank.webApplication.Repository.UserRepository;
-import com.bank.webApplication.Services.LogService;
-import com.bank.webApplication.Services.UserService;
 import com.bank.webApplication.Util.DtoEntityMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockingDetails;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Optional;

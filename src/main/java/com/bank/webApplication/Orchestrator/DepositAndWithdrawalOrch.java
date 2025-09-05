@@ -31,38 +31,68 @@ public class DepositAndWithdrawalOrch {
 
     @Transactional
     public DepositWithdrawDTO depositHandler(UUID userId, String accountNumber, double amount) {
+
+        if (userId == null) {
+            throw new IllegalArgumentException("User ID cannot be null");
+        }
+        if (accountNumber == null || accountNumber.isBlank()) {
+            throw new IllegalArgumentException("Account number cannot be null or empty");
+        }
+
         DepositWithdrawDTO depositOperation = transactionService.depositAmount(accountNumber,amount);
-        if (depositOperation != null ) {
-            transactionService.saveTransaction(null, accountNumber, amount, "Deposit Transaction Save Successful :)", TransactionEntity.type.DEPOSIT, TransactionEntity.status.COMPLETED);
+        if (depositOperation != null && depositOperation.getStatus() == TransactionEntity.status.COMPLETED) {
+            transactionService.saveTransaction(
+                    null,
+                    accountNumber,
+                    amount,
+                    "Deposit Transaction Save Successful :)",
+                    TransactionEntity.type.DEPOSIT,
+                    TransactionEntity.status.COMPLETED
+            );
             log.info("[Deposit Handler] Deposit Operation Successful :) ");
             logService.logintoDB(userId, LogEntity.Action.TRANSACTIONS, "Deposit Successful", String.valueOf(userId), LogEntity.Status.SUCCESS);
             log.info("[Deposit Handler] Transaction Saved Successfully in Logs");
-            return depositOperation;
-        } else {
+        }
+        else {
             log.error("[Deposit Handler] Deposit Operation Failed. Please Try Again");
             logService.logintoDB(userId, LogEntity.Action.TRANSACTIONS, "Deposit Failed", String.valueOf(userId), LogEntity.Status.FAILURE);
-            return depositOperation;
         }
+
+        return depositOperation;
     }
 
     @Transactional
     public DepositWithdrawDTO WithdrawalHandler(UUID userId, String accountNumber, double amount){
+
+            if (userId == null) {
+                throw new IllegalArgumentException("User ID cannot be null");
+            }
+            if (accountNumber == null || accountNumber.isBlank()) {
+                throw new IllegalArgumentException("Account number cannot be null or empty");
+            }
+
         DepositWithdrawDTO withdrawOperation = transactionService.withdrawAmount(accountNumber, amount);
-        if (withdrawOperation != null){
-            transactionService.saveTransaction(accountNumber,null, amount, "Withdrawal Transaction save Successful :)", TransactionEntity.type.WITHDRAWAL, TransactionEntity.status.COMPLETED);
-            log.info("[Withdrawal Handler] Withdraw Operation Successful :) ");
+        if (withdrawOperation != null && withdrawOperation.getStatus() == TransactionEntity.status.COMPLETED) {
+            transactionService.saveTransaction(
+                    accountNumber,
+                    null,
+                    amount,
+                    "Withdrawal Transaction save Successful :)",
+                    TransactionEntity.type.WITHDRAWAL,
+                    TransactionEntity.status.COMPLETED
+            );
+            log.info("[Withdrawal Handler] Withdraw Operation Successful :)");
             logService.logintoDB(userId, LogEntity.Action.TRANSACTIONS, "Withdrawal Successful", String.valueOf(userId), LogEntity.Status.SUCCESS);
             log.info("[Withdrawal Handler] Transaction Saved Successfully in Logs");
-            return withdrawOperation;
         }
         else {
-            log.error("[Withdrawal Handler] Withdraw Operation Failed. Please Try Again ");
-            logService.logintoDB(userId, LogEntity.Action.TRANSACTIONS, "Withdrawal Failed", String.valueOf(userId),LogEntity.Status.FAILURE );
-            return withdrawOperation;
+            log.error("[Withdrawal Handler] Withdraw Operation Failed. Please Try Again");
+            logService.logintoDB(userId, LogEntity.Action.TRANSACTIONS, "Withdrawal Failed", String.valueOf(userId), LogEntity.Status.FAILURE);
+        }
+        return withdrawOperation;
         }
     }
 
-}
 
 
 

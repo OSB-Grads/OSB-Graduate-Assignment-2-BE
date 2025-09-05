@@ -8,20 +8,14 @@ import com.bank.webApplication.Dto.TransactionDTO;
 import com.bank.webApplication.Entity.AccountEntity;
 import com.bank.webApplication.Entity.TransactionEntity;
 import com.bank.webApplication.Repository.AccountRepository;
-import com.bank.webApplication.Repository.ProductRepository;
 import com.bank.webApplication.Repository.TransactionRepository;
 import com.bank.webApplication.Util.DtoEntityMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -29,99 +23,122 @@ import java.util.stream.Stream;
 @Slf4j
 public class TransactionService {
 
-    private DepositWithdrawDTO depositWithdrawDTO;
-    private AccountRepository accountRepository;
-    private TransactionRepository transactionRepository;
-    private DtoEntityMapper dtoEntityMapper;
+    private final AccountRepository accountRepository;
+    private final TransactionRepository transactionRepository;
+    private final DtoEntityMapper dtoEntityMapper;
 
     @Autowired
-    public TransactionService (AccountRepository accountRepository,TransactionRepository transactionRepository, DtoEntityMapper dtoEntityMapper){
+    public TransactionService(AccountRepository accountRepository,
+                              TransactionRepository transactionRepository,
+                              DtoEntityMapper dtoEntityMapper) {
         this.accountRepository = accountRepository;
-        this.transactionRepository=transactionRepository;
+        this.transactionRepository = transactionRepository;
         this.dtoEntityMapper = dtoEntityMapper;
     }
-    public DepositWithdrawDTO depositAmount(String accountNumber, double amount){
 
-        // amount exception
-        if (amount <= 0){
-            log.info("[Deposit Amount] Amount Insufficient " );
-            throw new InsufficientFundsException("Amount should be greater than 0");
-        }
 
-        // FD Validation
+     // Checks if account is locked based on creation date, funding window,cooling period, and tenure.
 
-        AccountEntity account = accountRepository.findById(accountNumber).orElseThrow(() -> new AccountNotFoundException("Account not found.Not a valid AccountNumber"));
+    public boolean isLocked(AccountEntity account) {
+        LocalDateTime createdAt = LocalDateTime.parse(account.getAccountCreated());
+        LocalDateTime now = LocalDateTime.now();
+
         int tenure = account.getProduct().getTenure();
         int fundingWindow = account.getProduct().getFundingWindow();
         int coolingPeriod = account.getProduct().getCoolingPeriod();
 
-        if (! isLocked(tenure , fundingWindow, coolingPeriod)) {
+        LocalDateTime tenureEndDate = createdAt.plusHours(tenure);
+        LocalDateTime fundingEndDate = createdAt.plusHours(fundingWindow);
+        LocalDateTime coolingStartDate = tenureEndDate.minusHours(coolingPeriod);
 
-            account.setBalance(amount + account.getBalance());
-            try {
-                accountRepository.save(account);
-                log.info("[Deposit Operation] Account Balance Updation Successful ");
-                return new DepositWithdrawDTO(accountNumber, "Deposit Operation: Account Balance Updation Successful ", amount, TransactionEntity.status.COMPLETED, TransactionEntity.type.DEPOSIT );
-            } catch (RuntimeException e) {
-                log.info("[Deposit Operation] Account Balance Updation Failed ");
-                return new DepositWithdrawDTO(accountNumber, "Deposit Operation: Account Balance Updation Failed ", amount, TransactionEntity.status.FAILED, TransactionEntity.type.DEPOSIT );
-
-            }
+        // Funding period → deposits & withdrawals allowed
+        if (now.isBefore(fundingEndDate)) {
+            return false;
         }
-        else {
-            log.info("[Deposit Operation] Account is locked ");
-            return new DepositWithdrawDTO(accountNumber, "Deposit Operation: Account Balance Updation Failed ", amount, TransactionEntity.status.FAILED, TransactionEntity.type.DEPOSIT );
-        }
-    }
 
-    public boolean isLocked(int tenure, int coolingPeriod, int fundingWindow){
-        int maturity = tenure - (coolingPeriod + fundingWindow);
-        if (maturity >= fundingWindow && maturity <= (tenure - coolingPeriod)){
+        // Maturity period → locked
+        if (now.isAfter(fundingEndDate) && now.isBefore(coolingStartDate)) {
             return true;
         }
-        return false;
+
+        // Cooling period → deposits & withdrawals allowed
+        if (now.isAfter(coolingStartDate) && now.isBefore(tenureEndDate)) {
+            return false;
+        }
+
+        // After full tenure → unlocked
+        if (now.isAfter(tenureEndDate)) {
+            return false;
+        }
+
+        return true;
     }
 
-    public DepositWithdrawDTO withdrawAmount(String accountNumber, double amount){
 
-        // amount exception
-        if (amount <= 0){
-            log.info("[Withdraw Amount] Amount Insufficient " );
+    /**
+     * Helper method to update account balance safely and return DTO
+     */
+    private DepositWithdrawDTO processTransaction(AccountEntity account, double amount, TransactionEntity.type type, String successMsg, String failureMsg) {
+        try {
+            accountRepository.save(account);
+            log.info("[{}] {}", type, successMsg);
+            return new DepositWithdrawDTO(account.getAccountNumber(), successMsg, amount, TransactionEntity.status.COMPLETED, type);
+        }
+        catch (RuntimeException e) {
+            log.error("[{}] {}", type, failureMsg, e);
+            return new DepositWithdrawDTO(account.getAccountNumber(), failureMsg, amount, TransactionEntity.status.FAILED, type);
+        }
+    }
+
+
+     //  Deposit operation
+
+    public DepositWithdrawDTO depositAmount(String accountNumber, double amount) {
+        if (amount <= 0) {
             throw new InsufficientFundsException("Amount should be greater than 0");
         }
 
-        // FD Validation
+        AccountEntity account = accountRepository.findById(accountNumber)
+                .orElseThrow(() -> new AccountNotFoundException("Account not found. Not a valid AccountNumber"));
 
-        AccountEntity account = accountRepository.findById(accountNumber).orElseThrow(() -> new AccountNotFoundException("Account not found.Not a valid AccountNumber"));
-        int tenure = account.getProduct().getTenure();
-        int fundingWindow = account.getProduct().getFundingWindow();
-        int coolingPeriod = account.getProduct().getCoolingPeriod();
-
-        if (! isLocked(tenure , fundingWindow, coolingPeriod)){
-
-            if (account.getBalance() < amount) throw new InsufficientFundsException(account.getBalance() + " is Insufficient to debit.");
-            account.setBalance(account.getBalance() - amount);
-            try {
-
-                accountRepository.save(account);
-                log.info("[Debit operation] Account Balance updated successfully ");
-                return new DepositWithdrawDTO(accountNumber, "Debit Operation : Account Balance Updation Successful ", amount, TransactionEntity.status.COMPLETED, TransactionEntity.type.WITHDRAWAL);
-
-            }
-            catch (RuntimeException e){
-                log.info("[Debit Operation] Account Balance Updation Failed ");
-                return new DepositWithdrawDTO(accountNumber, " Debit Operation: Account Balance Updation Failed ", amount, TransactionEntity.status.FAILED, TransactionEntity.type.WITHDRAWAL );
-            }
+        if (isLocked(account)) {
+            return new DepositWithdrawDTO(accountNumber, "Account is Locked",
+                    amount, TransactionEntity.status.FAILED, TransactionEntity.type.DEPOSIT);
         }
-        else {
-            log.info("[Debit Operation] account is locked ");
-            return new DepositWithdrawDTO(accountNumber, " Debit Operation: Account is Locked ", amount, TransactionEntity.status.FAILED, TransactionEntity.type.WITHDRAWAL );
-        }
+
+        account.setBalance(account.getBalance() + amount);
+        return processTransaction(account, amount, TransactionEntity.type.DEPOSIT,
+                "Deposit Successful", "Deposit Failed");
     }
 
-    public void saveTransaction( String fromAccount, String toAccount , double amount,String description,TransactionEntity.type type,TransactionEntity.status status) {
-        TransactionEntity transactionEntity = new TransactionEntity();
 
+     // Withdraw operation
+
+    public DepositWithdrawDTO withdrawAmount(String accountNumber, double amount) {
+        if (amount <= 0) {
+            throw new InsufficientFundsException("Amount should be greater than 0");
+        }
+
+        AccountEntity account = accountRepository.findById(accountNumber)
+                .orElseThrow(() -> new AccountNotFoundException("Account not found. Not a valid AccountNumber"));
+
+        if (isLocked(account)) {
+            return new DepositWithdrawDTO(accountNumber, "Account is Locked", amount, TransactionEntity.status.FAILED, TransactionEntity.type.WITHDRAWAL);
+        }
+
+        if (account.getBalance() < amount) {
+            throw new InsufficientFundsException(account.getBalance() + " is Insufficient to debit.");
+        }
+
+        account.setBalance(account.getBalance() - amount);
+        return processTransaction(account, amount, TransactionEntity.type.WITHDRAWAL, "Withdrawal Successful", "Withdrawal Failed");
+    }
+
+    /**
+     * Save transaction history
+     */
+    public void saveTransaction(String fromAccount, String toAccount, double amount, String description, TransactionEntity.type type, TransactionEntity.status status) {
+        TransactionEntity transactionEntity = new TransactionEntity();
         transactionEntity.setFromAccount(accountRepository.findById(fromAccount).get());
         transactionEntity.setToAccount(accountRepository.findById(toAccount).get());
         transactionEntity.setAmount(amount);
@@ -131,19 +148,22 @@ public class TransactionService {
         transactionEntity.setCreatedAt(LocalDateTime.now().toString());
         try {
             transactionRepository.save(transactionEntity);
-        } catch (Exception e) {
-            throw new RuntimeException("Save Transaction Failed" + e);
+        }
+        catch (Exception e) {
+            throw new TransactionFailedException("Save Transaction Failed");
         }
     }
 
+    //Get all transactions for an account
 
-    public List<TransactionDTO> getTransactionsByAccountNumber(String accountNumber){
+    public List<TransactionDTO> getTransactionsByAccountNumber(String accountNumber) {
+        List<TransactionEntity> resultFromTransactions =
+                transactionRepository.findAllByFromAccountAccountNumber(accountNumber);
+        List<TransactionEntity> resultToTransactions =
+                transactionRepository.findAllByToAccountAccountNumber(accountNumber);
 
-        List<TransactionEntity> resultFromTransactions = transactionRepository.findAllByFromAccountAccountNumber(accountNumber);
-        List<TransactionEntity> resultToTransactions=transactionRepository.findAllByToAccountAccountNumber(accountNumber);
-        List<TransactionEntity> result=Stream.concat(resultFromTransactions.stream(),resultToTransactions.stream()).toList();
-        return result.stream().map((transactionEntity)->dtoEntityMapper.convertToDto(transactionEntity, TransactionDTO.class)).collect(Collectors.toList());
+        return Stream.concat(resultFromTransactions.stream(), resultToTransactions.stream())
+                .map(entity -> dtoEntityMapper.convertToDto(entity, TransactionDTO.class))
+                .collect(Collectors.toList());
     }
-    
-
 }
