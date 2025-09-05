@@ -24,6 +24,8 @@ public class JWTUtil {
 
 
     public String generateToken(String userId, String role) throws IllegalArgumentException,JwtException{
+        if(role == null) throw new IllegalArgumentException("Role should not be null");
+        if(userId==null) throw new IllegalArgumentException("UserId Should not be null");
         return Jwts.builder()
                 .setSubject(userId)
                 .claim("role",role)
@@ -54,13 +56,16 @@ public class JWTUtil {
 
     //method to validate JwtToken
     public boolean validateToken(String token, UserDetails userDetails) {
-        final String usernameFromToken = extractUsername(token);
-        return usernameFromToken.equals(userDetails.getUsername()) && !isTokenExpired(token);
+        try {
+            final String usernameFromToken = extractUsername(token);
+            return usernameFromToken.equals(userDetails.getUsername()) && !isTokenExpired(token);
+        }
+        catch (JwtException e){
+            return false;
+        }
     }
     //method to check expiration of the token
-
     public boolean isTokenExpired(String token) {
         return extractClaim(token, Claims::getExpiration).before(new Date());
     }
-
 }
