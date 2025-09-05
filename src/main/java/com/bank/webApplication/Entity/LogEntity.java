@@ -32,7 +32,7 @@ public class LogEntity {
             name = "user_id",
             referencedColumnName = "id"
     )
-    private UserEntity userEntity;
+    private AuthEntity authEntity;
     @Enumerated(EnumType.STRING)
     private Action action;
     private String details;

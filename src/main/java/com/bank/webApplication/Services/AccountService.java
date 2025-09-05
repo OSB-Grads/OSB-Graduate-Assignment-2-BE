@@ -66,7 +66,7 @@ public class AccountService {
 
                 accountRepository.save(accountEntity);
                 log.info("[Account Handler] Account Creation Operation Successful :) ");
-                logService.logintoDB(id, LogEntity.Action.TRANSACTIONS, "Account Created  Successful", String.valueOf(userId), LogEntity.Status.SUCCESS);
+                logService.logintoDB(id, LogEntity.Action.TRANSACTIONS, "Account Created  Successful", accountDto.getAccountCreated(), LogEntity.Status.SUCCESS);
                 log.info("[Account Handler]  Saved Successfully in Logs");
 
                 created = true;
@@ -97,7 +97,7 @@ public class AccountService {
 
         AccountDto dto=dtoEntityMapper.convertToDto(accountEntity,AccountDto.class);
         log.info("[Account Handler] Account Information Displayed Successfully :) ");
-        logService.logintoDB(id, LogEntity.Action.TRANSACTIONS, "Account Created  Successful", String.valueOf(id), LogEntity.Status.SUCCESS);
+        logService.logintoDB(id, LogEntity.Action.TRANSACTIONS, "Account Created  Successful",accountNumber, LogEntity.Status.SUCCESS);
         log.info("[Account Handler]  Saved Successfully in Logs");
 
         return dto;
@@ -115,7 +115,7 @@ public class AccountService {
                 .collect(Collectors.toList());
 
         log.info(" Accounts Information Displayed Successfully ");
-        logService.logintoDB(id, LogEntity.Action.TRANSACTIONS, "Account Created  Successful", String.valueOf(userId), LogEntity.Status.SUCCESS);
+        logService.logintoDB(id, LogEntity.Action.TRANSACTIONS, "Account retrieval  Successful", "ALl Counts", LogEntity.Status.SUCCESS);
         log.info("[Account Handler]  Saved Successfully in Logs");
 
 

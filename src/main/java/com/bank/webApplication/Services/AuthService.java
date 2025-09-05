@@ -41,7 +41,7 @@ public class AuthService {
         //Generates JwtToken for valid authenticated user
         String token= jwtUtil.generateToken(String.valueOf(user.getId()), String.valueOf(user.getRole()));
         //Invoke LogService
-        //logService.logintoDB(user.getId(), LogEntity.Action.AUTHENTICATION,"User Logged in Successfully",user.getId().toString(),LogEntity.Status.SUCCESS);
+        logService.logintoDB(user.getId(), LogEntity.Action.AUTHENTICATION,"User Logged in Successfully",user.getUsername(),LogEntity.Status.SUCCESS);
         return new JwtResponseDto(token);
     }
     public JwtResponseDto Signup(AuthDto authdto){
@@ -63,7 +63,7 @@ public class AuthService {
         //generates JwtToken
         String token =jwtUtil.generateToken(String.valueOf(user.getId()),user.getRole().name());
         //Invoke LogService
-        //logService.logintoDB(user.getId(), LogEntity.Action.AUTHENTICATION,"User Signup Successfull",user.getId().toString(),LogEntity.Status.SUCCESS);
+        logService.logintoDB(user.getId(), LogEntity.Action.AUTHENTICATION,"User Signup Successfull",user.getUsername(),LogEntity.Status.SUCCESS);
         return new JwtResponseDto(token);
     }
 }
