@@ -1,6 +1,5 @@
-package com.bank.webApplication.Controller;
+package com.bank.webApplication.Controllers;
 
-import com.bank.webApplication.Controllers.UserController;
 import com.bank.webApplication.Dto.UserDto;
 import com.bank.webApplication.Services.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,7 +12,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.in;
 import static org.mockito.Mockito.*;
 
 public class UserControllerTests {
