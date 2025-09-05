@@ -16,6 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @AllArgsConstructor
 @Slf4j
@@ -46,7 +48,7 @@ public class AuthService {
     }
     public JwtResponseDto Signup(AuthDto authdto){
         //Checks if user is already present in the database
-
+        Optional<AuthEntity> a = authrepository.findByUsername(authdto.getUsername());
         if(authrepository.findByUsername(authdto.getUsername()).isPresent()){
             throw new UserAlreadyExistException("User Already Exist");
         }
