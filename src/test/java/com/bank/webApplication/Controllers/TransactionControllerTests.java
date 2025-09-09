@@ -59,11 +59,11 @@ public class TransactionControllerTests {
     void testDeposit_Success() {
         // Given
         DepositWithdrawRequestDTO request = new DepositWithdrawRequestDTO();
-        request.setAccountnumber("ACC123");
+        request.setAccountNumber("ACC123");
         request.setAmount(500.0);
 
         DepositWithdrawDTO responseDto = new DepositWithdrawDTO();
-        responseDto.setAccountnumber("ACC123");
+        responseDto.setAccountNumber("ACC123");
         responseDto.setAmount(1500.0);
 
         when(depositAndWithdrawalOrch.depositHandler(UUID.fromString(userId), "ACC123", 500.0)).thenReturn(responseDto);
@@ -77,7 +77,7 @@ public class TransactionControllerTests {
         assertTrue(response.getBody() instanceof DepositWithdrawDTO);
 
         DepositWithdrawDTO returned = (DepositWithdrawDTO) response.getBody();
-        assertEquals("ACC123", returned.getAccountnumber());
+        assertEquals("ACC123", returned.getAccountNumber());
         assertEquals(1500.0, returned.getAmount());
         verify(depositAndWithdrawalOrch, times(1)).depositHandler(UUID.fromString(userId), "ACC123", 500.0);
     }
@@ -86,11 +86,11 @@ public class TransactionControllerTests {
     void testWithdraw_Success() {
         // Given
         DepositWithdrawRequestDTO request = new DepositWithdrawRequestDTO();
-        request.setAccountnumber("ACC789");
+        request.setAccountNumber("ACC789");
         request.setAmount(200.0);
 
         DepositWithdrawDTO responseDto = new DepositWithdrawDTO();
-        responseDto.setAccountnumber("ACC789");
+        responseDto.setAccountNumber("ACC789");
         responseDto.setAmount(800.0);
 
         when(depositAndWithdrawalOrch.depositHandler(UUID.fromString(userId), "ACC789", 200.0)).thenReturn(responseDto);
@@ -104,7 +104,7 @@ public class TransactionControllerTests {
         assertTrue(response.getBody() instanceof DepositWithdrawDTO);
 
         DepositWithdrawDTO returned = (DepositWithdrawDTO) response.getBody();
-        assertEquals("ACC789", returned.getAccountnumber());
+        assertEquals("ACC789", returned.getAccountNumber());
         assertEquals(800.0, returned.getAmount());
 
         verify(depositAndWithdrawalOrch, times(1)).depositHandler(UUID.fromString(userId), "ACC789", 200.0);

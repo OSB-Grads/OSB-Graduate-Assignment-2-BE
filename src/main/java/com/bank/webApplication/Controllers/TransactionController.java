@@ -10,6 +10,7 @@ import com.bank.webApplication.Orchestrator.DepositAndWithdrawalOrch;
 import com.bank.webApplication.Orchestrator.TransactOrchestrator;
 import com.bank.webApplication.Services.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -53,6 +54,14 @@ public class TransactionController {
     public ResponseEntity<?> getTransactionHistory(@PathVariable ("accountNumber") String accountNumber){
         List<TransactionDTO> transactions = transactionService.getTransactionsByAccountNumber(accountNumber);
         return ResponseEntity.ok(transactions);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<TransactionDTO>> getTransactionHistoryByUserId(){
+        String userId= SecurityContextHolder.getContext().getAuthentication().getName();
+        List<TransactionDTO> transactionDTOList=transactionService.getTransactionHistoryByUserId(userId);
+        return ResponseEntity.status(HttpStatus.OK).body(transactionDTOList);
+
     }
 
 }

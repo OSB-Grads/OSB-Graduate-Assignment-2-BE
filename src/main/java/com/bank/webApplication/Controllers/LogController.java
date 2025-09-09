@@ -5,11 +5,10 @@ import com.bank.webApplication.Services.LogService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/logs")
@@ -28,4 +27,15 @@ public class LogController {
       return ResponseEntity.status(HttpStatus.OK).body(logs);
   }
 
+  @GetMapping("/{userid}")
+    public ResponseEntity<List<LogDTO>> retrieveLogsByUserId(@PathVariable("userid") UUID userid){
+      List<LogDTO> logsByUserId=logService.retrieveAllLogsByUserId(userid);
+      return  ResponseEntity.status(HttpStatus.OK).body(logsByUserId);
+  }
+
+  @GetMapping("/logId/{logId}")
+    public ResponseEntity<LogDTO> retrieveLogByLogId(@PathVariable("logId") UUID logId){
+      LogDTO logDTO=logService.retrieveLogByLogId(logId);
+      return ResponseEntity.status(HttpStatus.OK).body(logDTO);
+  }
 }

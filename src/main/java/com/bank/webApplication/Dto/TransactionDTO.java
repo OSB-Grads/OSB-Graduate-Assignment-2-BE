@@ -17,5 +17,6 @@ public class TransactionDTO {
     private double amount;
     private TransactionEntity.status status;
     private TransactionEntity.type type;
+    private String createdAt;
 }
 
