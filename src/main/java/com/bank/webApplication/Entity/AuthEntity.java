@@ -3,7 +3,9 @@ package com.bank.webApplication.Entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.JdbcTypeCode;
 
+import java.sql.Types;
 import java.util.UUID;
 
 @Entity
@@ -21,7 +23,8 @@ public class AuthEntity {
             name="UUID",
             strategy = "org.hibernate.id.UUIDGenerator"
     )
-    @Column(name = "id" , updatable = false,nullable = false,columnDefinition = "VARCHAR(25)")
+    @Column(name = "id" , updatable = false,nullable = false,columnDefinition = "TEXT")
+    @JdbcTypeCode(Types.VARCHAR)
     private UUID id;
     @Column(name="UserName",updatable = false,nullable = false,unique = true)
     private String username;

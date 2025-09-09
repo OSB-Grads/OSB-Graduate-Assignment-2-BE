@@ -148,7 +148,9 @@ public class TransactionService {
      */
     public void saveTransaction(String fromAccount, String toAccount, double amount, String description, TransactionEntity.type type, TransactionEntity.status status) {
         TransactionEntity transactionEntity = new TransactionEntity();
+        log.info("[SAVE RTRANSACTION] TRANSACTION FROM Account");
         transactionEntity.setFromAccount((fromAccount!=null)?accountRepository.findById(fromAccount).get():null);
+        log.info("[SAVE RTRANSACTION] TRANSACTION TO Account");
         transactionEntity.setToAccount((toAccount!=null)?accountRepository.findById(toAccount).get():null);
         transactionEntity.setAmount(amount);
         transactionEntity.setTransactionType(type);
@@ -166,13 +168,15 @@ public class TransactionService {
     //Get all transactions for an account
 
     public List<TransactionDTO> getTransactionsByAccountNumber(String accountNumber) {
+        log.info("FROM TRANSACTION HISTORY");
         List<TransactionEntity> resultFromTransactions =
                 transactionRepository.findAllByFromAccountAccountNumber(accountNumber);
+        log.info("TO TRANSACTION HISTORY");
         List<TransactionEntity> resultToTransactions =
                 transactionRepository.findAllByToAccountAccountNumber(accountNumber);
 
         return Stream.concat(resultFromTransactions.stream(), resultToTransactions.stream())
-                .map(entity -> dtoEntityMapper.convertToDto(entity, TransactionDTO.class))
+                .map(entity -> new TransactionDTO(entity.getFromAccount()!=null?entity.getFromAccount().getAccountNumber():null,entity.getToAccount()!=null?entity.getToAccount().getAccountNumber():null,entity.getDescription(),entity.getAmount(),entity.getTransactionStatus(),entity.getTransactionType()))
                 .collect(Collectors.toList());
     }
 }
