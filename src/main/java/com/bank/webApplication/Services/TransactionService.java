@@ -3,6 +3,7 @@ package com.bank.webApplication.Services;
 import com.bank.webApplication.CustomException.AccountNotFoundException;
 import com.bank.webApplication.CustomException.InsufficientFundsException;
 import com.bank.webApplication.CustomException.TransactionFailedException;
+import com.bank.webApplication.Dto.AccountDto;
 import com.bank.webApplication.Dto.DepositWithdrawDTO;
 import com.bank.webApplication.Dto.TransactionDTO;
 import com.bank.webApplication.Entity.AccountEntity;
@@ -16,9 +17,13 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static java.util.Arrays.stream;
 
 @Service
 @Slf4j
@@ -30,13 +35,17 @@ public class TransactionService {
     @Autowired
     private final DtoEntityMapper dtoEntityMapper;
 
+    private AccountService accountService;
+
+
     @Autowired
     public TransactionService(AccountRepository accountRepository,
                               TransactionRepository transactionRepository,
-                              DtoEntityMapper dtoEntityMapper) {
+                              DtoEntityMapper dtoEntityMapper,AccountService accountService) {
         this.accountRepository = accountRepository;
         this.transactionRepository = transactionRepository;
         this.dtoEntityMapper = dtoEntityMapper;
+        this.accountService=accountService;
     }
 
 
@@ -176,7 +185,22 @@ public class TransactionService {
                 transactionRepository.findAllByToAccountAccountNumber(accountNumber);
 
         return Stream.concat(resultFromTransactions.stream(), resultToTransactions.stream())
-                .map(entity -> new TransactionDTO(entity.getFromAccount()!=null?entity.getFromAccount().getAccountNumber():null,entity.getToAccount()!=null?entity.getToAccount().getAccountNumber():null,entity.getDescription(),entity.getAmount(),entity.getTransactionStatus(),entity.getTransactionType()))
+                .map(entity -> new TransactionDTO(entity.getFromAccount()!=null?entity.getFromAccount().getAccountNumber():null,entity.getToAccount()!=null?entity.getToAccount().getAccountNumber():null,entity.getDescription(),entity.getAmount(),entity.getTransactionStatus(),entity.getTransactionType(),entity.getCreatedAt()))
+                .sorted(Comparator.comparing(TransactionDTO::getCreatedAt).reversed())
                 .collect(Collectors.toList());
+    }
+
+    public List<TransactionDTO> getTransactionHistoryByUserId(String userId){
+       log.info("[Transaction Service] Get Transaction History By userId");
+        List<AccountDto> accountDtoList=accountService.getAllAccountsByUserId(userId);
+        log.info("[Transaction Service] Retrieval of AccountDTOs from UserId is Successful");
+        List<TransactionDTO> transactionHistory = accountDtoList.stream()
+                .map(accountDto -> getTransactionsByAccountNumber(accountDto.getAccountNumber()))
+                .flatMap(List::stream)
+                .sorted(Comparator.comparing(TransactionDTO::getCreatedAt).reversed())
+                .collect(Collectors.toList());
+
+        return transactionHistory;
+
     }
 }
