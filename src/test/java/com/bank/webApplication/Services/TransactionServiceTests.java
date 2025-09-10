@@ -21,7 +21,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -77,34 +76,33 @@ class TransactionServiceTest {
 
     @Test
     void depositAmount_AmountLessThanZero() {
-
         InsufficientFundsException exception = assertThrows(InsufficientFundsException.class, () -> {
-            transactionService.depositAmount("ACC123", 0); // Deposit zero
+            transactionService.depositAmount("ACC123", -10); // Deposit a negative amount
         });
 
-        assertThat(exception.getMessage()).contains("Amount should be greater than 0");
+        assertThat(exception.getMessage()).contains("Deposit amount must be positive");
         verifyNoInteractions(accountRepository);
     }
 
     @Test
     void depositAmount_lockedAccount_returnsFailedDTO() {
-
         account.setAccountCreated(LocalDateTime.now().minusHours(7).toString()); // locked period
         when(accountRepository.findById("ACC123")).thenReturn(Optional.of(account));
 
         DepositWithdrawDTO dto = transactionService.depositAmount("ACC123", 500);
         assertThat(dto.getStatus()).isEqualTo(TransactionEntity.status.FAILED);
-        assertThat(dto.getDescription()).isEqualTo("Account is Locked");
+        assertThat(dto.getDescription()).isEqualTo("Account is currently locked due to the funding window.");
     }
 
     @Test
     void depositAmount_saveFails_returnsFailedDTO() {
         when(accountRepository.findById("ACC123")).thenReturn(Optional.of(account));
-        when(accountRepository.save(any(AccountEntity.class))).thenThrow(new RuntimeException("DB error. Failed to Save Transaction"));
+        when(accountRepository.save(any(AccountEntity.class))).thenThrow(new RuntimeException("Database error during deposit"));
 
         DepositWithdrawDTO result = transactionService.depositAmount("ACC123", 500);
 
         assertThat(result.getStatus()).isEqualTo(TransactionEntity.status.FAILED);
+        assertThat(result.getDescription()).contains("Database error during deposit");
     }
 
 
@@ -125,10 +123,10 @@ class TransactionServiceTest {
     @Test
     void withdrawAmount_amountLessThanOrEqualZero() {
         InsufficientFundsException exception = assertThrows(InsufficientFundsException.class, () -> {
-            transactionService.withdrawAmount("ACC123", 0); // Deposit zero
+            transactionService.withdrawAmount("ACC123", -100); // Withdraw a negative amount
         });
 
-        assertThat(exception.getMessage()).contains("greater than 0");
+        assertThat(exception.getMessage()).contains("Amount should be greater than 0");
 
         verifyNoInteractions(accountRepository);
     }
@@ -139,7 +137,7 @@ class TransactionServiceTest {
 
         assertThatThrownBy(() -> transactionService.withdrawAmount("ACC123", 2000))
                 .isInstanceOf(InsufficientFundsException.class)
-                .hasMessageContaining("Insufficient");
+                .hasMessageContaining("Insufficient funds available for this withdrawal");
     }
 
     @Test
@@ -149,17 +147,18 @@ class TransactionServiceTest {
 
         DepositWithdrawDTO dto = transactionService.withdrawAmount("ACC123", 500);
         assertThat(dto.getStatus()).isEqualTo(TransactionEntity.status.FAILED);
-        assertThat(dto.getDescription()).isEqualTo("Account is Locked");
+        assertThat(dto.getDescription()).isEqualTo("Account is currently locked due to the funding window.");
     }
 
     @Test
     void withdrawAmount_saveFails_returnsFailedDTO() {
         when(accountRepository.findById("ACC123")).thenReturn(Optional.of(account));
-        when(accountRepository.save(any(AccountEntity.class))).thenThrow(new RuntimeException("DB error"));
+        when(accountRepository.save(any(AccountEntity.class))).thenThrow(new RuntimeException("Database error during withdrawal"));
 
         DepositWithdrawDTO result = transactionService.withdrawAmount("ACC123", 100);
 
         assertThat(result.getStatus()).isEqualTo(TransactionEntity.status.FAILED);
+        assertThat(result.getDescription()).contains("Database error during withdrawal");
     }
 
 
@@ -215,15 +214,15 @@ class TransactionServiceTest {
         acc.setAccountNumber("ACC123");
         when(accountRepository.findById("ACC123")).thenReturn(Optional.of(acc));
         when(accountRepository.findById("ACC456")).thenReturn(Optional.of(acc));
-        doThrow(new RuntimeException("DB error")).when(transactionRepository).save(any(TransactionEntity.class));
+        doThrow(new RuntimeException("Database error during transaction save")).when(transactionRepository).save(any(TransactionEntity.class));
 
         assertThatThrownBy(() -> transactionService.saveTransaction("ACC123", "ACC456", 100.0,
                 "Test", TransactionEntity.type.DEPOSIT, TransactionEntity.status.COMPLETED))
-                .isInstanceOf(TransactionFailedException.class);
+                .isInstanceOf(TransactionFailedException.class)
+                .hasMessageContaining("Transaction save failed due to a database error");
     }
 
     // GetTransactionsByAccountNumber Tests
-
 
     @Test
     void getTransactionsByAccountNumber_returnsCombinedList() {

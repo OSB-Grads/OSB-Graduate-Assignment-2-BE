@@ -7,6 +7,6 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class DepositWithdrawRequestDTO {
-    private String Accountnumber;
+    private String accountNumber;
     private double amount;
 }

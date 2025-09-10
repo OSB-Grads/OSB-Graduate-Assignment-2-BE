@@ -3,6 +3,7 @@ package com.bank.webApplication.Services;
 import com.bank.webApplication.CustomException.AccountNotFoundException;
 import com.bank.webApplication.CustomException.InsufficientFundsException;
 import com.bank.webApplication.CustomException.TransactionFailedException;
+import com.bank.webApplication.Dto.AccountDto;
 import com.bank.webApplication.Dto.DepositWithdrawDTO;
 import com.bank.webApplication.Dto.TransactionDTO;
 import com.bank.webApplication.Entity.AccountEntity;
@@ -15,33 +16,50 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static java.util.Arrays.stream;
 
 @Service
 @Slf4j
 public class TransactionService {
-
+    @Autowired
     private final AccountRepository accountRepository;
+    @Autowired
     private final TransactionRepository transactionRepository;
+    @Autowired
     private final DtoEntityMapper dtoEntityMapper;
+
+    private AccountService accountService;
+
 
     @Autowired
     public TransactionService(AccountRepository accountRepository,
                               TransactionRepository transactionRepository,
-                              DtoEntityMapper dtoEntityMapper) {
+                              DtoEntityMapper dtoEntityMapper,AccountService accountService) {
         this.accountRepository = accountRepository;
         this.transactionRepository = transactionRepository;
         this.dtoEntityMapper = dtoEntityMapper;
+        this.accountService=accountService;
     }
 
 
      // Checks if account is locked based on creation date, funding window,cooling period, and tenure.
 
     public boolean isLocked(AccountEntity account) {
-        LocalDateTime createdAt = LocalDateTime.parse(account.getAccountCreated());
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        //String formattedDate = now.format(formatter);
+        LocalDateTime createdAt = LocalDateTime.parse(account.getAccountCreated(),formatter);
         LocalDateTime now = LocalDateTime.now();
+
+//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+//        String formattedDate = now.format(formatter);
 
         int tenure = account.getProduct().getTenure();
         int fundingWindow = account.getProduct().getFundingWindow();
@@ -139,8 +157,10 @@ public class TransactionService {
      */
     public void saveTransaction(String fromAccount, String toAccount, double amount, String description, TransactionEntity.type type, TransactionEntity.status status) {
         TransactionEntity transactionEntity = new TransactionEntity();
-        transactionEntity.setFromAccount(accountRepository.findById(fromAccount).get());
-        transactionEntity.setToAccount(accountRepository.findById(toAccount).get());
+        log.info("[SAVE RTRANSACTION] TRANSACTION FROM Account");
+        transactionEntity.setFromAccount((fromAccount!=null)?accountRepository.findById(fromAccount).get():null);
+        log.info("[SAVE RTRANSACTION] TRANSACTION TO Account");
+        transactionEntity.setToAccount((toAccount!=null)?accountRepository.findById(toAccount).get():null);
         transactionEntity.setAmount(amount);
         transactionEntity.setTransactionType(type);
         transactionEntity.setTransactionStatus(status);
@@ -157,13 +177,30 @@ public class TransactionService {
     //Get all transactions for an account
 
     public List<TransactionDTO> getTransactionsByAccountNumber(String accountNumber) {
+        log.info("FROM TRANSACTION HISTORY");
         List<TransactionEntity> resultFromTransactions =
                 transactionRepository.findAllByFromAccountAccountNumber(accountNumber);
+        log.info("TO TRANSACTION HISTORY");
         List<TransactionEntity> resultToTransactions =
                 transactionRepository.findAllByToAccountAccountNumber(accountNumber);
 
         return Stream.concat(resultFromTransactions.stream(), resultToTransactions.stream())
-                .map(entity -> dtoEntityMapper.convertToDto(entity, TransactionDTO.class))
+                .map(entity -> new TransactionDTO(entity.getFromAccount()!=null?entity.getFromAccount().getAccountNumber():null,entity.getToAccount()!=null?entity.getToAccount().getAccountNumber():null,entity.getDescription(),entity.getAmount(),entity.getTransactionStatus(),entity.getTransactionType(),entity.getCreatedAt()))
+                .sorted(Comparator.comparing(TransactionDTO::getCreatedAt).reversed())
                 .collect(Collectors.toList());
+    }
+
+    public List<TransactionDTO> getTransactionHistoryByUserId(String userId){
+       log.info("[Transaction Service] Get Transaction History By userId");
+        List<AccountDto> accountDtoList=accountService.getAllAccountsByUserId(userId);
+        log.info("[Transaction Service] Retrieval of AccountDTOs from UserId is Successful");
+        List<TransactionDTO> transactionHistory = accountDtoList.stream()
+                .map(accountDto -> getTransactionsByAccountNumber(accountDto.getAccountNumber()))
+                .flatMap(List::stream)
+                .sorted(Comparator.comparing(TransactionDTO::getCreatedAt).reversed())
+                .collect(Collectors.toList());
+
+        return transactionHistory;
+
     }
 }

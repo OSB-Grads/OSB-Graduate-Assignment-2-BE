@@ -12,14 +12,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 @Slf4j
 @Component
 public class TransactOrchestrator {
-
+    @Autowired
     private TransactionService transactionService;
+    @Autowired
     private LogService logService;
 
     @Autowired
@@ -38,7 +40,7 @@ public class TransactOrchestrator {
                     "Transaction Failed", String.valueOf(user_id), LogEntity.Status.FAILURE);
             return new TransactionDTO(fromAccountNumber, ToAccountNumber,
                     "Cannot transfer to the same account", amount,
-                    TransactionEntity.status.FAILED, TransactionEntity.type.TRANSFER);
+                    TransactionEntity.status.FAILED, TransactionEntity.type.TRANSFER, LocalDateTime.now().toString());
         }
 
         DepositWithdrawDTO withdrawOperation=transactionService.withdrawAmount(fromAccountNumber,amount);
@@ -50,18 +52,18 @@ public class TransactOrchestrator {
                 transactionService.saveTransaction(fromAccountNumber,ToAccountNumber,amount,"Transaction Saved Successfully", TransactionEntity.type.TRANSFER, TransactionEntity.status.COMPLETED);
                 log.info("[TransactOrchestrator ] Transaction Saved Successfully");
                 logService.logintoDB(user_id, LogEntity.Action.TRANSACTIONS,"Transaction is Successful", String.valueOf(user_id), LogEntity.Status.SUCCESS);
-                return new TransactionDTO(fromAccountNumber,ToAccountNumber,"Transaction Successful",amount, TransactionEntity.status.COMPLETED, TransactionEntity.type.TRANSFER);
+                return new TransactionDTO(fromAccountNumber,ToAccountNumber,"Transaction Successful",amount, TransactionEntity.status.COMPLETED, TransactionEntity.type.TRANSFER,LocalDateTime.now().toString());
             }
             else{
                 log.error("[TransactOrchestrator ] Deposit Operation Failed");
                 logService.logintoDB(user_id, LogEntity.Action.TRANSACTIONS,"Transaction Failed", String.valueOf(user_id), LogEntity.Status.FAILURE);
-                return new TransactionDTO(fromAccountNumber,ToAccountNumber,"Transaction Failed at Deposit Level.",amount, TransactionEntity.status.FAILED, TransactionEntity.type.TRANSFER);
+                return new TransactionDTO(fromAccountNumber,ToAccountNumber,"Transaction Failed at Deposit Level.",amount, TransactionEntity.status.FAILED, TransactionEntity.type.TRANSFER,LocalDateTime.now().toString());
 
             }
         }
         logService.logintoDB(user_id, LogEntity.Action.TRANSACTIONS,"Transaction Failed", String.valueOf(user_id), LogEntity.Status.FAILURE);
         log.error("[TransactOrchestrator ] Withdraw Operation Failed");
-        return new TransactionDTO(fromAccountNumber,ToAccountNumber,"Transaction Failed at Withdrawal Level",amount, TransactionEntity.status.FAILED, TransactionEntity.type.TRANSFER);
+        return new TransactionDTO(fromAccountNumber,ToAccountNumber,"Transaction Failed at Withdrawal Level",amount, TransactionEntity.status.FAILED, TransactionEntity.type.TRANSFER,LocalDateTime.now().toString());
 
     }
 }

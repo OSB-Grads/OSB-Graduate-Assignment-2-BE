@@ -7,7 +7,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.JdbcTypeCode;
 
+import java.sql.Types;
 import java.util.UUID;
 
 
@@ -24,7 +26,8 @@ public class LogEntity {
             name="UUID",
             strategy = "org.hibernate.id.UUIDGenerator"
     )
-    @Column(name = "id" , updatable = false,nullable = false,columnDefinition = "VARCHAR(25)")
+    @Column(name = "id" , updatable = false,nullable = false,columnDefinition = "TEXT")
+    @JdbcTypeCode(Types.VARCHAR)
     private UUID id;
 
     @ManyToOne

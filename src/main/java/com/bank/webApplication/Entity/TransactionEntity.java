@@ -3,7 +3,9 @@ package com.bank.webApplication.Entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.JdbcTypeCode;
 
+import java.sql.Types;
 import java.util.UUID;
 
 @Entity
@@ -20,7 +22,8 @@ public class TransactionEntity {
             name="UUID",
             strategy = "org.hibernate.id.UUIDGenerator"
     )
-    @Column(name = "transactionId" , updatable = false,nullable = false, columnDefinition = "VARCHAR(20)")
+    @Column(name = "transactionId" , updatable = false,nullable = false, columnDefinition = "TEXT")
+    @JdbcTypeCode(Types.VARCHAR)
     private UUID transactionId;
 
     @ManyToOne

@@ -19,8 +19,9 @@ import java.util.UUID;
 @Controller
 @Component
 public class DepositAndWithdrawalOrch {
-
+    @Autowired
     private TransactionService transactionService;
+    @Autowired
     private LogService logService;
 
     @Autowired
@@ -40,6 +41,7 @@ public class DepositAndWithdrawalOrch {
         }
 
         DepositWithdrawDTO depositOperation = transactionService.depositAmount(accountNumber,amount);
+        log.info("Deposit Successful"+" "+depositOperation.getStatus()+" ");
         if (depositOperation != null && depositOperation.getStatus() == TransactionEntity.status.COMPLETED) {
             transactionService.saveTransaction(
                     null,
@@ -57,7 +59,6 @@ public class DepositAndWithdrawalOrch {
             log.error("[Deposit Handler] Deposit Operation Failed. Please Try Again");
             logService.logintoDB(userId, LogEntity.Action.TRANSACTIONS, "Deposit Failed", String.valueOf(userId), LogEntity.Status.FAILURE);
         }
-
         return depositOperation;
     }
 
