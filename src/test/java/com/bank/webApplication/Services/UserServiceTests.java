@@ -95,7 +95,6 @@ public class UserServiceTests {
     void testGetUserById(){
         when(userRepository.findById(id)).thenReturn(Optional.of(userEntity));
         when(dtoEntityMapper.convertToDto(userEntity,UserDto.class)).thenReturn(userDto);
-
         UserDto result=userService.getUserById(String.valueOf(id));
         assertThat(result).isNotNull();
         assertThat(result.getName()).isEqualTo(userDto.getName());
