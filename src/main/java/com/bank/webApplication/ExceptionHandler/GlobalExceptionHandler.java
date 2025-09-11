@@ -69,4 +69,10 @@ public class GlobalExceptionHandler{
     public ResponseEntity<Object> handleUserAlreadyExistException(Exception ex){
         return buildResponse(HttpStatus.CONFLICT, ex.getMessage());
     }
+
+    //Error-403
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Object> handleAccessDeniedException(Exception ex){
+        return buildResponse(HttpStatus.FORBIDDEN, ex.getMessage());
+    }
 }

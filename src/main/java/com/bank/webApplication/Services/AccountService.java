@@ -1,6 +1,8 @@
 package com.bank.webApplication.Services;
 
 
+import com.bank.webApplication.CustomException.AccessDeniedException;
+import com.bank.webApplication.CustomException.AccountNotFoundException;
 import com.bank.webApplication.CustomException.UserNotFoundException;
 import com.bank.webApplication.Dto.AccountDto;
 import com.bank.webApplication.Entity.AccountEntity;
@@ -13,6 +15,7 @@ import com.bank.webApplication.Repository.UserRepository;
 import com.bank.webApplication.Util.DtoEntityMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.sql.SQLException;
@@ -21,6 +24,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import static org.springframework.security.core.context.SecurityContextHolder.getContext;
 
 
 @Slf4j
@@ -99,9 +104,15 @@ public class AccountService {
     public AccountDto getOneAccount(String accountNumber){
         AccountEntity accountEntity=accountRepository.findByAccountNumber(accountNumber);
         double accountInterest =accountEntity.getProduct().getInterestRate();
-
+        if(accountEntity==null){
+            throw new AccountNotFoundException("Account not exit");
+        }
         UUID id= accountEntity.getUser().getId();
+        String curentUser=SecurityContextHolder.getContext().getAuthentication().getName();
 
+        if(id==UUID.fromString(curentUser)){
+            throw new AccessDeniedException("You are not authorized to access this account");
+        }
 
         AccountDto dto=dtoEntityMapper.convertToDto(accountEntity,AccountDto.class);
         log.info("[Account Handler] Account Information Displayed Successfully :) ");
