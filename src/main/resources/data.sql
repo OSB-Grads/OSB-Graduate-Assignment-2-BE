@@ -17,6 +17,12 @@ INSERT OR IGNORE INTO products (
   'SAV01', 'saving account with the interestRate of 1', 1, 'Saving Account', 0, 0, 0
 );
 
+
+INSERT OR IGNORE INTO auth_table (id, pass_word, role, user_name)
+VALUES
+('110011001100', 'WonderWoman@123', 'ADMIN', 'WonderWoman'),
+('110011001101', 'LazyMan@123', 'USER', 'LazyMan');
+
 INSERT OR IGNORE INTO users (
     id, name, email, phone, created_At, updated_At, role
 ) VALUES (
