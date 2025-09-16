@@ -26,7 +26,7 @@ public class UserEntity {
     private String phone;
     private String created_At;
     private String updated_At;
-
+    private String Address;
     @Enumerated(EnumType.STRING)
     private Role role;
 

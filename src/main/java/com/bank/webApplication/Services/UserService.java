@@ -69,6 +69,7 @@ public class UserService {
         existing.setPhone(userDto.getPhone());
         existing.setRole(userDto.getRole());
         existing.setUpdated_At(getCurrentTimestampString());
+        existing.setAddress(userDto.getAddress());
 
         UserEntity updated=userRepository.save(existing);
 
