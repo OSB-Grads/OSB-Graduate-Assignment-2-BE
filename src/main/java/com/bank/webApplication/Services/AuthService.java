@@ -17,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @AllArgsConstructor
@@ -67,5 +68,13 @@ public class AuthService {
         //Invoke LogService
         logService.logintoDB(user.getId(), LogEntity.Action.AUTHENTICATION,"User Signup Successfull",user.getUsername(),LogEntity.Status.SUCCESS);
         return new JwtResponseDto(token);
+    }
+
+    public void updatePassword(String password, UUID userId){
+        String hashedPassword= PasswordHash.HashPass(password);
+        authrepository.findById(userId).get().setPassword(hashedPassword);
+        log.info("[RESET PASSWORD] Password Updation SUCCESS");
+        logService.logintoDB(userId, LogEntity.Action.PROFILE_MANAGEMENT, "Password Updation SUCCESS",userId.toString()
+                ,LogEntity.Status.SUCCESS);
     }
 }
