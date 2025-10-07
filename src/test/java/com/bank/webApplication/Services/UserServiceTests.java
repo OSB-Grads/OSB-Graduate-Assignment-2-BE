@@ -46,6 +46,7 @@ public class UserServiceTests {
         userDto.setEmail("zargarzaid271@gmail.com");
         userDto.setPhone("9596781234");
         userDto.setRole(Role.USER);
+        userDto.setAddress("dummy address");
 
         userEntity=new UserEntity();
         userEntity.setId(id);
