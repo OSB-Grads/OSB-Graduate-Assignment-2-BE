@@ -9,6 +9,7 @@ import com.bank.webApplication.Util.EmailService;
 import com.bank.webApplication.Util.OTPGenerator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -60,4 +61,9 @@ public class OTPService {
         return false;
     }
 
+    @Scheduled(fixedRate = 120_000)
+    public void cleanupExpiredOTP(){
+        otpRepository.deleteByExpirationTimeBefore(new Date());
+        log.info("[OTP DELETION] Expired OTP Deletion SUCCESS");
+    }
 }
