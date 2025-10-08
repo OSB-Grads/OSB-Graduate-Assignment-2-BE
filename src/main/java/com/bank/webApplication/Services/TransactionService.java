@@ -157,9 +157,9 @@ public class TransactionService {
      */
     public void saveTransaction(String fromAccount, String toAccount, double amount, String description, TransactionEntity.type type, TransactionEntity.status status) {
         TransactionEntity transactionEntity = new TransactionEntity();
-        log.info("[SAVE RTRANSACTION] TRANSACTION FROM Account");
+        log.info("[SAVE TRANSACTION] TRANSACTION FROM Account");
         transactionEntity.setFromAccount((fromAccount!=null)?accountRepository.findById(fromAccount).get():null);
-        log.info("[SAVE RTRANSACTION] TRANSACTION TO Account");
+        log.info("[SAVE TRANSACTION] TRANSACTION TO Account");
         transactionEntity.setToAccount((toAccount!=null)?accountRepository.findById(toAccount).get():null);
         transactionEntity.setAmount(amount);
         transactionEntity.setTransactionType(type);
