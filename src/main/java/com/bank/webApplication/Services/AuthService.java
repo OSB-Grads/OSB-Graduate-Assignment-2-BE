@@ -1,4 +1,5 @@
 package com.bank.webApplication.Services;
+
 import com.bank.webApplication.CustomException.InvalidCredentialsException;
 import com.bank.webApplication.CustomException.UserAlreadyExistException;
 import com.bank.webApplication.Dto.AuthDto;
@@ -17,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
 import java.time.Instant;
 import java.util.Optional;
 
@@ -38,18 +40,17 @@ public class AuthService {
     private UserService userService;
 
 
-
     public JwtResponseDto Login(AuthDto authdto) {
         log.info("[AuthService] Entered Login SUCCESS");
         //Validates User by taking Username and Password
         AuthEntity user = authrepository.findByUsername(authdto.getUsername())
                 .orElseThrow(() ->
                 {
-                    log.info("[AuthService] Login: Invalid UserName or User not found FAILED");
+                    log.error("[AuthService] Login: Invalid UserName or User not found FAILED");
                     return new InvalidCredentialsException("Invalid UserName or User not found");
                 });
         if (!passwordEncoder.matches(authdto.getPassword(), user.getPassword())) {
-            log.info("[AuthService] Login: Invalid PassWord FAILED");
+            log.error("[AuthService] Login: Invalid PassWord FAILED");
             throw new InvalidCredentialsException("Invalid PassWord");
         }
         //Generates JwtToken for valid authenticated user
@@ -68,7 +69,7 @@ public class AuthService {
         //Checks if user is already present in the database
         Optional<AuthEntity> a = authrepository.findByUsername(authdto.getUsername());
         if (authrepository.findByUsername(authdto.getUsername()).isPresent()) {
-            log.info("[AuthService] Signup: User Already Exist FAILURE");
+            log.error("[AuthService] Signup: User Already Exist FAILURE");
             throw new UserAlreadyExistException("User Already Exist");
         }
         //creates the hash of the password given by the user
@@ -99,15 +100,15 @@ public class AuthService {
         log.info("[AuthService] Entered RefreshAccessToken SUCCESS");
         //check refreshtoken is present in db and matches with the one sent by the frontend
         RefreshTokenEntity RefreshToken = refreshTokenRepository.findByRefreshToken(refreshToken)
-                .orElseThrow(() ->{
-                    log.info("[AuthService] RefreshAccessToken: Invalid Refresh Token FAILURE");
+                .orElseThrow(() -> {
+                    log.error("[AuthService] RefreshAccessToken: Invalid Refresh Token FAILURE");
                     return new RuntimeException("Invalid Refresh Token");
                 });
         //checks for expiry of refresh token
         if (RefreshToken.getExpiry().isBefore(Instant.now())) {
             //deletes the refresh token from db
             refreshTokenRepository.delete(RefreshToken);
-            log.info("[AuthService] RefreshAccessToken: Token Has Expired FAILURE");
+            log.error("[AuthService] RefreshAccessToken: Token Has Expired FAILURE");
             throw new RuntimeException("Token Has Expired");
         }
         //generates a new access token if it is expired
@@ -124,9 +125,10 @@ public class AuthService {
     public Boolean LogOut(String RefreshToken) {
         //logsout the user and deletes the refresh token from db
         //deletes the refresh token from db
-        int res=  refreshTokenRepository.deleteByRefreshToken(RefreshToken);
+        int res = refreshTokenRepository.deleteByRefreshToken(RefreshToken);
         log.info("[AuthService] LogOut  SUCCESS");
-        if(res==0){
+        if (res == 0) {
+            log.error("[AuthService] LogOut  FAILURE");
             return false;
         }
         return true;

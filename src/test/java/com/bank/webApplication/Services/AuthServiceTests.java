@@ -4,9 +4,11 @@ import com.bank.webApplication.Dto.AuthDto;
 import com.bank.webApplication.Dto.JwtResponseDto;
 import com.bank.webApplication.Dto.UserDto;
 import com.bank.webApplication.Entity.AuthEntity;
+import com.bank.webApplication.Entity.RefreshTokenEntity;
 import com.bank.webApplication.Entity.Role;
 import com.bank.webApplication.Entity.UserEntity;
 import com.bank.webApplication.Repository.AuthRepository;
+import com.bank.webApplication.Repository.RefreshTokenRepository;
 import com.bank.webApplication.Util.JWTUtil;
 import com.bank.webApplication.Util.PasswordHash;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,6 +21,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,9 +33,12 @@ import static org.mockito.Mockito.*;
 public class AuthServiceTests {
     @Mock
     private AuthRepository authRepository;
-
+    @Mock
+    private RefreshTokenRepository refreshTokenRepository;
     @Mock
     private PasswordHash passwordHash;
+    @Mock
+    private  RefreshTokenEntity refreshTokenEntity;
 
     @Mock
     private PasswordEncoder passwordEncoder;
@@ -65,7 +71,7 @@ public class AuthServiceTests {
     @Test
     void testSignUp(){
 
-        try {
+
             id=UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
             authEntity = AuthEntity.builder().role(Role.ADMIN).id(id).build();
             authDto = new AuthDto();
@@ -82,15 +88,13 @@ public class AuthServiceTests {
             // Assertions
             assertNotNull(response);
             assertEquals("SignUpJWTtoken", response.getToken());
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
+
 
     }
     @Test
     void testSignUp_UserAlreadyExists() {
 
-        try {
+
             UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
             authEntity = AuthEntity.builder()
                     .id(id)
@@ -109,13 +113,11 @@ public class AuthServiceTests {
             });
             //  verify exception message
             assertEquals("User Already Exist", exception.getMessage());
-        } catch (Exception e) {
-            System.out.println("Exception occurred: " + e.getMessage());
-        }
+
     }
     @Test
     void testLogin(){
-        try{
+
             UUID id=UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
             authEntity=AuthEntity.builder()
                     .id(id)
@@ -132,10 +134,7 @@ public class AuthServiceTests {
             JwtResponseDto response=authService.Login(authDto);
             assertNotNull(response);
             assertEquals("LoginJwtToken",response.getToken());
-        }
-        catch (Exception e){
-          System.out.println(e.getMessage());
-        }
+
     }
     @Test
     void testLogin_UserNotfound(){
@@ -167,5 +166,23 @@ public class AuthServiceTests {
             authService.Login(authDto);
         });
         assertEquals("Invalid PassWord",e.getMessage());
+    }
+    @Test
+    void  LogOut(){
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        authEntity = AuthEntity.builder()
+                .id(id)
+                .username("testuser")
+                .password("existingPassword")
+                .role(Role.USER)
+                .build();
+        RefreshTokenEntity Refreshtoken = jwtUtil.generateRefreshToken(authEntity);
+        var claims= RefreshTokenEntity.builder()
+                .refreshToken("SampleRefreshToken")
+                .authEntity(authEntity)
+                .expiry(Instant.now().plusSeconds(1000 * 60*2))//expiry time of 1 day
+//        1 * 24 * 60 * 60
+                .build();
+        when(refreshTokenRepository.deleteByRefreshToken("SampleRefreshToken")).thenReturn(1);
     }
 }

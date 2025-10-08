@@ -24,7 +24,7 @@ public class ProductService {
         log.info("[ProductService] getProduct entered SUCCESS");
         ProductEntity product=productRepository.findById(productId)
                 .orElseThrow(()->{
-                    log.info("[ProductService] getProduct: not found FAILURE");
+                    log.error("[ProductService] getProduct: not found FAILURE");
                     return new NullPointerException("not found");
                 });
         ProductDto productDto=dtoEntityMapper.convertToDto(product,ProductDto.class);

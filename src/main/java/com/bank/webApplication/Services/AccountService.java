@@ -50,7 +50,10 @@ public class AccountService {
         log.info("[AccountService]  CreateAccount entered SUCCESS");
         UUID id = UUID.fromString(userId);
         UserEntity user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("user not found! create the profile before create the account"));
+                .orElseThrow(() -> {
+                    log.error("[AccountService] CreateAccount:user not found! create the profile before create the account FAILURE ");
+                    return new UserNotFoundException("user not found! create the profile before create the account");
+                });
         ProductEntity product = productRepository.findByProductId(productId);
 
         boolean created = false;
@@ -89,9 +92,9 @@ public class AccountService {
             } catch (RuntimeException e) {
                 if (e.getMessage().contains("UNIQUE") || e.getMessage().contains("constraint")) {
                     System.out.println("Duplicate account number detected, regenerating... (Attempt " + attempts + ")");
-                    log.info("[Account Service] CreateAccount:Duplicate account number detected  FAILURE ");
+                    log.error("[Account Service] CreateAccount:Duplicate account number detected  FAILURE ");
                 } else {
-                    log.info("[Account Service] CreateAccount  FAILURE ");
+                    log.error("[Account Service] CreateAccount  FAILURE ");
                     throw e;
                 }
             }
@@ -111,14 +114,14 @@ public class AccountService {
         AccountEntity accountEntity = accountRepository.findByAccountNumber(accountNumber);
         double accountInterest = accountEntity.getProduct().getInterestRate();
         if (accountEntity == null) {
-            log.info("[Account Service] getOneAccount:Account not exit FAILURE ");
+            log.error("[Account Service] getOneAccount:Account not exit FAILURE ");
             throw new AccountNotFoundException("Account not exit");
         }
         UUID id = accountEntity.getUser().getId();
         String curentUser = SecurityContextHolder.getContext().getAuthentication().getName();
 
         if (id == UUID.fromString(curentUser)) {
-            log.info("[Account Service] getOneAccount: Not authorized to access this account FAILURE ");
+            log.error("[Account Service] getOneAccount: Not authorized to access this account FAILURE ");
             throw new AccessDeniedException("You are not authorized to access this account");
         }
 

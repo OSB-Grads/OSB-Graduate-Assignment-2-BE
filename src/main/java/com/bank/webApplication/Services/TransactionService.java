@@ -41,22 +41,22 @@ public class TransactionService {
     @Autowired
     public TransactionService(AccountRepository accountRepository,
                               TransactionRepository transactionRepository,
-                              DtoEntityMapper dtoEntityMapper,AccountService accountService) {
+                              DtoEntityMapper dtoEntityMapper, AccountService accountService) {
         this.accountRepository = accountRepository;
         this.transactionRepository = transactionRepository;
         this.dtoEntityMapper = dtoEntityMapper;
-        this.accountService=accountService;
+        this.accountService = accountService;
     }
 
 
-     // Checks if account is locked based on creation date, funding window,cooling period, and tenure.
+    // Checks if account is locked based on creation date, funding window,cooling period, and tenure.
 
     public boolean isLocked(AccountEntity account) {
         log.info("[TransactionService] isLocked entered SUCCESS");
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         //String formattedDate = now.format(formatter);
-        LocalDateTime createdAt = LocalDateTime.parse(account.getAccountCreated(),formatter);
+        LocalDateTime createdAt = LocalDateTime.parse(account.getAccountCreated(), formatter);
         LocalDateTime now = LocalDateTime.now();
 
 //        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -107,26 +107,25 @@ public class TransactionService {
             accountRepository.save(account);
             log.info("[{}] {}", type, successMsg);
             return new DepositWithdrawDTO(account.getAccountNumber(), successMsg, amount, TransactionEntity.status.COMPLETED, type);
-        }
-        catch (RuntimeException e) {
+        } catch (RuntimeException e) {
             log.error("[{}] {}", type, failureMsg, e);
             return new DepositWithdrawDTO(account.getAccountNumber(), failureMsg, amount, TransactionEntity.status.FAILED, type);
         }
     }
 
 
-     //  Deposit operation
+    //  Deposit operation
 
     public DepositWithdrawDTO depositAmount(String accountNumber, double amount) {
         log.info("[TransactionService] depositAmount entered  SUCCESS");
         if (amount <= 0) {
-            log.info("[TransactionService] depositAmount: Amount should be greater than 0  FAILURE ");
+            log.error("[TransactionService] depositAmount: Amount should be greater than 0  FAILURE ");
             throw new InsufficientFundsException("Amount should be greater than 0");
         }
 
         AccountEntity account = accountRepository.findById(accountNumber)
-                .orElseThrow(() ->{
-                    log.info("[TransactionService] depositAmount: Account not found. Not a valid AccountNumber  FAILURE ");
+                .orElseThrow(() -> {
+                    log.error("[TransactionService] depositAmount: Account not found. Not a valid AccountNumber  FAILURE ");
                     return new AccountNotFoundException("Account not found. Not a valid AccountNumber");
                 });
 
@@ -142,19 +141,19 @@ public class TransactionService {
     }
 
 
-     // Withdraw operation
+    // Withdraw operation
 
     public DepositWithdrawDTO withdrawAmount(String accountNumber, double amount) {
         log.info("[TransactionService]  withdrawAmount entered  SUCCESS");
         if (amount <= 0) {
-            log.info("[TransactionService]  withdrawAmount: Amount should be greater than 0  FAILURE");
+            log.error("[TransactionService]  withdrawAmount: Amount should be greater than 0  FAILURE");
             throw new InsufficientFundsException("Amount should be greater than 0");
         }
 
         AccountEntity account = accountRepository.findById(accountNumber)
                 .orElseThrow(() -> {
-                    log.info("[TransactionService]  withdrawAmount: Account not found. Not a valid AccountNumber  FAILURE");
-                    return  new AccountNotFoundException("Account not found. Not a valid AccountNumber");
+                    log.error("[TransactionService]  withdrawAmount: Account not found. Not a valid AccountNumber  FAILURE");
+                    return new AccountNotFoundException("Account not found. Not a valid AccountNumber");
                 });
 
         if (isLocked(account)) {
@@ -162,7 +161,7 @@ public class TransactionService {
         }
 
         if (account.getBalance() < amount) {
-            log.info("[TransactionService]  withdrawAmount:Balance  Insufficient to debit. FAILURE");
+            log.error("[TransactionService]  withdrawAmount:Balance  Insufficient to debit. FAILURE");
             throw new InsufficientFundsException(account.getBalance() + " is Insufficient to debit.");
         }
 
@@ -178,9 +177,9 @@ public class TransactionService {
         log.info("[TransactionService]  saveTransaction entered  SUCCESS");
         TransactionEntity transactionEntity = new TransactionEntity();
         log.info("[SAVE RTRANSACTION] TRANSACTION FROM Account");
-        transactionEntity.setFromAccount((fromAccount!=null)?accountRepository.findById(fromAccount).get():null);
+        transactionEntity.setFromAccount((fromAccount != null) ? accountRepository.findById(fromAccount).get() : null);
         log.info("[SAVE RTRANSACTION] TRANSACTION TO Account");
-        transactionEntity.setToAccount((toAccount!=null)?accountRepository.findById(toAccount).get():null);
+        transactionEntity.setToAccount((toAccount != null) ? accountRepository.findById(toAccount).get() : null);
         transactionEntity.setAmount(amount);
         transactionEntity.setTransactionType(type);
         transactionEntity.setTransactionStatus(status);
@@ -189,8 +188,7 @@ public class TransactionService {
         try {
             log.info("[TransactionService]  saveTransaction   SUCCESS");
             transactionRepository.save(transactionEntity);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             log.info("[TransactionService]  saveTransaction :Save Transaction Failed  FAILURE");
             throw new TransactionFailedException("Save Transaction Failed");
         }
@@ -208,15 +206,15 @@ public class TransactionService {
                 transactionRepository.findAllByToAccountAccountNumber(accountNumber);
         log.info("[TransactionService]  getTransactionsByAccountNumber    SUCCESS");
         return Stream.concat(resultFromTransactions.stream(), resultToTransactions.stream())
-                .map(entity -> new TransactionDTO(entity.getFromAccount()!=null?entity.getFromAccount().getAccountNumber():null,entity.getToAccount()!=null?entity.getToAccount().getAccountNumber():null,entity.getDescription(),entity.getAmount(),entity.getTransactionStatus(),entity.getTransactionType(),entity.getCreatedAt()))
+                .map(entity -> new TransactionDTO(entity.getFromAccount() != null ? entity.getFromAccount().getAccountNumber() : null, entity.getToAccount() != null ? entity.getToAccount().getAccountNumber() : null, entity.getDescription(), entity.getAmount(), entity.getTransactionStatus(), entity.getTransactionType(), entity.getCreatedAt()))
                 .sorted(Comparator.comparing(TransactionDTO::getCreatedAt).reversed())
                 .collect(Collectors.toList());
     }
 
-    public List<TransactionDTO> getTransactionHistoryByUserId(String userId){
+    public List<TransactionDTO> getTransactionHistoryByUserId(String userId) {
         log.info("[TransactionService]  getTransactionHistoryByUserId entered   SUCCESS");
-       log.info("[Transaction Service] Get Transaction History By userId");
-        List<AccountDto> accountDtoList=accountService.getAllAccountsByUserId(userId);
+        log.info("[Transaction Service] Get Transaction History By userId");
+        List<AccountDto> accountDtoList = accountService.getAllAccountsByUserId(userId);
         log.info("[Transaction Service] Retrieval of AccountDTOs from UserId is Successful");
         List<TransactionDTO> transactionHistory = accountDtoList.stream()
                 .map(accountDto -> getTransactionsByAccountNumber(accountDto.getAccountNumber()))
