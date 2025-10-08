@@ -10,8 +10,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface OTPRepository  extends JpaRepository<OTPEntity, UUID> {
-//    @Query("SELECT otpEntity from OTP_Storage otpEntity where otpEntity.otp = ?1 and otpEntity.user = ?2")
+
     Optional<OTPEntity> findByOtp(Integer otp);
+    Optional<OTPEntity> findByUser(UserEntity user);
 
     void deleteByExpirationTimeBefore(Date now);
 }

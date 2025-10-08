@@ -48,7 +48,12 @@ private final JwtFilter jwtFilter;
                                 "/swagger-ui/**",
                                 "/webjars/**",
                                 "/swagger-ui.html").permitAll()
-                        .requestMatchers("/api/v1/auth/register","/api/v1/auth/login","api/v1/forgotPassword").permitAll()
+                        .requestMatchers("/api/v1/auth/register",
+                                "/api/v1/auth/login",
+                                "api/v1/forgotPassword/{email}",
+                                "api/v1/forgotPassword/resendOtp/{email}",
+                                "api/v1/forgotPassword/verify-otp",
+                                "api/v1/forgotPassword/resetPassword").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

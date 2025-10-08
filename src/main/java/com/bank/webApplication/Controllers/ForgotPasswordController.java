@@ -35,6 +35,7 @@ public class ForgotPasswordController {
     // send otp for user mail and store otpId in FE
     @PostMapping(path = "/{email}")
     public ResponseEntity<?> verifyEmail(@PathVariable String email) {
+        System.out.println("Entering into controller");
         UUID otpId = forgotPasswordService.verifyEmail(email);
         return ResponseEntity.ok(Map.of(
                 "message", "OTP sent successfully to User email.",

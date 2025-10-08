@@ -40,11 +40,17 @@ public class OTPService {
                 .subject("OTP for Forgot Password Request")
                 .text("Welcome to the Banking Application .You have forgot your Password :( . This is the OTP for your forgot Password Request. Please do not forget next time :|" + otp).build();
 
-        OTPEntity otpEntity = OTPEntity.builder().otp(otp).expirationTime(new Date(System.currentTimeMillis() + 60 * 1000)) // 1 minute
-                .user(user).build();
+        OTPEntity otpEntity =  otpRepository.findByUser(user)
+                .orElse(new OTPEntity());
+
+        otpEntity.setOtp(otp);
+        otpEntity.setExpirationTime(new Date(System.currentTimeMillis() + 60 * 1000));
+        otpEntity.setUser(user);
 
         emailService.sendMessage(mailBodyDTO);
         OTPService.log.info("[OTP SERVICE] OTP Sent Successfully");
+
+        System.out.println(otpEntity);
 
         OTPEntity savedOtp = otpRepository.save(otpEntity);
         return savedOtp.getOtpId();
@@ -61,7 +67,7 @@ public class OTPService {
         return false;
     }
 
-    @Scheduled(fixedRate = 120_000)
+    @Scheduled(fixedRate = 240_000)
     public void cleanupExpiredOTP(){
         otpRepository.deleteByExpirationTimeBefore(new Date());
         log.info("[OTP DELETION] Expired OTP Deletion SUCCESS");
