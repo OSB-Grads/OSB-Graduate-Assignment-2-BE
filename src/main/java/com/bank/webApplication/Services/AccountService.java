@@ -47,6 +47,7 @@ public class AccountService {
     private LogService logService;
 
     public AccountDto CreateAccount(AccountDto accountDto,String userId,String productId ) throws SQLException {
+        log.info("[AccountService]  CreateAccount entered SUCCESS");
         UUID id=UUID.fromString(userId);
         UserEntity user=userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("user not found! create the profile before create the account"));

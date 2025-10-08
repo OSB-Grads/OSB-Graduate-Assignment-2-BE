@@ -30,7 +30,7 @@ public class RefreshTokenEntity {
     @JoinColumn(name="Auth_id",referencedColumnName = "id")
     private AuthEntity authEntity;
     @Column(nullable = false,unique = true)
-    private String token;
+    private String refreshToken;
     @Column(nullable = false)
     private Instant expiry;
 
