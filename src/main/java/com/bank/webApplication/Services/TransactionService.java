@@ -52,6 +52,7 @@ public class TransactionService {
      // Checks if account is locked based on creation date, funding window,cooling period, and tenure.
 
     public boolean isLocked(AccountEntity account) {
+        log.info("[TransactionService] isLocked entered SUCCESS");
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         //String formattedDate = now.format(formatter);
@@ -71,24 +72,28 @@ public class TransactionService {
 
         // Funding period → deposits & withdrawals allowed
         if (now.isBefore(fundingEndDate)) {
+            log.info("[TransactionService] isLocked  SUCCESS");
             return false;
         }
 
         // Maturity period → locked
         if (now.isAfter(fundingEndDate) && now.isBefore(coolingStartDate)) {
+            log.info("[TransactionService] isLocked  SUCCESS");
             return true;
         }
 
         // Cooling period → deposits & withdrawals allowed
         if (now.isAfter(coolingStartDate) && now.isBefore(tenureEndDate)) {
+            log.info("[TransactionService] isLocked  SUCCESS");
             return false;
         }
 
         // After full tenure → unlocked
         if (now.isAfter(tenureEndDate)) {
+            log.info("[TransactionService] isLocked  SUCCESS");
             return false;
         }
-
+        log.info("[TransactionService] isLocked  SUCCESS");
         return true;
     }
 
@@ -97,6 +102,7 @@ public class TransactionService {
      * Helper method to update account balance safely and return DTO
      */
     private DepositWithdrawDTO processTransaction(AccountEntity account, double amount, TransactionEntity.type type, String successMsg, String failureMsg) {
+        log.info("[TransactionService] processTransaction entered  SUCCESS");
         try {
             accountRepository.save(account);
             log.info("[{}] {}", type, successMsg);
@@ -112,12 +118,17 @@ public class TransactionService {
      //  Deposit operation
 
     public DepositWithdrawDTO depositAmount(String accountNumber, double amount) {
+        log.info("[TransactionService] depositAmount entered  SUCCESS");
         if (amount <= 0) {
+            log.info("[TransactionService] depositAmount: Amount should be greater than 0  FAILURE ");
             throw new InsufficientFundsException("Amount should be greater than 0");
         }
 
         AccountEntity account = accountRepository.findById(accountNumber)
-                .orElseThrow(() -> new AccountNotFoundException("Account not found. Not a valid AccountNumber"));
+                .orElseThrow(() ->{
+                    log.info("[TransactionService] depositAmount: Account not found. Not a valid AccountNumber  FAILURE ");
+                    return new AccountNotFoundException("Account not found. Not a valid AccountNumber");
+                });
 
         if (isLocked(account)) {
             return new DepositWithdrawDTO(accountNumber, "Account is Locked",
@@ -125,6 +136,7 @@ public class TransactionService {
         }
 
         account.setBalance(account.getBalance() + amount);
+        log.info("[TransactionService] depositAmount   SUCCESS");
         return processTransaction(account, amount, TransactionEntity.type.DEPOSIT,
                 "Deposit Successful", "Deposit Failed");
     }
@@ -133,22 +145,29 @@ public class TransactionService {
      // Withdraw operation
 
     public DepositWithdrawDTO withdrawAmount(String accountNumber, double amount) {
+        log.info("[TransactionService]  withdrawAmount entered  SUCCESS");
         if (amount <= 0) {
+            log.info("[TransactionService]  withdrawAmount: Amount should be greater than 0  FAILURE");
             throw new InsufficientFundsException("Amount should be greater than 0");
         }
 
         AccountEntity account = accountRepository.findById(accountNumber)
-                .orElseThrow(() -> new AccountNotFoundException("Account not found. Not a valid AccountNumber"));
+                .orElseThrow(() -> {
+                    log.info("[TransactionService]  withdrawAmount: Account not found. Not a valid AccountNumber  FAILURE");
+                    return  new AccountNotFoundException("Account not found. Not a valid AccountNumber");
+                });
 
         if (isLocked(account)) {
             return new DepositWithdrawDTO(accountNumber, "Account is Locked", amount, TransactionEntity.status.FAILED, TransactionEntity.type.WITHDRAWAL);
         }
 
         if (account.getBalance() < amount) {
+            log.info("[TransactionService]  withdrawAmount:Balance  Insufficient to debit. FAILURE");
             throw new InsufficientFundsException(account.getBalance() + " is Insufficient to debit.");
         }
 
         account.setBalance(account.getBalance() - amount);
+        log.info("[TransactionService]  withdrawAmount   SUCCESS");
         return processTransaction(account, amount, TransactionEntity.type.WITHDRAWAL, "Withdrawal Successful", "Withdrawal Failed");
     }
 
@@ -156,6 +175,7 @@ public class TransactionService {
      * Save transaction history
      */
     public void saveTransaction(String fromAccount, String toAccount, double amount, String description, TransactionEntity.type type, TransactionEntity.status status) {
+        log.info("[TransactionService]  saveTransaction entered  SUCCESS");
         TransactionEntity transactionEntity = new TransactionEntity();
         log.info("[SAVE RTRANSACTION] TRANSACTION FROM Account");
         transactionEntity.setFromAccount((fromAccount!=null)?accountRepository.findById(fromAccount).get():null);
@@ -167,9 +187,11 @@ public class TransactionService {
         transactionEntity.setDescription(description);
         transactionEntity.setCreatedAt(LocalDateTime.now().toString());
         try {
+            log.info("[TransactionService]  saveTransaction   SUCCESS");
             transactionRepository.save(transactionEntity);
         }
         catch (Exception e) {
+            log.info("[TransactionService]  saveTransaction :Save Transaction Failed  FAILURE");
             throw new TransactionFailedException("Save Transaction Failed");
         }
     }
@@ -177,13 +199,14 @@ public class TransactionService {
     //Get all transactions for an account
 
     public List<TransactionDTO> getTransactionsByAccountNumber(String accountNumber) {
+        log.info("[TransactionService]  getTransactionsByAccountNumber entered   SUCCESS");
         log.info("FROM TRANSACTION HISTORY");
         List<TransactionEntity> resultFromTransactions =
                 transactionRepository.findAllByFromAccountAccountNumber(accountNumber);
         log.info("TO TRANSACTION HISTORY");
         List<TransactionEntity> resultToTransactions =
                 transactionRepository.findAllByToAccountAccountNumber(accountNumber);
-
+        log.info("[TransactionService]  getTransactionsByAccountNumber    SUCCESS");
         return Stream.concat(resultFromTransactions.stream(), resultToTransactions.stream())
                 .map(entity -> new TransactionDTO(entity.getFromAccount()!=null?entity.getFromAccount().getAccountNumber():null,entity.getToAccount()!=null?entity.getToAccount().getAccountNumber():null,entity.getDescription(),entity.getAmount(),entity.getTransactionStatus(),entity.getTransactionType(),entity.getCreatedAt()))
                 .sorted(Comparator.comparing(TransactionDTO::getCreatedAt).reversed())
@@ -191,6 +214,7 @@ public class TransactionService {
     }
 
     public List<TransactionDTO> getTransactionHistoryByUserId(String userId){
+        log.info("[TransactionService]  getTransactionHistoryByUserId entered   SUCCESS");
        log.info("[Transaction Service] Get Transaction History By userId");
         List<AccountDto> accountDtoList=accountService.getAllAccountsByUserId(userId);
         log.info("[Transaction Service] Retrieval of AccountDTOs from UserId is Successful");
@@ -199,7 +223,7 @@ public class TransactionService {
                 .flatMap(List::stream)
                 .sorted(Comparator.comparing(TransactionDTO::getCreatedAt).reversed())
                 .collect(Collectors.toList());
-
+        log.info("[TransactionService] getTransactionHistoryByUserId  SUCCESS");
         return transactionHistory;
 
     }

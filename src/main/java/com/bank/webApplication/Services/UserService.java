@@ -8,6 +8,7 @@ import com.bank.webApplication.Entity.UserEntity;
 import com.bank.webApplication.Repository.UserRepository;
 import com.bank.webApplication.Util.DtoEntityMapper;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,7 +17,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.UUID;
-
+@Slf4j
 @Service
 @AllArgsConstructor
 public class UserService {
@@ -38,6 +39,7 @@ public class UserService {
     }
 
     public UserDto CreateUser( UserDto userDto,String userId){
+        log.info("[UserService] CreateUser entered SUCCESS");
 
         UserEntity userEntity= mapper.convertToEntity(userDto, UserEntity.class);
 
@@ -51,7 +53,7 @@ public class UserService {
 
         UserEntity savedUSer=userRepository.save(userEntity);
         logService.logintoDB(userUUID, LogEntity.Action.PROFILE_MANAGEMENT,"New User Created",userEntity.getName(), LogEntity.Status.SUCCESS);
-
+        log.info("[UserService] CreateUser  SUCCESS");
         return (mapper.convertToDto(savedUSer, UserDto.class));
     }
 
@@ -61,8 +63,12 @@ public class UserService {
     // Update  User Details
 
     public UserDto UpdateUser(String id , UserDto userDto){
+        log.info("[UserService] UpdateUser   entered SUCCESS");
         UserEntity existing= userRepository.findById(UUID.fromString(id))
-                .orElseThrow (() -> new RuntimeException("User Not Found With Id :  " + id));
+                .orElseThrow (() ->{
+                    log.info("[UserService] UpdateUser: User Not Found FAILURE");
+                    return  new RuntimeException("User Not Found With Id :  " + id);
+                });
 
         existing.setName(userDto.getName());
         existing.setEmail(userDto.getEmail());
@@ -75,7 +81,7 @@ public class UserService {
 
         //LOGGING
         logService.logintoDB(UUID.fromString(id), LogEntity.Action.PROFILE_MANAGEMENT," User Updated",updated.getName(), LogEntity.Status.SUCCESS);
-
+        log.info("[UserService] UpdateUser   SUCCESS");
         return(mapper.convertToDto(updated, UserDto.class));
 
     }
@@ -86,12 +92,16 @@ public class UserService {
     //Display User Details
 
    public UserDto getUserById(String id){
+       log.info("[UserService] getUserById  entered SUCCESS");
         UserEntity getUser=userRepository.findById(UUID.fromString(id))
-                .orElseThrow( ()-> new RuntimeException("User Not Found With Id : " +id));
+                .orElseThrow( ()->{
+                    log.info("[UserService] getUserById: User Not Found  FAILURE");
+                    return new RuntimeException("User Not Found With Id : " +id);
+                });
 
        //LOGGING
        logService.logintoDB(UUID.fromString(id), LogEntity.Action.PROFILE_MANAGEMENT,"User Details Displayed",getUser.getName(), LogEntity.Status.SUCCESS);
-
+       log.info("[UserService] getUserById  SUCCESS");
         return(mapper.convertToDto(getUser, UserDto.class));
    }
 
