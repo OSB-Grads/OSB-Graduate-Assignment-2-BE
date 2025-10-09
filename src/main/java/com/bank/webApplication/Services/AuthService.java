@@ -58,7 +58,7 @@ public class AuthService {
         RefreshTokenEntity refreshToken = jwtUtil.generateRefreshToken(user);
         refreshTokenRepository.save(refreshToken);
         //Invoke LogService
-        logService.logintoDB(user.getId(), LogEntity.Action.AUTHENTICATION, "User Logged in Successfully", user.getUsername(), LogEntity.Status.SUCCESS);
+//        logService.logintoDB(user.getId(), LogEntity.Action.AUTHENTICATION, "User Logged in Successfully", user.getUsername(), LogEntity.Status.SUCCESS);
         log.info("[AuthService]  Login SUCCESS");
         return new JwtResponseDto(token, refreshToken.getRefreshToken());
     }
@@ -90,7 +90,7 @@ public class AuthService {
         refreshTokenRepository.save(refreshToken);
         log.info("[AuthService]  RefreshToken Saved To DataBase SUCCESS");
         //Invoke LogService
-        logService.logintoDB(user.getId(), LogEntity.Action.AUTHENTICATION, "User Signup Successfull", user.getUsername(), LogEntity.Status.SUCCESS);
+//        logService.logintoDB(user.getId(), LogEntity.Action.AUTHENTICATION, "User Signup Successfull", user.getUsername(), LogEntity.Status.SUCCESS);
         log.info("[AuthService]  SignUp SUCCESS");
         return new JwtResponseDto(token, refreshToken.getRefreshToken());
     }
@@ -115,7 +115,7 @@ public class AuthService {
         AuthEntity data = RefreshToken.getAuthEntity();
         //generates new accesstoken
         String newToken = jwtUtil.generateToken(String.valueOf(data.getId()), data.getRole().name());
-        logService.logintoDB(data.getId(), LogEntity.Action.AUTHENTICATION, "Refresh token Generated Successfully", data.getUsername(), LogEntity.Status.SUCCESS);
+//        logService.logintoDB(data.getId(), LogEntity.Action.AUTHENTICATION, "Refresh token Generated Successfully", data.getUsername(), LogEntity.Status.SUCCESS);
         log.info("[AuthService] RefreshAccessToken  SUCCESS");
         //sends back the new accesstoken along with refresh token
         return new JwtResponseDto(newToken, refreshToken);
