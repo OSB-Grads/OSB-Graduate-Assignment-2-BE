@@ -1,0 +1,446 @@
+openapi: 3.0.1
+info:
+  title: Bank API
+  description: API documentation with JWT auth
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: Generated server url
+security:
+  - BearerAuth: []
+paths:
+  /api/v1/users/me:
+    get:
+      tags:
+        - user-controller
+      operationId: getUserById
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserDto"
+    put:
+      tags:
+        - user-controller
+      operationId: createUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserDto"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserDto"
+    patch:
+      tags:
+        - user-controller
+      operationId: updateUserDetails
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserDto"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserDto"
+  /api/v1/transactions/withdraw:
+    post:
+      tags:
+        - transaction-controller
+      operationId: withdraw
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DepositWithdrawRequestDTO"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/v1/transactions/transfer:
+    post:
+      tags:
+        - transaction-controller
+      operationId: transfer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransactionRequestDTO"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/v1/transactions/deposit:
+    post:
+      tags:
+        - transaction-controller
+      operationId: deposit
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DepositWithdrawRequestDTO"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/v1/auth/register:
+    post:
+      tags:
+        - auth-controller
+      operationId: register
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthDto"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/JwtResponseDto"
+  /api/v1/auth/login:
+    post:
+      tags:
+        - auth-controller
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthDto"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/JwtResponseDto"
+  /api/v1/accounts:
+    get:
+      tags:
+        - account-controller
+      operationId: GetAllAccounts
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AccountDto"
+    post:
+      tags:
+        - account-controller
+      operationId: CreateAccount
+      parameters:
+        - name: productId
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AccountDto"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AccountDto"
+  /api/v1/transactions:
+    get:
+      tags:
+        - transaction-controller
+      operationId: getTransactionHistoryByUserId
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TransactionDTO"
+  /api/v1/transactions/{accountNumber}:
+    get:
+      tags:
+        - transaction-controller
+      operationId: getTransactionHistory
+      parameters:
+        - name: accountNumber
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/v1/product/fetch:
+    get:
+      tags:
+        - product-controller
+      operationId: fetchProductDetails
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/v1/product/fetch/{productId}:
+    get:
+      tags:
+        - product-controller
+      operationId: fetchProductDetailsById
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/v1/logs:
+    get:
+      tags:
+        - log-controller
+      operationId: retrieveLogs
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LogDTO"
+  /api/v1/logs/{userid}:
+    get:
+      tags:
+        - log-controller
+      operationId: retrieveLogsByUserId
+      parameters:
+        - name: userid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LogDTO"
+  /api/v1/logs/logId/{logId}:
+    get:
+      tags:
+        - log-controller
+      operationId: retrieveLogByLogId
+      parameters:
+        - name: logId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/LogDTO"
+  /api/v1/accounts/{accountNumber}:
+    get:
+      tags:
+        - account-controller
+      operationId: GetAccountByAccountNumber
+      parameters:
+        - name: accountNumber
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AccountDto"
+components:
+  schemas:
+    UserDto:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        role:
+          type: string
+          enum:
+            - ADMIN
+            - USER
+        address:
+          type: string
+    DepositWithdrawRequestDTO:
+      type: object
+      properties:
+        accountNumber:
+          type: string
+        amount:
+          type: number
+          format: double
+    TransactionRequestDTO:
+      type: object
+      properties:
+        fromAccountNumber:
+          type: string
+        toAccountNumber:
+          type: string
+        amount:
+          type: number
+          format: double
+    AuthDto:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+    JwtResponseDto:
+      type: object
+      properties:
+        token:
+          type: string
+    AccountDto:
+      type: object
+      properties:
+        accountNumber:
+          type: string
+        accountType:
+          type: string
+          enum:
+            - SAVINGS
+            - FIXED_DEPOSIT
+        balance:
+          type: number
+          format: double
+        accountCreated:
+          type: string
+        accountUpdated:
+          type: string
+    TransactionDTO:
+      type: object
+      properties:
+        fromAccount:
+          type: string
+        toAccount:
+          type: string
+        description:
+          type: string
+        amount:
+          type: number
+          format: double
+        status:
+          type: string
+          enum:
+            - COMPLETED
+            - PENDING
+            - FAILED
+        type:
+          type: string
+          enum:
+            - DEPOSIT
+            - WITHDRAWAL
+            - TRANSFER
+        createdAt:
+          type: string
+    LogDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        action:
+          type: string
+          enum:
+            - PROFILE_MANAGEMENT
+            - AUTHENTICATION
+            - TRANSACTIONS
+            - CREATION_MANAGEMENT
+        details:
+          type: string
+        ipAddress:
+          type: string
+        status:
+          type: string
+          enum:
+            - SUCCESS
+            - FAILURE
+            - ERROR
+        timestamp:
+          type: string
+  securitySchemes:
+    BearerAuth:
+      type: http
+      name: BearerAuth
+      scheme: Bearer
+      bearerFormat: JWT
+
+
+

@@ -41,6 +41,7 @@ private final JwtFilter jwtFilter;
                                 "/v2/api-docs",
                                 "/v3/api-docs",
                                 "/v3/api-docs/**",
+                                "v3/api-docs.yaml",
                                 "/swagger-resources",
                                 "/swagger-resources/**",
                                 "/configuration/ui",
@@ -48,7 +49,12 @@ private final JwtFilter jwtFilter;
                                 "/swagger-ui/**",
                                 "/webjars/**",
                                 "/swagger-ui.html").permitAll()
-                        .requestMatchers("/api/v1/auth/register","/api/v1/auth/login").permitAll()
+                        .requestMatchers("/api/v1/auth/register",
+                                "/api/v1/auth/login",
+                                "api/v1/forgotPassword/{email}",
+                                "api/v1/forgotPassword/resendOtp/{email}",
+                                "api/v1/forgotPassword/verify-otp",
+                                "api/v1/forgotPassword/resetPassword").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
@@ -64,7 +70,7 @@ private final JwtFilter jwtFilter;
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of("http://localhost:3000")); // React dev server
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
 

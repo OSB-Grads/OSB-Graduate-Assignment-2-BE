@@ -30,7 +30,7 @@ public class AccountRepositoryTests {
             UUID.randomUUID(),
             "Test123",
             "test@email.com",
-            "7894561233","25/9/2025","25/9/2025", Role.USER);
+            "7894561233","25/9/2025","25/9/2025","bengaluru", Role.USER);
     ProductEntity productEntity=new ProductEntity("FD01","Test",5.8,2,2,5,"Test");
     AccountEntity accountEntity=new AccountEntity(testAccountNumber,userEntity,productEntity, AccountEntity.accountType.SAVINGS,10000,"25/09/2025","30/09/2025");
 
