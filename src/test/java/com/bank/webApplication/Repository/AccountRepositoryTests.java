@@ -26,24 +26,24 @@ public class AccountRepositoryTests {
 
 
     String testAccountNumber="75694413356";
-//    UserEntity userEntity=new UserEntity(
-//            UUID.randomUUID(),
-//            "Test123",
-//            "test@email.com",
-//            "7894561233","25/9/2025","25/9/2025", Role.USER);
-//    ProductEntity productEntity=new ProductEntity("FD01","Test",5.8,2,2,5,"Test");
-//    AccountEntity accountEntity=new AccountEntity(testAccountNumber,userEntity,productEntity, AccountEntity.accountType.SAVINGS,10000,"25/09/2025","30/09/2025");
+    UserEntity userEntity=new UserEntity(
+            UUID.randomUUID(),
+            "Test123",
+            "test@email.com",
+            "7894561233","25/9/2025","25/9/2025","bengaluru", Role.USER);
+    ProductEntity productEntity=new ProductEntity("FD01","Test",5.8,2,2,5,"Test");
+    AccountEntity accountEntity=new AccountEntity(testAccountNumber,userEntity,productEntity, AccountEntity.accountType.SAVINGS,10000,"25/09/2025","30/09/2025");
 
 
-//    @Test
-//    void testForFindByAccountNumber(){
-//        when(accountRepository.findByAccountNumber(testAccountNumber)).thenReturn(accountEntity);
-//
-//        AccountEntity result=accountRepository.findByAccountNumber(testAccountNumber);
-//
-//        assertThat(result).isNotNull();
-//        assertThat(result).isEqualTo(accountEntity);
-//    }
+    @Test
+    void testForFindByAccountNumber(){
+        when(accountRepository.findByAccountNumber(testAccountNumber)).thenReturn(accountEntity);
+
+        AccountEntity result=accountRepository.findByAccountNumber(testAccountNumber);
+
+        assertThat(result).isNotNull();
+        assertThat(result).isEqualTo(accountEntity);
+    }
 
     @Test
     void testForAllByUserId(){

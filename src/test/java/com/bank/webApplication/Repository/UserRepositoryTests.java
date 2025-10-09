@@ -29,6 +29,7 @@ public class UserRepositoryTests {
         user.setEmail("zargarzaid271@gmail.com");
         user.setPhone("7889689012");
         user.setRole(Role.USER);
+        user.setAddress("Delhi");
         user.setCreated_At("2025-09-03");
         user.setUpdated_At("2025-09-03");
 
@@ -63,5 +64,31 @@ public class UserRepositoryTests {
         Optional<UserEntity> foundUser = userRepository.findById(randomId);
 
         assertThat(foundUser).isEmpty();
+    }
+
+    private UserEntity createTestUser(UUID id) {
+        UserEntity user = new UserEntity();
+        user.setId(id);
+        user.setName("zaid");
+        user.setEmail("zargarzaid271@gmail.com");
+        user.setPhone("7889689012");
+        user.setRole(Role.USER);
+        user.setCreated_At("2025-09-03");
+        user.setUpdated_At("2025-09-03");
+        user.setAddress("Delhi");
+        return user;
+    }
+
+    @Test
+    void testFindByEmail() {
+        UUID id = UUID.randomUUID();
+        String email = "zargarzaid271@gmail.com";
+        UserEntity user = createTestUser(id);
+
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+
+        Optional<UserEntity> foundUser = userRepository.findByEmail(email);
+        assertThat(foundUser).isPresent();
+        assertThat(foundUser.get().getEmail()).isEqualTo(email);
     }
 }
