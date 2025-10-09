@@ -65,6 +65,8 @@ public class RefreshTokenRepositoryTests {
     }
     @Test
     void testdeleteByRefreshToken(){
-
+        refreshTokenRepository.deleteByRefreshToken(refreshTokenEntity.getRefreshToken());
+        Optional<RefreshTokenEntity> token=refreshTokenRepository.findByRefreshToken(refreshTokenEntity.getRefreshToken());
+        assertThat(token).isNotPresent();
     }
 }
