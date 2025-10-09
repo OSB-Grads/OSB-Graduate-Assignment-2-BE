@@ -175,4 +175,13 @@ public class AuthServiceTests {
         when(refreshTokenRepository.findByRefreshToken(refreshTokenEntity.getRefreshToken())).thenReturn(Optional.of(refreshTokenEntity));
         assertThrows(RuntimeException.class, () -> authService.RefreshAccessToken(refreshTokenEntity.getRefreshToken()));
     }
+    @Test
+    void updatePassword(){
+        when(authRepository.findById(id)).thenReturn(Optional.of(authEntity));
+        MockedStatic<PasswordHash> mockedStaticPassword = Mockito.mockStatic(PasswordHash.class);
+        mockedStaticPassword.when(() -> PasswordHash.HashPass("Updatepassword"))
+                .thenReturn("updatedHashedPassword");
+         authService.updatePassword("Updatepassword",id);
+         assertEquals("updatedHashedPassword",authEntity.getPassword());
+    }
 }
