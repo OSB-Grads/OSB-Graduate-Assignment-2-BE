@@ -25,14 +25,14 @@ public class AuthControllerTests {
         authDto.setUsername("DummyUserName");
         authDto.setPassword("DummyPassword");
         //mock JWT Token
-        JwtResponseDto mockResponse=new JwtResponseDto("DummyToken");
+        JwtResponseDto mockResponse=new JwtResponseDto("DummyToken","DummyRefreshToken");
         when(authService.Signup(any(AuthDto.class))).thenReturn(mockResponse);
         //mock call to the controller("/register")
         ResponseEntity<JwtResponseDto> response=authController.register(authDto);
         //assert
         assertThat(response.getStatusCodeValue()).isEqualTo(200);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getToken()).isEqualTo("DummyToken");
+        assertThat(response.getBody().getToken()).isEqualTo("DummyToken","DummyRefreshToken");
     }
     @Test
     void testLogin(){
@@ -40,13 +40,13 @@ public class AuthControllerTests {
         authDto.setUsername("DummyUserName");
         authDto.setPassword("DummyPassword");
         //mock JWT Token
-        JwtResponseDto mockResponse=new JwtResponseDto("DummyToken");
+        JwtResponseDto mockResponse=new JwtResponseDto("DummyToken","DummyRefreshToken");
         when(authService.Login(authDto)).thenReturn(mockResponse);
         //mock call to the controller("/login")
         ResponseEntity<JwtResponseDto> response=authController.login(authDto);
         //assert
         assertThat(response.getStatusCodeValue()).isEqualTo(200);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getToken()).isEqualTo("DummyToken");
+        assertThat(response.getBody().getToken()).isEqualTo("DummyToken","DummyRefreshToken");
     }
 }

@@ -46,11 +46,15 @@ public class AccountService {
     @Autowired
     private LogService logService;
 
-    public AccountDto CreateAccount(AccountDto accountDto,String userId,String productId ) throws SQLException {
-        UUID id=UUID.fromString(userId);
-        UserEntity user=userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("user not found! create the profile before create the account"));
-        ProductEntity product=productRepository.findByProductId(productId);
+    public AccountDto CreateAccount(AccountDto accountDto, String userId, String productId) throws SQLException {
+        log.info("[AccountService]  CreateAccount entered SUCCESS");
+        UUID id = UUID.fromString(userId);
+        UserEntity user = userRepository.findById(id)
+                .orElseThrow(() -> {
+                    log.error("[AccountService] CreateAccount:user not found! create the profile before create the account FAILURE ");
+                    return new UserNotFoundException("user not found! create the profile before create the account");
+                });
+        ProductEntity product = productRepository.findByProductId(productId);
 
         boolean created = false;
         int attempts = 0;
@@ -70,17 +74,17 @@ public class AccountService {
             String accountNumber = generateUniqueAccountNumberUUID();
             accountDto.setAccountNumber(accountNumber);
 
-          AccountEntity accountEntity = dtoEntityMapper.convertToEntity(accountDto,AccountEntity.class);
-          accountEntity.setUser(user);
-          accountEntity.setProduct(product);
+            AccountEntity accountEntity = dtoEntityMapper.convertToEntity(accountDto, AccountEntity.class);
+            accountEntity.setUser(user);
+            accountEntity.setProduct(product);
 
             try {
 
 
                 accountRepository.save(accountEntity);
-                log.info("[Account Handler] Account Creation Operation Successful :) ");
+                log.info("[Account Service] CreateAccount SUCCESS ");
                 logService.logintoDB(id, LogEntity.Action.TRANSACTIONS, "Account Created  Successful", accountDto.getAccountCreated(), LogEntity.Status.SUCCESS);
-                log.info("[Account Handler]  Saved Successfully in Logs");
+
 
                 created = true;
                 System.out.println("Account created successfully! Account Number: " + accountNumber);
@@ -88,7 +92,9 @@ public class AccountService {
             } catch (RuntimeException e) {
                 if (e.getMessage().contains("UNIQUE") || e.getMessage().contains("constraint")) {
                     System.out.println("Duplicate account number detected, regenerating... (Attempt " + attempts + ")");
+                    log.error("[Account Service] CreateAccount:Duplicate account number detected  FAILURE ");
                 } else {
+                    log.error("[Account Service] CreateAccount  FAILURE ");
                     throw e;
                 }
             }
@@ -97,48 +103,53 @@ public class AccountService {
         return accountDto;
 
     }
+
     private String generateUniqueAccountNumberUUID() {
+        log.info("[Account Service] generateUniqueAccountNumberUUID  SUCCESS ");
         return String.valueOf(Math.abs(UUID.randomUUID().getMostSignificantBits())).substring(0, 10);
     }
 
-    public AccountDto getOneAccount(String accountNumber){
-        AccountEntity accountEntity=accountRepository.findByAccountNumber(accountNumber);
-        double accountInterest =accountEntity.getProduct().getInterestRate();
-        if(accountEntity==null){
+    public AccountDto getOneAccount(String accountNumber) {
+        log.info("[Account Service] getOneAccount Entered SUCCESS ");
+        AccountEntity accountEntity = accountRepository.findByAccountNumber(accountNumber);
+        double accountInterest = accountEntity.getProduct().getInterestRate();
+        if (accountEntity == null) {
+            log.error("[Account Service] getOneAccount:Account not exit FAILURE ");
             throw new AccountNotFoundException("Account not exit");
         }
-        UUID id= accountEntity.getUser().getId();
-        String curentUser=SecurityContextHolder.getContext().getAuthentication().getName();
+        UUID id = accountEntity.getUser().getId();
+        String curentUser = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        if(id==UUID.fromString(curentUser)){
+        if (id == UUID.fromString(curentUser)) {
+            log.error("[Account Service] getOneAccount: Not authorized to access this account FAILURE ");
             throw new AccessDeniedException("You are not authorized to access this account");
         }
 
-        AccountDto dto=dtoEntityMapper.convertToDto(accountEntity,AccountDto.class);
-        log.info("[Account Handler] Account Information Displayed Successfully :) ");
-        logService.logintoDB(id, LogEntity.Action.TRANSACTIONS, "Account Created  Successful",accountNumber, LogEntity.Status.SUCCESS);
-        log.info("[Account Handler]  Saved Successfully in Logs");
+        AccountDto dto = dtoEntityMapper.convertToDto(accountEntity, AccountDto.class);
+        log.info("[Account Service] getOneAccount  SUCCESS ");
+        logService.logintoDB(id, LogEntity.Action.TRANSACTIONS, "Account Created  Successful", accountNumber, LogEntity.Status.SUCCESS);
+
 
         return dto;
 
     }
 
-    public List<AccountDto> getAllAccountsByUserId(String  userId){
-        UUID id=UUID.fromString(userId);
+    public List<AccountDto> getAllAccountsByUserId(String userId) {
+        log.info("[Account Service] getAllAccountsByUserId entered  SUCCESS ");
+        UUID id = UUID.fromString(userId);
 
-        List<AccountEntity>accounts=accountRepository.findAllByUserId(id);
+        List<AccountEntity> accounts = accountRepository.findAllByUserId(id);
 
 
-        List<AccountDto>accountDtos=accounts.stream()
-                .map(account->dtoEntityMapper.convertToDto(account,AccountDto.class))
+        List<AccountDto> accountDtos = accounts.stream()
+                .map(account -> dtoEntityMapper.convertToDto(account, AccountDto.class))
                 .collect(Collectors.toList());
 
-        log.info(" Accounts Information Displayed Successfully ");
+        log.info("[Account Service] getAllAccountsByUserId  SUCCESS ");
         logService.logintoDB(id, LogEntity.Action.TRANSACTIONS, "Account retrieval  Successful", "ALl Counts", LogEntity.Status.SUCCESS);
-        log.info("[Account Handler]  Saved Successfully in Logs");
 
 
-        return  accountDtos;
+        return accountDtos;
 
     }
 

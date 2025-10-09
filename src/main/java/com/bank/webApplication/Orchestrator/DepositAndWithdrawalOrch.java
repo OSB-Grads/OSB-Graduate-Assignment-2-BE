@@ -25,23 +25,25 @@ public class DepositAndWithdrawalOrch {
     private LogService logService;
 
     @Autowired
-    public DepositAndWithdrawalOrch(TransactionService transactionService, LogService logService){
+    public DepositAndWithdrawalOrch(TransactionService transactionService, LogService logService) {
         this.transactionService = transactionService;
         this.logService = logService;
     }
 
     @Transactional
     public DepositWithdrawDTO depositHandler(UUID userId, String accountNumber, double amount) {
-
+        log.info("[DepositAndWithdrawalOrch] depositHandler entered SUCCESS");
         if (userId == null) {
+            log.error("[DepositAndWithdrawalOrch] depositHandler: User ID cannot be null  FAILURE");
             throw new IllegalArgumentException("User ID cannot be null");
         }
         if (accountNumber == null || accountNumber.isBlank()) {
+            log.error("[DepositAndWithdrawalOrch] depositHandler: Account number cannot be null or empty  FAILURE");
             throw new IllegalArgumentException("Account number cannot be null or empty");
         }
 
-        DepositWithdrawDTO depositOperation = transactionService.depositAmount(accountNumber,amount);
-        log.info("Deposit Successful"+" "+depositOperation.getStatus()+" ");
+        DepositWithdrawDTO depositOperation = transactionService.depositAmount(accountNumber, amount);
+        log.info("[DepositAndWithdrawalOrch]  Deposit Successful" + " " + depositOperation.getStatus() + " ");
         if (depositOperation != null && depositOperation.getStatus() == TransactionEntity.status.COMPLETED) {
             transactionService.saveTransaction(
                     null,
@@ -51,26 +53,27 @@ public class DepositAndWithdrawalOrch {
                     TransactionEntity.type.DEPOSIT,
                     TransactionEntity.status.COMPLETED
             );
-            log.info("[Deposit Handler] Deposit Operation Successful :) ");
+            log.info("[DepositAndWithdrawalOrch] Deposit Operation Successful :) ");
             logService.logintoDB(userId, LogEntity.Action.TRANSACTIONS, "Deposit Successful", String.valueOf(userId), LogEntity.Status.SUCCESS);
-            log.info("[Deposit Handler] Transaction Saved Successfully in Logs");
-        }
-        else {
-            log.error("[Deposit Handler] Deposit Operation Failed. Please Try Again");
+            log.info("[DepositAndWithdrawalOrch] Transaction Saved Successfully in Logs");
+        } else {
+            log.error("[DepositAndWithdrawalOrch] Deposit Operation Failed. Please Try Again");
             logService.logintoDB(userId, LogEntity.Action.TRANSACTIONS, "Deposit Failed", String.valueOf(userId), LogEntity.Status.FAILURE);
         }
         return depositOperation;
     }
 
     @Transactional
-    public DepositWithdrawDTO WithdrawalHandler(UUID userId, String accountNumber, double amount){
-
-            if (userId == null) {
-                throw new IllegalArgumentException("User ID cannot be null");
-            }
-            if (accountNumber == null || accountNumber.isBlank()) {
-                throw new IllegalArgumentException("Account number cannot be null or empty");
-            }
+    public DepositWithdrawDTO WithdrawalHandler(UUID userId, String accountNumber, double amount) {
+        log.info("[DepositAndWithdrawalOrch]  WithdrawalHandler entered SUCCESS");
+        if (userId == null) {
+            log.error("[DepositAndWithdrawalOrch] WithdrawalHandler: User ID cannot be null  FAILURE");
+            throw new IllegalArgumentException("User ID cannot be null");
+        }
+        if (accountNumber == null || accountNumber.isBlank()) {
+            log.error("[DepositAndWithdrawalOrch] WithdrawalHandler: Account number cannot be null or empty  FAILURE");
+            throw new IllegalArgumentException("Account number cannot be null or empty");
+        }
 
         DepositWithdrawDTO withdrawOperation = transactionService.withdrawAmount(accountNumber, amount);
         if (withdrawOperation != null && withdrawOperation.getStatus() == TransactionEntity.status.COMPLETED) {
@@ -82,93 +85,16 @@ public class DepositAndWithdrawalOrch {
                     TransactionEntity.type.WITHDRAWAL,
                     TransactionEntity.status.COMPLETED
             );
-            log.info("[Withdrawal Handler] Withdraw Operation Successful :)");
+            log.info("[DepositAndWithdrawalOrch] Withdraw Operation Successful :)");
             logService.logintoDB(userId, LogEntity.Action.TRANSACTIONS, "Withdrawal Successful", String.valueOf(userId), LogEntity.Status.SUCCESS);
-            log.info("[Withdrawal Handler] Transaction Saved Successfully in Logs");
-        }
-        else {
-            log.error("[Withdrawal Handler] Withdraw Operation Failed. Please Try Again");
+            log.info("[DepositAndWithdrawalOrch] Transaction Saved Successfully in Logs");
+        } else {
+            log.error("[DepositAndWithdrawalOrch] Withdraw Operation Failed. Please Try Again");
             logService.logintoDB(userId, LogEntity.Action.TRANSACTIONS, "Withdrawal Failed", String.valueOf(userId), LogEntity.Status.FAILURE);
         }
         return withdrawOperation;
-        }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+}
 
 
 
