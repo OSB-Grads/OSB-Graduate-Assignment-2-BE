@@ -31,7 +31,7 @@ public class GlobalExceptionHandler{
     }
 
     //Error-404
-    @ExceptionHandler({UserNotFoundException.class, AccountNotFoundException.class,LogNotFoundException.class})
+    @ExceptionHandler({UserNotFoundException.class, AccountNotFoundException.class,LogNotFoundException.class,ProductNotFoundException.class})
     public ResponseEntity<Object> handleNotFound(RuntimeException ex) {
         return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
     }
