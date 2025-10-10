@@ -25,15 +25,15 @@ public class TransactOrchestrator {
     private LogService logService;
 
     @Autowired
-    public TransactOrchestrator(TransactionService transactionService,LogService logService){
-        this.transactionService=transactionService;
-        this.logService=logService;
+    public TransactOrchestrator(TransactionService transactionService, LogService logService) {
+        this.transactionService = transactionService;
+        this.logService = logService;
     }
 
 
     @Transactional
-    public TransactionDTO transactionBetweenAccounts(UUID user_id, String fromAccountNumber, String ToAccountNumber, double amount){
-
+    public TransactionDTO transactionBetweenAccounts(UUID user_id, String fromAccountNumber, String ToAccountNumber, double amount) {
+        log.info("[TransactOrchestrator] transactionBetweenAccounts entered SUCCESS");
         if (fromAccountNumber == null || ToAccountNumber == null || fromAccountNumber.equals(ToAccountNumber)) {
             log.error("[TransactOrchestrator ] Cannot transfer to the same account or account is null");
             logService.logintoDB(user_id, LogEntity.Action.TRANSACTIONS,
@@ -43,27 +43,26 @@ public class TransactOrchestrator {
                     TransactionEntity.status.FAILED, TransactionEntity.type.TRANSFER, LocalDateTime.now().toString());
         }
 
-        DepositWithdrawDTO withdrawOperation=transactionService.withdrawAmount(fromAccountNumber,amount);
-        if(withdrawOperation != null){
+        DepositWithdrawDTO withdrawOperation = transactionService.withdrawAmount(fromAccountNumber, amount);
+        if (withdrawOperation != null) {
             log.info("[TransactOrchestrator ] Withdraw Operation is Successful ");
-            DepositWithdrawDTO depositOperation=transactionService.depositAmount(ToAccountNumber,amount);
-            if(depositOperation !=null){
+            DepositWithdrawDTO depositOperation = transactionService.depositAmount(ToAccountNumber, amount);
+            if (depositOperation != null) {
                 log.info("[TransactOrchestrator ] Deposit Operation is Successful ");
-                transactionService.saveTransaction(fromAccountNumber,ToAccountNumber,amount,"Transaction Saved Successfully", TransactionEntity.type.TRANSFER, TransactionEntity.status.COMPLETED);
+                transactionService.saveTransaction(fromAccountNumber, ToAccountNumber, amount, "Transaction Saved Successfully", TransactionEntity.type.TRANSFER, TransactionEntity.status.COMPLETED);
                 log.info("[TransactOrchestrator ] Transaction Saved Successfully");
-                logService.logintoDB(user_id, LogEntity.Action.TRANSACTIONS,"Transaction is Successful", String.valueOf(user_id), LogEntity.Status.SUCCESS);
-                return new TransactionDTO(fromAccountNumber,ToAccountNumber,"Transaction Successful",amount, TransactionEntity.status.COMPLETED, TransactionEntity.type.TRANSFER,LocalDateTime.now().toString());
-            }
-            else{
+                logService.logintoDB(user_id, LogEntity.Action.TRANSACTIONS, "Transaction is Successful", String.valueOf(user_id), LogEntity.Status.SUCCESS);
+                return new TransactionDTO(fromAccountNumber, ToAccountNumber, "Transaction Successful", amount, TransactionEntity.status.COMPLETED, TransactionEntity.type.TRANSFER, LocalDateTime.now().toString());
+            } else {
                 log.error("[TransactOrchestrator ] Deposit Operation Failed");
-                logService.logintoDB(user_id, LogEntity.Action.TRANSACTIONS,"Transaction Failed", String.valueOf(user_id), LogEntity.Status.FAILURE);
-                return new TransactionDTO(fromAccountNumber,ToAccountNumber,"Transaction Failed at Deposit Level.",amount, TransactionEntity.status.FAILED, TransactionEntity.type.TRANSFER,LocalDateTime.now().toString());
+                logService.logintoDB(user_id, LogEntity.Action.TRANSACTIONS, "Transaction Failed", String.valueOf(user_id), LogEntity.Status.FAILURE);
+                return new TransactionDTO(fromAccountNumber, ToAccountNumber, "Transaction Failed at Deposit Level.", amount, TransactionEntity.status.FAILED, TransactionEntity.type.TRANSFER, LocalDateTime.now().toString());
 
             }
         }
-        logService.logintoDB(user_id, LogEntity.Action.TRANSACTIONS,"Transaction Failed", String.valueOf(user_id), LogEntity.Status.FAILURE);
+        logService.logintoDB(user_id, LogEntity.Action.TRANSACTIONS, "Transaction Failed", String.valueOf(user_id), LogEntity.Status.FAILURE);
         log.error("[TransactOrchestrator ] Withdraw Operation Failed");
-        return new TransactionDTO(fromAccountNumber,ToAccountNumber,"Transaction Failed at Withdrawal Level",amount, TransactionEntity.status.FAILED, TransactionEntity.type.TRANSFER,LocalDateTime.now().toString());
+        return new TransactionDTO(fromAccountNumber, ToAccountNumber, "Transaction Failed at Withdrawal Level", amount, TransactionEntity.status.FAILED, TransactionEntity.type.TRANSFER, LocalDateTime.now().toString());
 
     }
 }

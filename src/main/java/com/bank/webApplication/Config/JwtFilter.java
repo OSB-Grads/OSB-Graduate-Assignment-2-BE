@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+
 @AllArgsConstructor
 @Component
 public class JwtFilter extends OncePerRequestFilter {
@@ -22,30 +23,31 @@ public class JwtFilter extends OncePerRequestFilter {
     private BankUserDetailService bankUserDetailService;
     @Autowired
     private final JWTUtil jwtUtil;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
 
-        String authHeader=request.getHeader("Authorization");
-        String UserId=null;
-        String token=null;
-        if(authHeader!=null && authHeader.startsWith("Bearer ")) {
-             token = authHeader.substring(7);
-             UserId= jwtUtil.extractUsername(token);
+        String authHeader = request.getHeader("Authorization");
+        String UserId = null;
+        String token = null;
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            token = authHeader.substring(7);
+            UserId = jwtUtil.extractUsername(token);
         }
-        if(UserId!=null && SecurityContextHolder.getContext().getAuthentication()==null){
-            UserDetails userDetails= bankUserDetailService.loadUserByUsername(UserId);
-            if(jwtUtil.validateToken(token,userDetails)){
+        if (UserId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            UserDetails userDetails = bankUserDetailService.loadUserByUsername(UserId);
+            if (jwtUtil.validateToken(token, userDetails)) {
 
-                UsernamePasswordAuthenticationToken authtoken=
-                        new UsernamePasswordAuthenticationToken(userDetails,null,userDetails.getAuthorities());
+                UsernamePasswordAuthenticationToken authtoken =
+                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 authtoken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                 SecurityContextHolder.getContext().setAuthentication(authtoken);
             }
         }
 
-        filterChain.doFilter(request,response);
+        filterChain.doFilter(request, response);
 
     }
 }
