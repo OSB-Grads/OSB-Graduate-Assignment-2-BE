@@ -1,6 +1,7 @@
 package com.bank.webApplication.Services;
 
 
+import com.bank.webApplication.CustomException.ProductNotFoundException;
 import com.bank.webApplication.Dto.ProductDto;
 import com.bank.webApplication.Entity.ProductEntity;
 import com.bank.webApplication.Repository.ProductRepository;
@@ -21,7 +22,7 @@ public class ProductService {
 
     public ProductDto getProduct(String  productId){
         ProductEntity product=productRepository.findById(productId)
-                .orElseThrow(()->new NullPointerException("not found"));
+                .orElseThrow(()->new ProductNotFoundException(" Product Not Found, Invalid Id"));
         ProductDto productDto=dtoEntityMapper.convertToDto(product,ProductDto.class);
         return productDto;
     }
