@@ -40,6 +40,7 @@ public class ForgotPasswordService {
 
 
     public UUID verifyEmail(String email) {
+        log.info("[Verify Email] entered");
         UserEntity user = userRepository.findByEmail(email)
                 .orElseThrow(() -> {
                     log.info("[Verify Email] User doesn't exist in Database");
@@ -49,7 +50,7 @@ public class ForgotPasswordService {
         log.info("[Verify Email] User found in Database");
 
         UUID otpId = otpService.sendOTP(email, user);
-        logService.logintoDB(user.getId(), LogEntity.Action.PROFILE_MANAGEMENT, "OTP Sent Successfully", user.getName(), LogEntity.Status.SUCCESS);
+//        logService.logintoDB(user.getId(), LogEntity.Action.PROFILE_MANAGEMENT, "OTP Sent Successfully", user.getName(), LogEntity.Status.SUCCESS);
         return otpId;
     }
 
@@ -63,7 +64,7 @@ public class ForgotPasswordService {
 
         authService.updatePassword(password, userId);
         log.info("[RESET PASSWORD] Password Reset SUCCESS");
-        logService.logintoDB(userId, LogEntity.Action.PROFILE_MANAGEMENT, "Password Reset SUCCESS", user.getEmail(), LogEntity.Status.SUCCESS);
+//        logService.logintoDB(userId, LogEntity.Action.PROFILE_MANAGEMENT, "Password Reset SUCCESS", user.getEmail(), LogEntity.Status.SUCCESS);
 
         return true;
     }

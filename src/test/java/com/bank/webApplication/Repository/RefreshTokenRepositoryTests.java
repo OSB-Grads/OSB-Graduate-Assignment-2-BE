@@ -46,27 +46,30 @@ public class RefreshTokenRepositoryTests {
     @Test
     void testsaveandfindByRefreshToken() {
         when(refreshTokenRepository.save(refreshTokenEntity)).thenReturn(refreshTokenEntity);
-        //mock behaviour for findByUsername
+        //mock behaviour
         when(refreshTokenRepository.findByRefreshToken(refreshTokenEntity.getRefreshToken())).thenReturn(Optional.of(refreshTokenEntity));
-        RefreshTokenEntity token=refreshTokenRepository.save(refreshTokenEntity);
-        Optional<RefreshTokenEntity> foundtoken=refreshTokenRepository.findByRefreshToken(refreshTokenEntity.getRefreshToken());
+        RefreshTokenEntity token = refreshTokenRepository.save(refreshTokenEntity);
+        Optional<RefreshTokenEntity> foundtoken = refreshTokenRepository.findByRefreshToken(refreshTokenEntity.getRefreshToken());
         //assert
         assertThat(token).isNotNull();
         assertThat(foundtoken).isPresent();
         assertThat(foundtoken.get().getRefreshToken()).isEqualTo("RefreshToken");
     }
+
     @Test
-    void testfindByRefreshToken_NotFound(){
+    void testfindByRefreshToken_NotFound() {
         //Mock Behaviour
         when(refreshTokenRepository.findByRefreshToken(refreshTokenEntity.getRefreshToken())).thenReturn(Optional.empty());
-        Optional<RefreshTokenEntity> foundtoken=refreshTokenRepository.findByRefreshToken(refreshTokenEntity.getRefreshToken());
+        Optional<RefreshTokenEntity> foundtoken = refreshTokenRepository.findByRefreshToken(refreshTokenEntity.getRefreshToken());
         //assert
         assertThat(foundtoken).isEmpty();
     }
+
     @Test
-    void testdeleteByRefreshToken(){
+    void testdeleteByRefreshToken() {
         refreshTokenRepository.deleteByRefreshToken(refreshTokenEntity.getRefreshToken());
-        Optional<RefreshTokenEntity> token=refreshTokenRepository.findByRefreshToken(refreshTokenEntity.getRefreshToken());
+        Optional<RefreshTokenEntity> token = refreshTokenRepository.findByRefreshToken(refreshTokenEntity.getRefreshToken());
+        //assert
         assertThat(token).isNotPresent();
     }
 }
