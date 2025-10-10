@@ -11,6 +11,7 @@ import com.bank.webApplication.Repository.AuthRepository;
 import com.bank.webApplication.Repository.UserRepository;
 import com.bank.webApplication.Services.AccountService;
 import com.bank.webApplication.Services.AccountService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.sql.SQLException;
 import java.util.List;
-
+@Slf4j
 @RestController()
 @RequestMapping("/api/v1/accounts")
 public class AccountController {
@@ -34,6 +35,7 @@ public class AccountController {
     @PostMapping()
     public ResponseEntity<AccountDto> CreateAccount(@RequestBody AccountDto accountDto
             ,@RequestParam String productId) throws SQLException {
+        log.info("[AccountController] Pinged CreateAccount");
 
         String userId= SecurityContextHolder.getContext().getAuthentication().getName();
 //        AuthEntity user =authRepository.findByUsername(Username)
@@ -46,6 +48,7 @@ public class AccountController {
 
     @GetMapping()
     public ResponseEntity<List<AccountDto>> GetAllAccounts(){
+        log.info("[AccountController] Pinged GetAllAccounts");
         String userId= SecurityContextHolder.getContext().getAuthentication().getName();
 //        AuthEntity user =authRepository.findByUsername(Username)
 //                .orElseThrow(()->new UserNotFoundException("user not found"));
@@ -57,7 +60,9 @@ public class AccountController {
 
     @GetMapping("/{accountNumber}")
     public ResponseEntity<AccountDto> GetAccountByAccountNumber(@PathVariable String accountNumber){
+        log.info("[AccountController] Pinged GetAccountByAccountNumber");
         if(accountNumber==null){
+            log.error("[AccountController]  GetAccountByAccountNumber: account is not found FAILURE ");
             throw new AccountNotFoundException("account is not found");
         }
         AccountDto accountDto=accountService.getOneAccount(accountNumber);
