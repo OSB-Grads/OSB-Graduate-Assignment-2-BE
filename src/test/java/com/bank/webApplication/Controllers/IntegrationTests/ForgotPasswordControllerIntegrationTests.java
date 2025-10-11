@@ -1,12 +1,7 @@
 package com.bank.webApplication.Controllers.IntegrationTests;
 
-import com.bank.webApplication.Entity.AuthEntity;
-import com.bank.webApplication.Entity.OTPEntity;
-import com.bank.webApplication.Entity.Role;
-import com.bank.webApplication.Entity.UserEntity;
-import com.bank.webApplication.Repository.AuthRepository;
-import com.bank.webApplication.Repository.OTPRepository;
-import com.bank.webApplication.Repository.UserRepository;
+import com.bank.webApplication.Entity.*;
+import com.bank.webApplication.Repository.*;
 import com.bank.webApplication.Util.PasswordHash;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.*;
@@ -55,36 +50,39 @@ public class ForgotPasswordControllerIntegrationTests {
     private OTPEntity testOtp;
     private String jwtToken;
 
-    @BeforeAll
+    @BeforeEach
     void setup() throws Exception {
-        otpRepository.deleteAll();
-        userRepository.deleteAll();
-        authRepository.deleteAll();
 
+        String uniqueUsername = "forgotUser_" + System.currentTimeMillis();
+
+        // Create auth
         testAuth = new AuthEntity();
-        testAuth.setUsername("forgotUser");
+        testAuth.setUsername(uniqueUsername);
         testAuth.setPassword(PasswordHash.HashPass("oldPassword123"));
         testAuth.setRole(Role.USER);
         testAuth = authRepository.saveAndFlush(testAuth);
 
+        // Create user
         testUser = new UserEntity();
         testUser.setId(testAuth.getId());
         testUser.setName("Forgot User");
-        testUser.setEmail("forgotUser@example.com");
+        testUser.setEmail(uniqueUsername + "@example.com");
         testUser = userRepository.saveAndFlush(testUser);
 
+        // Create OTP
         testOtp = new OTPEntity();
         testOtp.setOtp(123456);
         testOtp.setExpirationTime(new Date(System.currentTimeMillis() + 5 * 60 * 1000));
         testOtp.setUser(testUser);
         testOtp = otpRepository.saveAndFlush(testOtp);
 
-        String loginJson = """
+        // Login to get JWT
+        String loginJson = String.format("""
                 {
-                  "username": "forgotUser",
+                  "username": "%s",
                   "password": "oldPassword123"
                 }
-                """;
+                """, uniqueUsername);
 
         MvcResult loginResult = mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -96,10 +94,7 @@ public class ForgotPasswordControllerIntegrationTests {
         jwtToken = JsonPath.parse(responseJson).read("$.token");
     }
 
-    // ----------------------------------------------------------
-    // ✅ Test Cases
-    // ----------------------------------------------------------
-
+    // Test sending OTP for valid email
     @Test
     void testVerifyEmail_Success() throws Exception {
         mockMvc.perform(post("/api/v1/forgotPassword/{email}", testUser.getEmail())
@@ -109,6 +104,7 @@ public class ForgotPasswordControllerIntegrationTests {
                 .andExpect(jsonPath("$.otpId", notNullValue()));
     }
 
+    //Invalid email
     @Test
     void testVerifyEmail_UserNotFound() throws Exception {
         mockMvc.perform(post("/api/v1/forgotPassword/{email}", "unknown@example.com")
@@ -116,6 +112,7 @@ public class ForgotPasswordControllerIntegrationTests {
                 .andExpect(status().is4xxClientError());
     }
 
+    // Resend OTP
     @Test
     void testResendOtp_Success() throws Exception {
         mockMvc.perform(put("/api/v1/forgotPassword/resendOtp/{email}", testUser.getEmail())
@@ -125,6 +122,7 @@ public class ForgotPasswordControllerIntegrationTests {
                 .andExpect(jsonPath("$.otpId", notNullValue()));
     }
 
+    // Resend OTP for unknown email
     @Test
     void testResendOtp_UserNotFound() throws Exception {
         mockMvc.perform(put("/api/v1/forgotPassword/resendOtp/{email}", "unknown@example.com")
@@ -132,6 +130,7 @@ public class ForgotPasswordControllerIntegrationTests {
                 .andExpect(status().is4xxClientError());
     }
 
+    //Verify OTP success
     @Test
     void testVerifyOtp_Success() throws Exception {
         String verifyOtpJson = String.format("""
@@ -148,6 +147,7 @@ public class ForgotPasswordControllerIntegrationTests {
                 .andExpect(content().string("true"));
     }
 
+    // Invalid OTP value
     @Test
     void testVerifyOtp_Failure() throws Exception {
         String verifyOtpJson = String.format("""
@@ -164,6 +164,7 @@ public class ForgotPasswordControllerIntegrationTests {
                 .andExpect(content().string("false"));
     }
 
+    // Reset password success
     @Test
     void testResetPassword_Success() throws Exception {
         String resetPasswordJson = String.format("""
@@ -179,11 +180,12 @@ public class ForgotPasswordControllerIntegrationTests {
                 .andExpect(status().isOk())
                 .andExpect(content().string("true"));
 
-        // Verify password updated
+        // Verify password updated in DB
         AuthEntity updatedAuth = authRepository.findById(testUser.getId()).orElseThrow();
         assertTrue(passwordEncoder.matches("newSecurePassword123", updatedAuth.getPassword()));
     }
 
+    // Invalid OTP ID during reset
     @Test
     void testResetPassword_InvalidOtp() throws Exception {
         String resetPasswordJson = """
@@ -199,13 +201,5 @@ public class ForgotPasswordControllerIntegrationTests {
                 .andExpect(status().is5xxServerError());
     }
 
-    @Test
-    void testDatabaseState_AfterSetup() {
-        long authCount = authRepository.count();
-        long userCount = userRepository.count();
-        long otpCount = otpRepository.count();
-        Assertions.assertEquals(1, authCount);
-        Assertions.assertEquals(1, userCount);
-        Assertions.assertEquals(1, otpCount);
-    }
+
 }
