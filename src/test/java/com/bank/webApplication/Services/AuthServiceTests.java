@@ -80,18 +80,20 @@ public class AuthServiceTests {
     @Test
     void testSignUp() {
         authDto = new AuthDto();
-        authDto.setUsername(authEntity.getUsername());
-        authDto.setPassword(authEntity.getPassword());
+        authDto.setUsername("testuser");
+        authDto.setPassword("testPassword");
         MockedStatic<PasswordHash> mockedStaticPassword = Mockito.mockStatic(PasswordHash.class);
+        mockedStaticPassword.when(() -> PasswordHash.HashPass("testpassword"))
+                .thenReturn("HashedPassword");
         // Static method mocking
 //             Repository & JWT mocks
         when(authRepository.findByUsername("testuser")).thenReturn(Optional.empty());
-        mockedStaticPassword.when(() -> PasswordHash.HashPass("testpassword"))
-                .thenReturn("HashedPassword");
+        when(jwtUtil.generateToken(any(String.class), eq(Role.USER.name()))).thenReturn("SignUpJwtToken");
+        when(jwtUtil.generateRefreshToken(authEntity)).thenReturn(refreshTokenEntity);
         JwtResponseDto response = authService.Signup(authDto);
         // Assertions
         assertNotNull(response);
-        assertNotNull(response.getToken());
+        assertEquals("SignUpJwtToken", response.getToken());
         assertNotNull(response.getRefreshToken());
 
 
@@ -117,7 +119,9 @@ public class AuthServiceTests {
         authDto = new AuthDto();
         authDto.setUsername("testuser");
         authDto.setPassword("PlainPassword");
-        when(passwordEncoder.matches("PlainPassword", "HashedPassword")).thenReturn(true);
+        MockedStatic<PasswordHash> mockedStaticPassword = Mockito.mockStatic(PasswordHash.class);
+        mockedStaticPassword.when(() -> PasswordHash.HashPass("testpassword"))
+                .thenReturn("HashedPassword");
         when(authRepository.findByUsername("testuser")).thenReturn(Optional.of(authEntity));
         when(jwtUtil.generateToken(any(String.class), eq(Role.USER.name()))).thenReturn("LoginJwtToken");
         when(jwtUtil.generateRefreshToken(authEntity)).thenReturn(refreshTokenEntity);
