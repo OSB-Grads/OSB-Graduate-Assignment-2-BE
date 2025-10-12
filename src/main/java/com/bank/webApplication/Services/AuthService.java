@@ -30,7 +30,7 @@ public class AuthService {
     @Autowired
     public LogService logService;
     @Autowired
-    public  AuthRepository authrepository;
+    public AuthRepository authrepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
     @Autowired
@@ -75,9 +75,9 @@ public class AuthService {
         }
 
         //creates the hash of the password given by the user
-        String hashedPassword= PasswordHash.HashPass(authdto.getPassword());
+        String hashedPassword = PasswordHash.HashPass(authdto.getPassword());
         //registers username and hashed password into database
-        AuthEntity user=AuthEntity.builder()
+        AuthEntity user = AuthEntity.builder()
                 .username(authdto.getUsername())
                 .password(hashedPassword)
                 .role(Role.USER)
@@ -97,10 +97,10 @@ public class AuthService {
         return new JwtResponseDto(token, refreshToken.getRefreshToken());
     }
 
-    public void updatePassword(String password, UUID userId){
-        String hashedPassword= PasswordHash.HashPass(password);
+    public void updatePassword(String password, UUID userId) {
+        String hashedPassword = PasswordHash.HashPass(password);
         authrepository.findById(userId).get().setPassword(hashedPassword);
-        log.info("[RESET PASSWORD] Password Updation SUCCESS");
+        log.info("[AuthService] Password Updation SUCCESS");
 //        logService.logintoDB(userId, LogEntity.Action.PROFILE_MANAGEMENT, "Password Updation SUCCESS",userId.toString()
 //                ,LogEntity.Status.SUCCESS);
     }
@@ -117,8 +117,8 @@ public class AuthService {
         //checks for expiry of refresh token
         if (RefreshToken.getExpiry().isBefore(Instant.now())) {
             //deletes the refresh token from db
-            refreshTokenRepository.delete(RefreshToken);
-            log.error("[AuthService] RefreshAccessToken: Token Has Expired FAILURE");
+            refreshTokenRepository.deleteByRefreshToken(refreshToken);
+            log.error("[AuthService] RefreshAccessToken: Token Has Expired and has bee deleted from database FAILURE");
             throw new RuntimeException("Token Has Expired");
         }
         //generates a new access token if it is expired
@@ -136,12 +136,13 @@ public class AuthService {
         //logsout the user and deletes the refresh token from db
         //deletes the refresh token from db
         int res = refreshTokenRepository.deleteByRefreshToken(RefreshToken);
-        log.info("[AuthService] LogOut  SUCCESS");
         if (res == 0) {
             log.error("[AuthService] LogOut  FAILURE");
             return false;
         }
+        log.info("[AuthService] LogOut  SUCCESS");
         return true;
+
     }
 
 }
