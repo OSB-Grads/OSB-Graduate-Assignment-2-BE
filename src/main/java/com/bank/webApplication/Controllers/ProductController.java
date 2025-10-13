@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,6 +24,7 @@ public class ProductController {
         this.productService = productService;
     }
 
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @GetMapping("/fetch/{productId}")
     public ResponseEntity<?> fetchProductDetailsById(@PathVariable("productId") String productId) {
         log.info("[ProductController] pinged fetchProductDetailsById");
@@ -30,6 +32,7 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.OK).body(productInfo);
     }
 
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @GetMapping("/fetch")
     public ResponseEntity<?> fetchProductDetails() {
         log.info("[ProductController] pinged fetchProductDetails");
@@ -37,6 +40,7 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.OK).body(productInfo);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/create")
     public ResponseEntity<ProductDto> createProduct(@RequestBody ProductDto productDto) {
         log.info("[ProductController] pinged createProduct");
@@ -44,6 +48,7 @@ public class ProductController {
         return ResponseEntity.ok(create);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/update/{productId}")
     public ResponseEntity<ProductDto> updateProduct(@PathVariable String productId, @RequestBody ProductDto productDto) {
         log.info("[ProductController] pinged updateProduct");
@@ -51,6 +56,7 @@ public class ProductController {
         return ResponseEntity.ok(update);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/delete/{productId}")
     public ResponseEntity<String> deleteProduct(@PathVariable String productId) {
         log.info("[ProductController] pinged deleteProduct");

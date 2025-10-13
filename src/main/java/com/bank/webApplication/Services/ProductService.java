@@ -1,6 +1,7 @@
 package com.bank.webApplication.Services;
 
 
+import com.bank.webApplication.CustomException.ProductAlreadyExistException;
 import com.bank.webApplication.CustomException.ProductNotFoundException;
 import com.bank.webApplication.Dto.ProductDto;
 import com.bank.webApplication.Entity.ProductEntity;
@@ -60,7 +61,7 @@ public class ProductService {
         ProductEntity product = productRepository.findById(productDto.getProductId())
                 .orElseThrow(() -> {
                     log.error("[ProductService] createProduct: Product Already Exists FAILURE");
-                    return new ProductNotFoundException(" Product Already Exists");
+                    return new ProductAlreadyExistException(" Product Already Exists");
                 });
         //convert from dto to entity
         ProductEntity productEntity = dtoEntityMapper.convertToEntity(productDto, ProductEntity.class);

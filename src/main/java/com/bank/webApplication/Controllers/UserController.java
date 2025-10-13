@@ -11,6 +11,7 @@ import com.bank.webApplication.Services.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +28,7 @@ public class UserController {
 
 
     // Get UserProfile By id
-
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @GetMapping
     public ResponseEntity<UserDto> getUserById() {
         log.info("[UserController] pinged getUserById");
@@ -39,7 +40,7 @@ public class UserController {
     }
 
     //Create User After Authentication
-
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @PutMapping
     public ResponseEntity<UserDto> createUser(@RequestBody UserDto userDto) {
         log.info("[UserController] pinged createUser");
@@ -53,7 +54,7 @@ public class UserController {
     }
 
     // Update User Details
-
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @PatchMapping
     public ResponseEntity<UserDto> updateUserDetails(@RequestBody UserDto userDto) {
         log.info("[UserController] pinged updateUserDetails");

@@ -41,22 +41,22 @@ public class TransactionService {
     @Autowired
     public TransactionService(AccountRepository accountRepository,
                               TransactionRepository transactionRepository,
-                              DtoEntityMapper dtoEntityMapper,AccountService accountService) {
+                              DtoEntityMapper dtoEntityMapper, AccountService accountService) {
         this.accountRepository = accountRepository;
         this.transactionRepository = transactionRepository;
         this.dtoEntityMapper = dtoEntityMapper;
-        this.accountService=accountService;
+        this.accountService = accountService;
     }
 
 
-     // Checks if account is locked based on creation date, funding window,cooling period, and tenure.
+    // Checks if account is locked based on creation date, funding window,cooling period, and tenure.
 
     public boolean isLocked(AccountEntity account) {
         log.info("[TransactionService] isLocked entered SUCCESS");
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         //String formattedDate = now.format(formatter);
-        LocalDateTime createdAt = LocalDateTime.parse(account.getAccountCreated(),formatter);
+        LocalDateTime createdAt = LocalDateTime.parse(account.getAccountCreated(), formatter);
         LocalDateTime now = LocalDateTime.now();
 
 //        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -107,15 +107,14 @@ public class TransactionService {
             accountRepository.save(account);
             log.info("[{}] {}", type, successMsg);
             return new DepositWithdrawDTO(account.getAccountNumber(), successMsg, amount, TransactionEntity.status.COMPLETED, type);
-        }
-        catch (RuntimeException e) {
+        } catch (RuntimeException e) {
             log.error("[{}] {}", type, failureMsg, e);
             return new DepositWithdrawDTO(account.getAccountNumber(), failureMsg, amount, TransactionEntity.status.FAILED, type);
         }
     }
 
 
-     //  Deposit operation
+    //  Deposit operation
 
     public DepositWithdrawDTO depositAmount(String accountNumber, double amount) {
         log.info("[TransactionService] depositAmount entered  SUCCESS");
@@ -142,7 +141,7 @@ public class TransactionService {
     }
 
 
-     // Withdraw operation
+    // Withdraw operation
 
     public DepositWithdrawDTO withdrawAmount(String accountNumber, double amount) {
         log.info("[TransactionService]  withdrawAmount entered  SUCCESS");
@@ -178,9 +177,9 @@ public class TransactionService {
         log.info("[TransactionService]  saveTransaction entered  SUCCESS");
         TransactionEntity transactionEntity = new TransactionEntity();
         log.info("[SAVE TRANSACTION] TRANSACTION FROM Account");
-        transactionEntity.setFromAccount((fromAccount!=null)?accountRepository.findById(fromAccount).get():null);
+        transactionEntity.setFromAccount((fromAccount != null) ? accountRepository.findById(fromAccount).get() : null);
         log.info("[SAVE TRANSACTION] TRANSACTION TO Account");
-        transactionEntity.setToAccount((toAccount!=null)?accountRepository.findById(toAccount).get():null);
+        transactionEntity.setToAccount((toAccount != null) ? accountRepository.findById(toAccount).get() : null);
         transactionEntity.setAmount(amount);
         transactionEntity.setTransactionType(type);
         transactionEntity.setTransactionStatus(status);
