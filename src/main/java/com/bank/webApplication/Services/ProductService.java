@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
 @Slf4j
 @Service
 public class ProductService {
@@ -21,25 +22,96 @@ public class ProductService {
     @Autowired
     private DtoEntityMapper dtoEntityMapper;
 
-    public ProductDto getProduct(String  productId){
+    //method to get Product
+    public ProductDto getProduct(String productId) {
         log.info("[ProductService] getProduct entered SUCCESS");
-        ProductEntity product=productRepository.findById(productId)
-                .orElseThrow(()->{
+        //check if product is present in the database
+        ProductEntity product = productRepository.findById(productId)
+                .orElseThrow(() -> {
                     log.error("[ProductService] getProduct: not found FAILURE");
-                    return new ProductNotFoundException(" Product Not Found, Invalid Id");});
-        ProductDto productDto=dtoEntityMapper.convertToDto(product,ProductDto.class);
+                    return new ProductNotFoundException(" Product Not Found, Invalid Id");
+                });
+        //convert to dto from entity
+        ProductDto productDto = dtoEntityMapper.convertToDto(product, ProductDto.class);
         log.info("[ProductService] getProduct  SUCCESS");
+        //return
         return productDto;
     }
-    public List<ProductDto> getAllProducts(){
-        log.info("[ProductService] getAllProducts entered SUCCESS");
-        List<ProductEntity> products=productRepository.findAll();
 
-        List<ProductDto>productsdto=products.stream()
-                .map(product->dtoEntityMapper.convertToDto(product,ProductDto.class))
+    //method to get all Products
+    public List<ProductDto> getAllProducts() {
+        log.info("[ProductService] getAllProducts entered SUCCESS");
+        //get all products from the database
+        List<ProductEntity> products = productRepository.findAll();
+        //convert all the product from entity to dto
+        List<ProductDto> productsdto = products.stream()
+                .map(product -> dtoEntityMapper.convertToDto(product, ProductDto.class))
                 .collect(Collectors.toList());
         log.info("[ProductService] getAllProducts  SUCCESS");
+        //return
         return productsdto;
 
     }
+
+    //method to create a new Product
+    public ProductDto createProduct(ProductDto productDto) {
+        log.info("[ProductService] createproduct entered SUCCESS");
+        //check if the product is already present in the database
+        ProductEntity product = productRepository.findById(productDto.getProductId())
+                .orElseThrow(() -> {
+                    log.error("[ProductService] createProduct: Product Already Exists FAILURE");
+                    return new ProductNotFoundException(" Product Already Exists");
+                });
+        //convert from dto to entity
+        ProductEntity productEntity = dtoEntityMapper.convertToEntity(productDto, ProductEntity.class);
+        log.info("[ProductService] createProduct: New Product created and saved into database");
+        //save in the database
+        ProductEntity save = productRepository.save(productEntity);
+        //convert to dto
+        ProductDto response = dtoEntityMapper.convertToDto(save, ProductDto.class);
+        log.info("[ProductService] createProduct  SUCCESS");
+        //return
+        return response;
+    }
+
+    //method to updateproduct
+    public ProductDto updateProduct(String productId, ProductDto productDto) {
+        log.info("[ProductService] updateProduct entered SUCCESS");
+        //check if product is present in the database
+        ProductEntity product = productRepository.findById(productId)
+                .orElseThrow(() -> {
+                    log.error("[ProductService] updateProduct: not found FAILURE");
+                    return new ProductNotFoundException(" Product Not Found or does not exist in database");
+                });
+        //populate the updated values into the entity
+        product.setProductName(productDto.getProductName());
+        product.setInterestRate(productDto.getInterestRate());
+        product.setFundingWindow(product.getFundingWindow());
+        product.setCoolingPeriod(productDto.getCoolingPeriod());
+        product.setTenure(product.getTenure());
+        product.setDescription(product.getDescription());
+        log.info("[ProductService] updateProduct:  Product updated and saved into database");
+        //save in the database
+        ProductEntity update = productRepository.save(product);
+        log.info("[ProductService] updateProduct  SUCCESS");
+        //convert to dto and return
+        return (dtoEntityMapper.convertToDto(update, ProductDto.class));
+    }
+
+    //method to delete Product
+    public void deleteProduct(String productId) {
+        log.info("[ProductService] deleteProduct entered SUCCESS");
+        //check if the product is present in the database for deletion
+        ProductEntity product = productRepository.findById(productId)
+                .orElseThrow(() -> {
+                    log.error("[ProductService] Product: not found FAILURE");
+                    return new ProductNotFoundException(" Product Not Found or does not exist in the database");
+                });
+        log.info("[ProductService] Product Deleted From The Database  SUCCESS");
+        //remove product from the database
+        productRepository.deleteById(productId);
+        log.info("[ProductService] deleteProduct  SUCCESS");
+    }
+
+
 }
