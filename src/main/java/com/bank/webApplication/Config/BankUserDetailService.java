@@ -34,7 +34,7 @@ public class BankUserDetailService implements UserDetailsService {
                     log.info("[BankUserDetailService]  loadUserByUsername:User Not Found FAILURE ");
                     return new UsernameNotFoundException("User Not Found");
                 });
-        GrantedAuthority authority = new SimpleGrantedAuthority(auth.getRole().name());
+        GrantedAuthority authority = new SimpleGrantedAuthority("ROLE_"+auth.getRole().name());
         log.info("[BankUserDetailService]  loadUserByUsername SUCCESS");
         return new org.springframework.security.core.userdetails.User(
                 auth.getId().toString(), auth.getPassword(), Collections.singletonList(authority)//instead of sending username changed it to userId
