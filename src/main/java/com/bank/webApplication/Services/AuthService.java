@@ -1,6 +1,7 @@
 package com.bank.webApplication.Services;
 
 import com.bank.webApplication.CustomException.InvalidCredentialsException;
+import com.bank.webApplication.CustomException.RefreshTokenExpired;
 import com.bank.webApplication.CustomException.UserAlreadyExistException;
 import com.bank.webApplication.Dto.AuthDto;
 import com.bank.webApplication.Dto.JwtResponseDto;
@@ -12,12 +13,15 @@ import com.bank.webApplication.Repository.AuthRepository;
 import com.bank.webApplication.Repository.RefreshTokenRepository;
 import com.bank.webApplication.Util.JWTUtil;
 import com.bank.webApplication.Util.PasswordHash;
-import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -30,7 +34,7 @@ public class AuthService {
     @Autowired
     public LogService logService;
     @Autowired
-    public  AuthRepository authrepository;
+    public AuthRepository authrepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
     @Autowired
@@ -39,7 +43,7 @@ public class AuthService {
     private RefreshTokenRepository refreshTokenRepository;
     @Autowired
     private UserService userService;
-
+    private TransactionTemplate transactionTemplate;
 
     public JwtResponseDto Login(AuthDto authdto) {
         log.info("[AuthService] Entered Login SUCCESS");
@@ -75,9 +79,9 @@ public class AuthService {
         }
 
         //creates the hash of the password given by the user
-        String hashedPassword= PasswordHash.HashPass(authdto.getPassword());
+        String hashedPassword = PasswordHash.HashPass(authdto.getPassword());
         //registers username and hashed password into database
-        AuthEntity user=AuthEntity.builder()
+        AuthEntity user = AuthEntity.builder()
                 .username(authdto.getUsername())
                 .password(hashedPassword)
                 .role(Role.USER)
@@ -97,29 +101,34 @@ public class AuthService {
         return new JwtResponseDto(token, refreshToken.getRefreshToken());
     }
 
-    public void updatePassword(String password, UUID userId){
-        String hashedPassword= PasswordHash.HashPass(password);
+    public void updatePassword(String password, UUID userId) {
+        String hashedPassword = PasswordHash.HashPass(password);
         authrepository.findById(userId).get().setPassword(hashedPassword);
-        log.info("[RESET PASSWORD] Password Updation SUCCESS");
-        logService.logintoDB(userId, LogEntity.Action.PROFILE_MANAGEMENT, "Password Updation SUCCESS",userId.toString()
-                ,LogEntity.Status.SUCCESS);
+        log.info("[AuthService] Password Updation SUCCESS");
+//        logService.logintoDB(userId, LogEntity.Action.PROFILE_MANAGEMENT, "Password Updation SUCCESS",userId.toString()
+//                ,LogEntity.Status.SUCCESS);
     }
 
-
+    @Transactional(noRollbackFor=RefreshTokenExpired.class)
     public JwtResponseDto RefreshAccessToken(String refreshToken) {
         log.info("[AuthService] Entered RefreshAccessToken SUCCESS");
         //check refreshtoken is present in db and matches with the one sent by the frontend
         RefreshTokenEntity RefreshToken = refreshTokenRepository.findByRefreshToken(refreshToken)
                 .orElseThrow(() -> {
                     log.error("[AuthService] RefreshAccessToken: Invalid Refresh Token FAILURE");
-                    return new RuntimeException("Invalid Refresh Token");
+                    return new InvalidCredentialsException("Invalid Refresh Token");
                 });
         //checks for expiry of refresh token
         if (RefreshToken.getExpiry().isBefore(Instant.now())) {
-            //deletes the refresh token from db
-            refreshTokenRepository.delete(RefreshToken);
-            log.error("[AuthService] RefreshAccessToken: Token Has Expired FAILURE");
-            throw new RuntimeException("Token Has Expired");
+//            deletes the refresh token from db
+            int del = refreshTokenRepository.deleteByRefreshToken(refreshToken);
+            refreshTokenRepository.flush();
+            if (del == 1) {
+                log.error("[AuthService] RefreshAccessToken: Token Has Expired and has been deleted from database FAILURE");
+                throw new RefreshTokenExpired("Token Has Expired");
+
+            }
+
         }
         //generates a new access token if it is expired
         AuthEntity data = RefreshToken.getAuthEntity();
@@ -128,7 +137,7 @@ public class AuthService {
 //        logService.logintoDB(data.getId(), LogEntity.Action.AUTHENTICATION, "Refresh token Generated Successfully", data.getUsername(), LogEntity.Status.SUCCESS);
         log.info("[AuthService] RefreshAccessToken  SUCCESS");
         //sends back the new accesstoken along with refresh token
-        return new JwtResponseDto(newToken, refreshToken);
+        return new JwtResponseDto(newToken, RefreshToken.getRefreshToken());
     }
 
     @Transactional
@@ -136,12 +145,13 @@ public class AuthService {
         //logsout the user and deletes the refresh token from db
         //deletes the refresh token from db
         int res = refreshTokenRepository.deleteByRefreshToken(RefreshToken);
-        log.info("[AuthService] LogOut  SUCCESS");
         if (res == 0) {
             log.error("[AuthService] LogOut  FAILURE");
             return false;
         }
+        log.info("[AuthService] LogOut  SUCCESS");
         return true;
+
     }
 
 }

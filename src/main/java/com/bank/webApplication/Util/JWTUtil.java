@@ -36,7 +36,7 @@ public class JWTUtil {
         return RefreshTokenEntity.builder()
                 .refreshToken(UUID.randomUUID().toString())
                 .authEntity(authEntity)
-                .expiry(Instant.now().plusSeconds(1000 * 60*2))//expiry time of 1 day
+                .expiry(Instant.now().plusSeconds( 60*2))//expiry time of 1 day
 //        1 * 24 * 60 * 60
                 .build();
 
