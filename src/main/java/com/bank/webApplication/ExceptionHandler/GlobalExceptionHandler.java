@@ -75,4 +75,8 @@ public class GlobalExceptionHandler{
     public ResponseEntity<Object> handleAccessDeniedException(Exception ex){
         return buildResponse(HttpStatus.FORBIDDEN, ex.getMessage());
     }
+    @ExceptionHandler(RefreshTokenExpired.class)
+    public ResponseEntity<Object> handleRefreshTokenExpired(Exception ex){
+        return buildResponse(HttpStatus.UNAUTHORIZED, ex.getMessage());
+    }
 }
