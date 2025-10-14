@@ -22,7 +22,7 @@ import java.util.function.Function;
 public class JWTUtil {
     @Value("${spring.jwt.secretkey}")
     private String SECRET;
-    private final long EXPIRATION_TIME = 1000 * 60 ;
+    private final long EXPIRATION_TIME = 3000 * 60 ;
 //1000 * 60 * 15
 
     private Key getKey() {
@@ -36,7 +36,7 @@ public class JWTUtil {
         return RefreshTokenEntity.builder()
                 .refreshToken(UUID.randomUUID().toString())
                 .authEntity(authEntity)
-                .expiry(Instant.now().plusSeconds( 60*2))//expiry time of 1 day
+                .expiry(Instant.now().plusSeconds( 60*5))//expiry time of 1 day
 //        1 * 24 * 60 * 60
                 .build();
 

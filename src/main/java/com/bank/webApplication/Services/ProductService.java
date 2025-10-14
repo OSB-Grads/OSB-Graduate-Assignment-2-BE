@@ -10,6 +10,7 @@ import com.bank.webApplication.Util.DtoEntityMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -74,7 +75,7 @@ public class ProductService {
         //return
         return response;
     }
-
+    @Transactional
     //method to updateproduct
     public ProductDto updateProduct(String productId, ProductDto productDto) {
         log.info("[ProductService] updateProduct entered SUCCESS");
@@ -84,16 +85,20 @@ public class ProductService {
                     log.error("[ProductService] updateProduct: not found FAILURE");
                     return new ProductNotFoundException(" Product Not Found or does not exist in database");
                 });
+        System.out.println("Before"+product);
+//        System.out.println("After"+product);
         //populate the updated values into the entity
+//        product.setProductId(productDto.getProductId());
         product.setProductName(productDto.getProductName());
         product.setInterestRate(productDto.getInterestRate());
-        product.setFundingWindow(product.getFundingWindow());
+        product.setFundingWindow(productDto.getFundingWindow());
         product.setCoolingPeriod(productDto.getCoolingPeriod());
-        product.setTenure(product.getTenure());
-        product.setDescription(product.getDescription());
+        product.setTenure(productDto.getTenure());
+        product.setDescription(productDto.getDescription());
         log.info("[ProductService] updateProduct:  Product updated and saved into database");
         //save in the database
         ProductEntity update = productRepository.save(product);
+        System.out.println("After update"+update);
         log.info("[ProductService] updateProduct  SUCCESS");
         //convert to dto and return
         return (dtoEntityMapper.convertToDto(update, ProductDto.class));
