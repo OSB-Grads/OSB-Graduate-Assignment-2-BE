@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -59,11 +60,11 @@ public class ProductService {
     public ProductDto createProduct(ProductDto productDto) {
         log.info("[ProductService] createproduct entered SUCCESS");
         //check if the product is already present in the database
-        ProductEntity product = productRepository.findById(productDto.getProductId())
-                .orElseThrow(() -> {
+        Optional<ProductEntity> product = productRepository.findById(productDto.getProductId());
+                if(product!=null) {
                     log.error("[ProductService] createProduct: Product Already Exists FAILURE");
-                    return new ProductAlreadyExistException(" Product Already Exists");
-                });
+                    throw  new ProductAlreadyExistException(" Product Already Exists");
+                }
         //convert from dto to entity
         ProductEntity productEntity = dtoEntityMapper.convertToEntity(productDto, ProductEntity.class);
         log.info("[ProductService] createProduct: New Product created and saved into database");
@@ -85,10 +86,7 @@ public class ProductService {
                     log.error("[ProductService] updateProduct: not found FAILURE");
                     return new ProductNotFoundException(" Product Not Found or does not exist in database");
                 });
-        System.out.println("Before"+product);
-//        System.out.println("After"+product);
         //populate the updated values into the entity
-//        product.setProductId(productDto.getProductId());
         product.setProductName(productDto.getProductName());
         product.setInterestRate(productDto.getInterestRate());
         product.setFundingWindow(productDto.getFundingWindow());
@@ -98,7 +96,6 @@ public class ProductService {
         log.info("[ProductService] updateProduct:  Product updated and saved into database");
         //save in the database
         ProductEntity update = productRepository.save(product);
-        System.out.println("After update"+update);
         log.info("[ProductService] updateProduct  SUCCESS");
         //convert to dto and return
         return (dtoEntityMapper.convertToDto(update, ProductDto.class));
