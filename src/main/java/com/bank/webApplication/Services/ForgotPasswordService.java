@@ -40,30 +40,31 @@ public class ForgotPasswordService {
 
 
     public UUID verifyEmail(String email) {
+        log.info("[ ForgotPasswordService] verifyEmail entered SUCCESS");
         UserEntity user = userRepository.findByEmail(email)
                 .orElseThrow(() -> {
-                    log.info("[Verify Email] User doesn't exist in Database");
+                    log.info("[ForgotPasswordService] verifyEmail : User doesn't exist in Database FAILURE");
                     return new UserNotFoundException("Please provide a valid email");
                 });
 
-        log.info("[Verify Email] User found in Database");
+        log.info("[ForgotPasswordService] verifyEmail  SUCCESS");
 
         UUID otpId = otpService.sendOTP(email, user);
-        logService.logintoDB(user.getId(), LogEntity.Action.PROFILE_MANAGEMENT, "OTP Sent Successfully", user.getName(), LogEntity.Status.SUCCESS);
+//        logService.logintoDB(user.getId(), LogEntity.Action.PROFILE_MANAGEMENT, "OTP Sent Successfully", user.getName(), LogEntity.Status.SUCCESS);
         return otpId;
     }
 
 
     public boolean resetPassword(String password, UUID otpId) {
-
+        log.info("[ ForgotPasswordService] resetPassword entered SUCCESS");
         UserEntity user = otpRepository.findById(otpId)
                 .orElseThrow(() -> new RuntimeException("Invalid or expired OTP ID"))
                 .getUser();
         UUID userId = user.getId();
 
         authService.updatePassword(password, userId);
-        log.info("[RESET PASSWORD] Password Reset SUCCESS");
-        logService.logintoDB(userId, LogEntity.Action.PROFILE_MANAGEMENT, "Password Reset SUCCESS", user.getEmail(), LogEntity.Status.SUCCESS);
+        log.info("[ForgotPasswordService]  resetPassword  SUCCESS");
+//        logService.logintoDB(userId, LogEntity.Action.PROFILE_MANAGEMENT, "Password Reset SUCCESS", user.getEmail(), LogEntity.Status.SUCCESS);
 
         return true;
     }

@@ -9,13 +9,16 @@ import com.bank.webApplication.Repository.UserRepository;
 import com.bank.webApplication.Services.LogService;
 import com.bank.webApplication.Services.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/users/me")
 @RequiredArgsConstructor
@@ -25,41 +28,40 @@ public class UserController {
 
 
     // Get UserProfile By id
-
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @GetMapping
-    public ResponseEntity<UserDto> getUserById(){
-
-        String userId= SecurityContextHolder.getContext().getAuthentication().getName();
-        System.out.println("user controller user id "+userId);
-        UserDto userDto=userService.getUserById(userId);
+    public ResponseEntity<UserDto> getUserById() {
+        log.info("[UserController] pinged getUserById");
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        System.out.println("user controller user id " + userId);
+        UserDto userDto = userService.getUserById(userId);
         return ResponseEntity.ok(userDto);
 
     }
 
-     //Create User After Authentication
-
+    //Create User After Authentication
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @PutMapping
-    public ResponseEntity<UserDto> createUser( @RequestBody UserDto userDto){
+    public ResponseEntity<UserDto> createUser(@RequestBody UserDto userDto) {
+        log.info("[UserController] pinged createUser");
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        System.out.println("user controller user id " + userId);
 
-        String userId= SecurityContextHolder.getContext().getAuthentication().getName();
-        System.out.println("user controller user id "+userId);
 
-
-        UserDto Created= userService.CreateUser(userDto, userId);
+        UserDto Created = userService.CreateUser(userDto, userId);
         return ResponseEntity.ok(Created);
 
     }
 
     // Update User Details
-
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @PatchMapping
-    public ResponseEntity<UserDto> updateUserDetails( @RequestBody UserDto userDto){
-
-         String userId= SecurityContextHolder.getContext().getAuthentication().getName();
-         UserDto Updated=userService.UpdateUser(userId,userDto);
-         return ResponseEntity.ok(Updated);
+    public ResponseEntity<UserDto> updateUserDetails(@RequestBody UserDto userDto) {
+        log.info("[UserController] pinged updateUserDetails");
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        UserDto Updated = userService.UpdateUser(userId, userDto);
+        return ResponseEntity.ok(Updated);
     }
-
 
 
 }

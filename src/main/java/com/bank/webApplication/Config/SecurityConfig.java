@@ -51,6 +51,7 @@ private final JwtFilter jwtFilter;
                                 "/swagger-ui.html").permitAll()
                         .requestMatchers("/api/v1/auth/register",
                                 "/api/v1/auth/login",
+                                "/api/v1/auth/refreshtoken",
                                 "api/v1/forgotPassword/{email}",
                                 "api/v1/forgotPassword/resendOtp/{email}",
                                 "api/v1/forgotPassword/verify-otp",

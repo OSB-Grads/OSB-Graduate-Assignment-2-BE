@@ -43,6 +43,7 @@ public class LogService {
 
 
     public void logintoDB(UUID user_id, LogEntity.Action action, String details, String ip_address, LogEntity.Status status) {
+        log.info("[LogService] LogintoDb entered SUCCESS ");
         AuthEntity authEntity = authRepository.findById(user_id).orElseThrow(() -> new NullPointerException("User Not Found"));
         if (sensitiveDataValidator.containsSensitiveData(details)) {
             details = "Log Has  [SENSITIVE DATA]";
@@ -64,6 +65,7 @@ public class LogService {
     }
 
     public List<LogDTO> retrieveAllLogsFromDB() {
+        log.info("[LogService] retrieveAllLogsFromDB entered SUCCESS ");
         List<LogEntity> logEntity = logRepository.findAll();
         log.info("[Log Service] Logs Retrieval Successful");
         return logEntity.stream()
@@ -78,9 +80,11 @@ public class LogService {
                     dto.setTimestamp(entity.getTimestamp());
                     return dto;
                 })
-                .toList();    }
+                .toList();
+    }
 
     public List<LogDTO> retrieveAllLogsByUserId(UUID authid) {
+        log.info("[LogService] retrieveAllLogsByUserId entered SUCCESS ");
         List<LogEntity> logsByUserId = logRepository.findByAuthEntity_Id(authid);
         log.info("[Log Service] Logs Retrieval By UserId is Successful");
         return logsByUserId.stream()
@@ -99,11 +103,12 @@ public class LogService {
     }
 
 
-    public LogDTO retrieveLogByLogId(UUID logId){
-        LogEntity logEntity=logRepository.findById(logId).orElseThrow(()->new LogNotFoundException("Log Has Not Found"));
+    public LogDTO retrieveLogByLogId(UUID logId) {
+        log.info("[LogService] retrieveLogByLogId entered SUCCESS ");
+        LogEntity logEntity = logRepository.findById(logId).orElseThrow(() -> new LogNotFoundException("Log Has Not Found"));
         log.info("[Log Service] Logs Retrieval By Log Id Successful");
-        return   new LogDTO(logEntity.getId(),logEntity.getAuthEntity()!=null? logEntity.getAuthEntity().getId():null,logEntity.getAction(),
-                            logEntity.getDetails(), logEntity.getIp_address(), logEntity.getStatus(),logEntity.getTimestamp());
+        return new LogDTO(logEntity.getId(), logEntity.getAuthEntity() != null ? logEntity.getAuthEntity().getId() : null, logEntity.getAction(),
+                logEntity.getDetails(), logEntity.getIp_address(), logEntity.getStatus(), logEntity.getTimestamp());
     }
 
 
