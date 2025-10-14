@@ -11,6 +11,7 @@ import com.bank.webApplication.Util.PasswordHash;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,8 +30,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
@@ -55,7 +55,7 @@ public class ProductFlow_AdminIntegrationTests {
 
     private String jwtToken;
 
-    @BeforeAll
+    @BeforeEach
     void setup() throws Exception {
         // Clear DB
         productRepository.deleteAll();
@@ -66,7 +66,7 @@ public class ProductFlow_AdminIntegrationTests {
         ProductEntity p2 = new ProductEntity("P002", "Fixed Deposit", 7.2, 2, 1, 5, "1 Year FD");
         ProductEntity p3 = new ProductEntity("P003", "Recurring Deposit", 6.5, 2, 1, 6, "Monthly deposit plan");
         productRepository.saveAll(List.of(p1, p2, p3));
-
+        productRepository.flush();
         // Create test user with encoded password
         AuthEntity user = new AuthEntity(null, "test12", PasswordHash.HashPass("test123"), Role.ADMIN);
         authRepository.save(user);
@@ -89,11 +89,14 @@ public class ProductFlow_AdminIntegrationTests {
         jwtToken = JsonPath.parse(responseJson).read("$.token");
     }
 
+    //test to fetch all products
     @Test
     void testFetchAllProducts() throws Exception {
+        //mock call
         mockMvc.perform(get("/api/v1/product/fetch")
                         .header("Authorization", "Bearer " + jwtToken)
                         .contentType(MediaType.APPLICATION_JSON))
+                //expect success
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(3)))
                 .andExpect(jsonPath("$[0].productId", is("P001")))
@@ -101,40 +104,49 @@ public class ProductFlow_AdminIntegrationTests {
                 .andExpect(jsonPath("$[2].description", is("Monthly deposit plan")));
     }
 
+    //test to fetch product by id
     @Test
     void testFetchProductById_Valid() throws Exception {
+        //mock call
         mockMvc.perform(get("/api/v1/product/fetch/P002")
                         .header("Authorization", "Bearer " + jwtToken)
                         .contentType(MediaType.APPLICATION_JSON))
+                //expect 200
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.productId", is("P002")))
                 .andExpect(jsonPath("$.productName", is("Fixed Deposit")))
                 .andExpect(jsonPath("$.interestRate", is(7.2)));
     }
 
+    //test to fetch product by id failure
     @Test
     void testFetchProductById_Invalid() throws Exception {
+        //mock call
         mockMvc.perform(get("/api/v1/product/fetch/INVALID")
                         .header("Authorization", "Bearer " + jwtToken)
                         .contentType(MediaType.APPLICATION_JSON))
+                //expect error
                 .andExpect(status().is4xxClientError());
 
     }
 
+    //test db state
     @Test
     void testDatabaseState_AfterSetup() {
         long count = productRepository.count();
         assertEquals(3, count);
     }
 
+    //test to fetch all products with an empty list
     @Test
     void testFetchAllProducts_EmptyList() throws Exception {
-
+        //delete mock data in repo
         productRepository.deleteAll();
-
+        //mock call
         mockMvc.perform(get("/api/v1/product/fetch")
                         .header("Authorization", "Bearer " + jwtToken)
                         .contentType(MediaType.APPLICATION_JSON))
+                //expect 200
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$", hasSize(0)));
@@ -162,6 +174,7 @@ public class ProductFlow_AdminIntegrationTests {
                         .header("Authorization", "Bearer " + jwtToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
+                //expect 200
                 .andExpect(status().isOk())
                 .andReturn();
         //response
@@ -200,7 +213,9 @@ public class ProductFlow_AdminIntegrationTests {
                         .header("Authorization", "Bearer " + jwtToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
+                //expect error
                 .andExpect(status().is4xxClientError())
+                //expect error message
                 .andExpect(jsonPath("$.message").value(" Product Already Exists"))
                 .andReturn();
 
@@ -209,6 +224,7 @@ public class ProductFlow_AdminIntegrationTests {
 
     //test for UpdateProduct_Success
     @Test
+    @Transactional
     void testUpdateProduct_Success() throws Exception {
         //mock json
         String json = """
@@ -222,10 +238,11 @@ public class ProductFlow_AdminIntegrationTests {
                   "tenure": 15
                 }
                 """;
-        MvcResult result = mockMvc.perform(post("/api/v1/product/update/POO2")
+        MvcResult result = mockMvc.perform(put("/api/v1/product/update/POO2")
                         .header("Authorization", "Bearer " + jwtToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
+                //expect 200
                 .andExpect(status().isOk())
                 .andReturn();
         //response
@@ -243,4 +260,60 @@ public class ProductFlow_AdminIntegrationTests {
         assertEquals(15, productDto.getTenure());
     }
 
+    //test for UpdateProduct_Failure
+    @Test
+    void testUpdateProduct_Failure() throws Exception {
+        //mock input
+        String json = """
+                {
+                  "productId": "FD004",
+                  "productName": "Fixed Deposit",
+                  "interestRate": 7.2,
+                  "fundingWindow": 2,
+                  "coolingPeriod": 1,
+                  "description": "1 Year Simple FD",
+                  "tenure": 15
+                }
+                """;
+        //mock request
+        MvcResult result = mockMvc.perform(put("/api/v1/product/update/FD004")
+                        .header("Authorization", "Bearer " + jwtToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                //expect error
+                .andExpect(status().is4xxClientError())
+                //expect error message
+                .andExpect(jsonPath("$.message").value(" Product Not Found or does not exist in database"))
+                .andReturn();
+    }
+
+    //test for deleteProduct_Success
+    @Test
+    void testDeleteProduct_Success() throws Exception {
+        //mock call
+        MvcResult result = mockMvc.perform(delete("/api/v1/product/delete/P002")
+                        .header("Authorization", "Bearer " + jwtToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                //expect 200
+                .andExpect(status().isOk())
+                .andReturn();
+        //mock response
+        String res = result.getResponse().getContentAsString();
+        //assert
+        assertEquals("Product deleted Successfully", res);
+
+    }
+
+    //test for deleteProduct_Failure
+    @Test
+    void testDeleteProduct_Failure() throws Exception {
+        //mock call
+        MvcResult result = mockMvc.perform(delete("/api/v1/product/delete/P005")
+                        .header("Authorization", "Bearer " + jwtToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                //expect error
+                .andExpect(status().is4xxClientError())
+                .andReturn();
+
+    }
 }
