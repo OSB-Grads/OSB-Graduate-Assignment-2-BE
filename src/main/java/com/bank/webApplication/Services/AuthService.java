@@ -109,7 +109,7 @@ public class AuthService {
 //                ,LogEntity.Status.SUCCESS);
     }
 
-    @Transactional(noRollbackFor=RefreshTokenExpired.class)
+    @Transactional(noRollbackFor = RefreshTokenExpired.class)
     public JwtResponseDto RefreshAccessToken(String refreshToken) {
         log.info("[AuthService] Entered RefreshAccessToken SUCCESS");
         //check refreshtoken is present in db and matches with the one sent by the frontend

@@ -80,7 +80,8 @@ public class LogService {
                     dto.setTimestamp(entity.getTimestamp());
                     return dto;
                 })
-                .toList();    }
+                .toList();
+    }
 
     public List<LogDTO> retrieveAllLogsByUserId(UUID authid) {
         log.info("[LogService] retrieveAllLogsByUserId entered SUCCESS ");
@@ -102,12 +103,12 @@ public class LogService {
     }
 
 
-    public LogDTO retrieveLogByLogId(UUID logId){
+    public LogDTO retrieveLogByLogId(UUID logId) {
         log.info("[LogService] retrieveLogByLogId entered SUCCESS ");
-        LogEntity logEntity=logRepository.findById(logId).orElseThrow(()->new LogNotFoundException("Log Has Not Found"));
+        LogEntity logEntity = logRepository.findById(logId).orElseThrow(() -> new LogNotFoundException("Log Has Not Found"));
         log.info("[Log Service] Logs Retrieval By Log Id Successful");
-        return   new LogDTO(logEntity.getId(),logEntity.getAuthEntity()!=null? logEntity.getAuthEntity().getId():null,logEntity.getAction(),
-                            logEntity.getDetails(), logEntity.getIp_address(), logEntity.getStatus(),logEntity.getTimestamp());
+        return new LogDTO(logEntity.getId(), logEntity.getAuthEntity() != null ? logEntity.getAuthEntity().getId() : null, logEntity.getAction(),
+                logEntity.getDetails(), logEntity.getIp_address(), logEntity.getStatus(), logEntity.getTimestamp());
     }
 
 
