@@ -1,5 +1,6 @@
 package com.bank.webApplication.Controllers.IntegrationTests;
 
+import com.bank.webApplication.Dto.ProductDto;
 import com.bank.webApplication.Entity.AuthEntity;
 import com.bank.webApplication.Entity.ProductEntity;
 import com.bank.webApplication.Entity.Role;
@@ -129,5 +130,6 @@ public class ProductControllerIntegrationTests {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$", hasSize(0)));
     }
+
 
 }
