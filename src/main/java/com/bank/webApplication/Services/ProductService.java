@@ -29,11 +29,11 @@ public class ProductService {
     public ProductDto getProduct(String productId) {
         log.info("[ProductService] getProduct entered SUCCESS");
         //check if product is present in the database
-        ProductEntity product = productRepository.findById(productId)
-                .orElseThrow(() -> {
-                    log.error("[ProductService] getProduct: not found FAILURE");
-                    return new ProductNotFoundException(" Product Not Found, Invalid Id");
-                });
+        ProductEntity product = productRepository.findByProductId(productId);
+        if (product == null) {
+            log.error("[ProductService] getProduct: not found FAILURE");
+            throw new ProductNotFoundException(" Product Not Found, Invalid Id");
+        }
         //convert to dto from entity
         ProductDto productDto = dtoEntityMapper.convertToDto(product, ProductDto.class);
         log.info("[ProductService] getProduct  SUCCESS");
@@ -60,11 +60,11 @@ public class ProductService {
     public ProductDto createProduct(ProductDto productDto) {
         log.info("[ProductService] createproduct entered SUCCESS");
         //check if the product is already present in the database
-        Optional<ProductEntity> product = productRepository.findById(productDto.getProductId());
-                if(product!=null) {
-                    log.error("[ProductService] createProduct: Product Already Exists FAILURE");
-                    throw  new ProductAlreadyExistException(" Product Already Exists");
-                }
+        ProductEntity product = productRepository.findByProductId(productDto.getProductId());
+        if (product != null) {
+            log.error("[ProductService] createProduct: Product Already Exists FAILURE");
+            throw new ProductAlreadyExistException(" Product Already Exists");
+        }
         //convert from dto to entity
         ProductEntity productEntity = dtoEntityMapper.convertToEntity(productDto, ProductEntity.class);
         log.info("[ProductService] createProduct: New Product created and saved into database");
@@ -76,16 +76,17 @@ public class ProductService {
         //return
         return response;
     }
+
     @Transactional
     //method to updateproduct
     public ProductDto updateProduct(String productId, ProductDto productDto) {
         log.info("[ProductService] updateProduct entered SUCCESS");
         //check if product is present in the database
-        ProductEntity product = productRepository.findById(productId)
-                .orElseThrow(() -> {
-                    log.error("[ProductService] updateProduct: not found FAILURE");
-                    return new ProductNotFoundException(" Product Not Found or does not exist in database");
-                });
+        ProductEntity product = productRepository.findByProductId(productId);
+        if (product == null) {
+            log.error("[ProductService] updateProduct: not found FAILURE");
+            throw new ProductNotFoundException(" Product Not Found or does not exist in database");
+        }
         //populate the updated values into the entity
         product.setProductName(productDto.getProductName());
         product.setInterestRate(productDto.getInterestRate());
@@ -105,11 +106,11 @@ public class ProductService {
     public void deleteProduct(String productId) {
         log.info("[ProductService] deleteProduct entered SUCCESS");
         //check if the product is present in the database for deletion
-        ProductEntity product = productRepository.findById(productId)
-                .orElseThrow(() -> {
-                    log.error("[ProductService] Product: not found FAILURE");
-                    return new ProductNotFoundException(" Product Not Found or does not exist in the database");
-                });
+        ProductEntity product = productRepository.findByProductId(productId);
+        if (product == null) {
+            log.error("[ProductService] Product: not found FAILURE");
+            throw new ProductNotFoundException(" Product Not Found or does not exist in the database");
+        }
         log.info("[ProductService] Product Deleted From The Database  SUCCESS");
         //remove product from the database
         productRepository.deleteById(productId);

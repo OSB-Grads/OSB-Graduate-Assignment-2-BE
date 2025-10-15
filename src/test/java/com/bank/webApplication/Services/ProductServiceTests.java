@@ -27,11 +27,32 @@ public class ProductServiceTests {
     private ProductRepository productRepository;
     @Mock
     private DtoEntityMapper dtoEntityMapper;
+    @Mock
+    private ProductDto productDto1;
+    @Mock
+    private ProductEntity product1;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        productDto1 = new ProductDto();
+        productDto1.setProductId("FD0043");
+        productDto1.setProductName("3  pLAN");
+        productDto1.setInterestRate(1.0);
+        productDto1.setFundingWindow(3);
+        productDto1.setDescription("3 year plan with the interestRate of 6.1");
+        productDto1.setTenure(10);
+
+        product1 = new ProductEntity();
+        product1.setProductId("FD0043");
+        product1.setProductName("3  pLAN");
+        product1.setInterestRate(1.0);
+        product1.setFundingWindow(3);
+        product1.setDescription("3 year plan with the interestRate of 6.1");
+        product1.setTenure(10);
+        productRepository.save(product1);
     }
+
 
     @Test
     void testGetProduct() {
@@ -124,24 +145,7 @@ public class ProductServiceTests {
 
     @Test
     void testcreateProducts_Success() {
-        ProductDto productDto1 = new ProductDto();
-        productDto1.setProductId("FD0043");
-        productDto1.setProductName("3  pLAN");
-        productDto1.setInterestRate(1.0);
-        productDto1.setFundingWindow(3);
-        productDto1.setDescription("3 year plan with the interestRate of 6.1");
-        productDto1.setTenure(10);
 
-        ProductEntity product1 = new ProductEntity();
-        product1.setProductId("FD0043");
-        product1.setProductName("3  pLAN");
-        product1.setInterestRate(1.0);
-        product1.setFundingWindow(3);
-        product1.setDescription("3 year plan with the interestRate of 6.1");
-        product1.setTenure(10);
-        productRepository.save(product1);
-
-        when(productRepository.findById("FD0043")).thenReturn(Optional.empty());
         when(dtoEntityMapper.convertToEntity(productDto1, ProductEntity.class)).thenReturn(product1);
         when(productRepository.save(product1)).thenReturn(product1);
         when(dtoEntityMapper.convertToDto(product1, ProductDto.class)).thenReturn(productDto1);
@@ -154,22 +158,7 @@ public class ProductServiceTests {
 
     @Test
     void testcreateProducts_FailureUserAlreadyExist() {
-        //mock dto
-        ProductDto productDto1 = new ProductDto();
-        productDto1.setProductId("FD0043");
-        productDto1.setProductName("3  pLAN");
-        productDto1.setInterestRate(1.0);
-        productDto1.setFundingWindow(3);
-        productDto1.setDescription("3 year plan with the interestRate of 6.1");
-        productDto1.setTenure(10);
-        //mock dto
-        ProductEntity product1 = new ProductEntity();
-        product1.setProductId(productDto1.getProductId());
-        product1.setProductName(product1.getProductName());
-        product1.setInterestRate(productDto1.getInterestRate());
-        product1.setFundingWindow(productDto1.getFundingWindow());
-        product1.setDescription(productDto1.getDescription());
-        product1.setTenure(productDto1.getTenure());
+
         when(productRepository.findById("FD0043")).thenReturn(Optional.of(product1));
         //mock
         Exception e = assertThrows(RuntimeException.class, () -> {
@@ -181,21 +170,7 @@ public class ProductServiceTests {
 
     @Test
     void testupdateProducts_Success() {
-        ProductDto productDto1 = new ProductDto();
-        productDto1.setProductId("FD043");
-        productDto1.setProductName("2  pLAN");
-        productDto1.setInterestRate(2.0);
-        productDto1.setFundingWindow(2);
-        productDto1.setDescription("3 year plan with the interestRate of 6.1");
-        productDto1.setTenure(5);
-        //mock dto
-        ProductEntity product1 = new ProductEntity();
-        product1.setProductId("FD0043");
-        product1.setProductName("3  pLAN");
-        product1.setInterestRate(1.0);
-        product1.setFundingWindow(3);
-        product1.setDescription("3 year plan with the interestRate of 6.1");
-        product1.setTenure(10);
+
         when(productRepository.findById("FD0043")).thenReturn(Optional.of(product1));
         product1.setProductName(productDto1.getProductName());
         product1.setInterestRate(productDto1.getInterestRate());
@@ -211,22 +186,7 @@ public class ProductServiceTests {
 
     @Test
     void testupdateProducts_FailureUserDoesNotExist() {
-        ProductDto productDto1 = new ProductDto();
-        productDto1.setProductId("FD0043");
-        productDto1.setProductName("2  pLAN");
-        productDto1.setInterestRate(2.0);
-        productDto1.setFundingWindow(2);
-        productDto1.setDescription("3 year plan with the interestRate of 6.1");
-        productDto1.setTenure(5);
 
-        ProductEntity product1 = new ProductEntity();
-        product1.setProductId("FD0043");
-        product1.setProductName("3  pLAN");
-        product1.setInterestRate(1.0);
-        product1.setFundingWindow(3);
-        product1.setDescription("3 year plan with the interestRate of 6.1");
-        product1.setTenure(10);
-        productRepository.save(product1);
         //mock dto
         when(productRepository.findById("FD0043")).thenReturn(Optional.empty());
         Exception e = assertThrows(RuntimeException.class, () -> {
@@ -238,31 +198,18 @@ public class ProductServiceTests {
 
     @Test
     void testdeleteProducts_Success() {
-        ProductEntity product1 = new ProductEntity();
-        product1.setProductId("FD0043");
-        product1.setProductName("3  pLAN");
-        product1.setInterestRate(1.0);
-        product1.setFundingWindow(3);
-        product1.setDescription("3 year plan with the interestRate of 6.1");
-        product1.setTenure(10);
-        productRepository.save(product1);
+
         when(productRepository.findById("FD0043")).thenReturn(Optional.of(product1));
         productService.deleteProduct("FD0043");
     }
 
     @Test
     void testdeleteProducts_FailureUserDoesNotExist() {
-        ProductEntity product1 = new ProductEntity();
-        product1.setProductId("FD0043");
-        product1.setProductName("3  pLAN");
-        product1.setInterestRate(1.0);
-        product1.setFundingWindow(3);
-        product1.setDescription("3 year plan with the interestRate of 6.1");
-        product1.setTenure(10);
-        productRepository.save(product1);
+
         when(productRepository.findById("FD0043")).thenReturn(Optional.empty());
         Exception e = assertThrows(RuntimeException.class, () -> {
-            productService.deleteProduct("FD0043");;
+            productService.deleteProduct("FD0043");
+            ;
         });
         //assert
         assertEquals(" Product Not Found or does not exist in the database", e.getMessage());

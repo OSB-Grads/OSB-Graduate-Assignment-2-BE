@@ -183,7 +183,7 @@ public class ProductFlow_AdminIntegrationTests {
         ProductDto productDto = objectMapper.readValue(responseJson, ProductDto.class);
         //assert
         assertNotNull(productDto);
-        assertEquals("FD03", productDto.getProductId());
+        assertEquals("P004", productDto.getProductId());
         assertEquals("Fixed Deposit", productDto.getProductName());
         assertEquals(1, productDto.getInterestRate());
         assertEquals(3.0, productDto.getFundingWindow());
