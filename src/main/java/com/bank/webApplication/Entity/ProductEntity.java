@@ -21,4 +21,6 @@ public class ProductEntity {
     private int coolingPeriod;
     private int tenure;
     private String description;
+
+
 }
