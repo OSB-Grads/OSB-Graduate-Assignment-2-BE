@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.UUID;
@@ -28,13 +29,13 @@ public class OTPService {
     private OTPRepository otpRepository;
 
     private boolean isExpired(Date expirationTime) {
-        log.info("[OTPService] isExpired SUCCESS");
+        log.info("[OTPService]Entered into isExpired");
         return expirationTime.before(new Date());
     }
 
 
     public UUID sendOTP(String email, UserEntity user) {
-        log.info("[OTPService] sendOTP entered SUCCESS");
+        log.info("[OTPService] Entered into sendOTP");
         Integer otp = otpGenerator.generateOtp();
 
         MailBodyDTO mailBodyDTO = MailBodyDTO.builder()
@@ -44,10 +45,10 @@ public class OTPService {
 
         OTPEntity otpEntity = otpRepository.findByUser(user)
                 .orElse(new OTPEntity());
-
-        otpEntity.setOtp(otp);
-        otpEntity.setExpirationTime(new Date(System.currentTimeMillis() + 60 * 1000));
         otpEntity.setUser(user);
+        otpEntity.setOtp(otp);
+        otpEntity.setExpirationTime(new Date(System.currentTimeMillis() + 180 *1000));
+
 
         emailService.sendMessage(mailBodyDTO);
         OTPService.log.info("[OTPService] sendOTP SUCCESS ");
@@ -75,6 +76,7 @@ public class OTPService {
     }
 
     @Scheduled(fixedRate = 240_000)
+    @Transactional
     public void cleanupExpiredOTP() {
         otpRepository.deleteByExpirationTimeBefore(new Date());
         log.info("[OTPService] cleanupExpiredOTP SUCCESS");

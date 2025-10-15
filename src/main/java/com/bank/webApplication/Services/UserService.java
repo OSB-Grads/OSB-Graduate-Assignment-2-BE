@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -100,6 +102,13 @@ public class UserService {
         logService.logintoDB(UUID.fromString(id), LogEntity.Action.PROFILE_MANAGEMENT, "User Details Displayed", getUser.getName(), LogEntity.Status.SUCCESS);
         log.info("[UserService] getUserById  SUCCESS");
         return (mapper.convertToDto(getUser, UserDto.class));
+    }
+
+    // Get all users for Admin
+    public List<UserDto> getAllUsers() {
+        log.info("[User Service] getAllUsers entered SUCCESS");
+        List<UserEntity> allUsersList = userRepository.findAll();
+        return mapper.convertToDto(allUsersList,new ArrayList<UserDto>);
     }
 
 }
