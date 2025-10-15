@@ -28,11 +28,13 @@ public class OTPService {
     private OTPRepository otpRepository;
 
     private boolean isExpired(Date expirationTime) {
+        log.info("[OTPService] isExpired SUCCESS");
         return expirationTime.before(new Date());
     }
 
 
-    public UUID sendOTP(String email, UserEntity user){
+    public UUID sendOTP(String email, UserEntity user) {
+        log.info("[OTPService] sendOTP entered SUCCESS");
         Integer otp = otpGenerator.generateOtp();
 
         MailBodyDTO mailBodyDTO = MailBodyDTO.builder()
@@ -40,7 +42,7 @@ public class OTPService {
                 .subject("OTP for Forgot Password Request")
                 .text("Welcome to the Banking Application .You have forgot your Password :( . This is the OTP for your forgot Password Request. Please do not forget next time :|" + otp).build();
 
-        OTPEntity otpEntity =  otpRepository.findByUser(user)
+        OTPEntity otpEntity = otpRepository.findByUser(user)
                 .orElse(new OTPEntity());
 
         otpEntity.setOtp(otp);
@@ -48,7 +50,7 @@ public class OTPService {
         otpEntity.setUser(user);
 
         emailService.sendMessage(mailBodyDTO);
-        OTPService.log.info("[OTP SERVICE] OTP Sent Successfully");
+        OTPService.log.info("[OTPService] sendOTP SUCCESS ");
 
         System.out.println(otpEntity);
 
@@ -57,19 +59,24 @@ public class OTPService {
     }
 
     public boolean verifyOtp(UUID otpId, Integer otp) {
-
+        log.info("[OTPService] verifyOtp entered SUCCESS");
         OTPEntity otpEntity = otpRepository.findById(otpId)
-                .orElseThrow(() -> new RuntimeException("Invalid OTP ID"));
+                .orElseThrow(() -> {
+                    log.error("[OTPService] verifyOtp : Invalid OTP ID FAILURE ");
+                    return new RuntimeException("Invalid OTP ID");
+                });
 
         if (otpEntity.getOtp().equals(otp) && !isExpired(otpEntity.getExpirationTime())) {
+            log.info("[OTPService] verifyOtp  SUCCESS ");
             return true;
         }
+        log.error("[OTPService] verifyOtp  FAILURE ");
         return false;
     }
 
     @Scheduled(fixedRate = 240_000)
-    public void cleanupExpiredOTP(){
+    public void cleanupExpiredOTP() {
         otpRepository.deleteByExpirationTimeBefore(new Date());
-        log.info("[OTP DELETION] Expired OTP Deletion SUCCESS");
+        log.info("[OTPService] cleanupExpiredOTP SUCCESS");
     }
 }
