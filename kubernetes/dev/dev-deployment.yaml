@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: springboot-backend-dev
+  labels:
+    app: springboot-backend
+    env: k-dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: springboot-backend
+      env: k-dev
+  template:
+    metadata:
+      labels:
+        app: springboot-backend
+        env: k-dev
+    spec:
+      containers:
+        - name: springboot-backend
+          image: backend:dev
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "300m"
+              memory: "512Mi"
+
+          env:
+            # === Spring profile for Kubernetes dev ===
+            - name: SPRING_PROFILES_ACTIVE
+              value: "k-dev"
+
+            # === Connect to local PostgreSQL (from docker image) ===
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:postgresql://postgres:5432/devdb"
+            - name: SPRING_DATASOURCE_USERNAME
+              value: "devuser"
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: "devpassword"
+            - name: SPRING_JPA_HIBERNATE_DDL_AUTO
+              value: "update"
+
+            # === JWT secret key ===
+            - name: SPRING_JWT_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets-dev
+                  key: JWT_SECRET_KEY
+
+            # === Mail configuration ===
+            - name: SPRING_MAIL_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets-dev
+                  key: MAIL_USERNAME
+            - name: SPRING_MAIL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets-dev
+                  key: MAIL_PASSWORD
+            - name: SPRING_MAIL_HOST
+              value: "smtp.gmail.com"
+            - name: SPRING_MAIL_PORT
+              value: "587"
+            - name: SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH
+              value: "true"
+            - name: SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE
+              value: "true"
