@@ -5,6 +5,7 @@ import com.bank.webApplication.CustomException.AccessDeniedException;
 import com.bank.webApplication.CustomException.AccountNotFoundException;
 import com.bank.webApplication.CustomException.UserNotFoundException;
 import com.bank.webApplication.Dto.AccountDto;
+import com.bank.webApplication.Dto.UserDto;
 import com.bank.webApplication.Entity.AccountEntity;
 import com.bank.webApplication.Entity.LogEntity;
 import com.bank.webApplication.Entity.ProductEntity;
@@ -24,8 +25,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
-import static org.springframework.security.core.context.SecurityContextHolder.getContext;
 
 
 @Slf4j
@@ -151,6 +150,20 @@ public class AccountService {
 
         return accountDtos;
 
+    }
+
+    public List<AccountDto> getAllAccounts() {
+        log.info("[Account Service] getAllAccounts entered SUCCESS");
+        List<AccountEntity> allAccounts = accountRepository.findAll();
+        if (allAccounts.isEmpty()) {
+            log.error("[Account Service] No Accounts exist in Database");
+            throw new AccountNotFoundException("No Accounts exist in Database");
+        }
+        List<AccountDto> accountDtos = allAccounts.stream()
+                .map(account -> dtoEntityMapper.convertToDto(account, AccountDto.class))
+                .collect(Collectors.toList());
+        log.info("[Account Service] getAllAccounts  SUCCESS");
+        return accountDtos;
     }
 
 }

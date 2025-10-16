@@ -41,9 +41,6 @@ public class AccountController {
         log.info("[AccountController] Pinged CreateAccount");
 
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
-//        AuthEntity user =authRepository.findByUsername(Username)
-//                .orElseThrow(()->new UserNotFoundException("user not found"));
-//        String userId=user.getId().toString();
         AccountDto account = accountService.CreateAccount(accountDto, userId, productId);
         return new ResponseEntity<>(account, HttpStatus.OK);
     }
@@ -53,9 +50,6 @@ public class AccountController {
     public ResponseEntity<List<AccountDto>> GetAllAccounts() {
         log.info("[AccountController] Pinged GetAllAccounts");
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
-//        AuthEntity user =authRepository.findByUsername(Username)
-//                .orElseThrow(()->new UserNotFoundException("user not found"));
-//        String userId=user.getId().toString();
         List<AccountDto> account = accountService.getAllAccountsByUserId(userId);
         return new ResponseEntity<>(account, HttpStatus.OK);
 

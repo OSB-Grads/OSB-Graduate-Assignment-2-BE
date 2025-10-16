@@ -47,7 +47,7 @@ public class OTPService {
                 .orElse(new OTPEntity());
         otpEntity.setUser(user);
         otpEntity.setOtp(otp);
-        otpEntity.setExpirationTime(new Date(System.currentTimeMillis() + 180 *1000));
+        otpEntity.setExpirationTime(new Date(System.currentTimeMillis() + 180 * 1000));
 
 
         emailService.sendMessage(mailBodyDTO);

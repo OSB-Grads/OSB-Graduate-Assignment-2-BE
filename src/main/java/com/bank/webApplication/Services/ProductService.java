@@ -88,7 +88,6 @@ public class ProductService {
         System.out.println("Before"+product);
 //        System.out.println("After"+product);
         //populate the updated values into the entity
-//        product.setProductId(productDto.getProductId());
         product.setProductName(productDto.getProductName());
         product.setInterestRate(productDto.getInterestRate());
         product.setFundingWindow(productDto.getFundingWindow());
