@@ -2,6 +2,8 @@ package com.bank.webApplication.Services;
 
 
 import com.bank.webApplication.Config.MapperConfig;
+import com.bank.webApplication.CustomException.UserNotFoundException;
+import com.bank.webApplication.Dto.ProductDto;
 import com.bank.webApplication.Dto.UserDto;
 import com.bank.webApplication.Entity.LogEntity;
 import com.bank.webApplication.Entity.UserEntity;
@@ -15,8 +17,11 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -24,7 +29,8 @@ import java.util.UUID;
 public class UserService {
     @Autowired
     private final UserRepository userRepository;
-
+    @Autowired
+    private DtoEntityMapper dtoEntityMapper;
     @Autowired
     private final DtoEntityMapper mapper;
     private final LogService logService;
@@ -101,5 +107,21 @@ public class UserService {
         log.info("[UserService] getUserById  SUCCESS");
         return (mapper.convertToDto(getUser, UserDto.class));
     }
+
+    // Get all users for Admin
+    public List<UserDto> getAllUsers() {
+        log.info("[User Service] getAllAccounts entered SUCCESS");
+        List<UserEntity> allUsers = userRepository.findAll();
+        if(allUsers.isEmpty()){
+            log.error("[User Service] No Users exist in Database");
+            throw new UserNotFoundException("No Users Exist in Database");
+        }
+        List<UserDto> userDtos = allUsers.stream()
+                .map(user -> dtoEntityMapper.convertToDto(user, UserDto.class))
+                .collect(Collectors.toList());
+        log.info("[User Service] getAllAccounts  SUCCESS");
+        return userDtos;
+    }
+
 
 }

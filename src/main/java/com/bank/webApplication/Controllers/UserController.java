@@ -10,12 +10,14 @@ import com.bank.webApplication.Services.LogService;
 import com.bank.webApplication.Services.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -45,7 +47,7 @@ public class UserController {
     public ResponseEntity<UserDto> createUser(@RequestBody UserDto userDto) {
         log.info("[UserController] pinged createUser");
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
-        System.out.println("user controller user id " + userId);
+        System.out.println("User controller user id " + userId);
 
 
         UserDto Created = userService.CreateUser(userDto, userId);
