@@ -128,6 +128,7 @@ public class AccountIntegrationTest_ADMIN {
 
     }
 
+    //test get all accounts failure
     @Test
     void testGetAllAccounts_Failure() throws Exception {
         //delete accounts in database
