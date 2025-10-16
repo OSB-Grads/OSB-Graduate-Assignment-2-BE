@@ -50,9 +50,12 @@ public class UserIntegrationTests_ADMIN {
 
     @BeforeEach
     void setup() throws Exception {
+
+
         // Clear any existing data
         userRepository.deleteAll();
         authRepository.deleteAll();
+
         // Create and save AuthEntity first
         AuthEntity testAuth = AuthEntity.builder()
                 .username("testuser")
@@ -60,6 +63,8 @@ public class UserIntegrationTests_ADMIN {
                 .role(Role.ADMIN)
                 .build();
         AuthEntity savedAuth = authRepository.save(testAuth);
+
+
         // Create and save UserEntity
         UUID id1 = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
         UUID id2 = UUID.fromString("123e4568-e89c-12e3-a356-226614174000");
@@ -81,6 +86,9 @@ public class UserIntegrationTests_ADMIN {
                 "456 Main St",
                 Role.USER);
         userRepository.saveAll(List.of(u1, u2));
+
+
+        //mock login input
         String loginJson = """
                 {
                   "username": "testuser",
@@ -101,6 +109,7 @@ public class UserIntegrationTests_ADMIN {
     //test for get all users
     @Test
     void testGetAllUsers() throws Exception {
+
         //mock call users
         mockMvc.perform(get("/api/v1/admin/users")
                         .header("Authorization", "Bearer " + jwtToken)
@@ -117,6 +126,7 @@ public class UserIntegrationTests_ADMIN {
     //test for get all users Failure
     @Test
     void testGetAllUsers_Failure() throws Exception {
+
         //delete accounts in database
         userRepository.deleteAll();
         //mock call accounts

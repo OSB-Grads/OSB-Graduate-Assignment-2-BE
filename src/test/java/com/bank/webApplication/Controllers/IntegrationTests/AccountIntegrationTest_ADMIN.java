@@ -55,9 +55,10 @@ public class AccountIntegrationTest_ADMIN {
     private UserEntity testUser;
     private String jwtToken;
 
-
+    //setup
     @BeforeEach
     void setUp() throws Exception {
+
         // Clear any existing data
         accountRepository.deleteAll();
         userRepository.deleteAll();
@@ -71,8 +72,9 @@ public class AccountIntegrationTest_ADMIN {
                 .role(Role.ADMIN)
                 .build();
         AuthEntity savedAuth = authRepository.save(testAuth);
-        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+
         // Create and save UserEntity
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
         testUser = new UserEntity(
                 id,
                 "John Doe",
@@ -89,10 +91,13 @@ public class AccountIntegrationTest_ADMIN {
         ProductEntity p2 = new ProductEntity("P002", "Fixed Deposit", 7.2, 2, 1, 5, "1 Year FD");
         ProductEntity p3 = new ProductEntity("P003", "Recurring Deposit", 6.5, 2, 1, 6, "Monthly deposit plan");
         productRepository.saveAll(List.of(p1, p2, p3));
+
+
         //create and save test account
         AccountEntity a1 = new AccountEntity("102837349", testUser, p1, AccountEntity.accountType.SAVINGS, 20000.00, "2023-01-01 10:00:00", "2023-01-01 10:00:00");
         AccountEntity a2 = new AccountEntity("1932193931", testUser, p1, AccountEntity.accountType.FIXED_DEPOSIT, 30000.00, "2023-01-01 10:00:00", "2023-01-01 10:00:00");
         accountRepository.saveAll(List.of(a1, a2));
+
         // Login with mock user to get JWT token
         String loginJson = """
                 {
@@ -104,9 +109,10 @@ public class AccountIntegrationTest_ADMIN {
         MvcResult result = mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(loginJson))
+                //expect 200
                 .andExpect(status().isOk())
                 .andReturn();
-
+        //extract token from response
         String responseJson = result.getResponse().getContentAsString();
         jwtToken = JsonPath.parse(responseJson).read("$.token");
 
@@ -116,6 +122,7 @@ public class AccountIntegrationTest_ADMIN {
     @Test
     void testGetAllAccounts() throws Exception {
         //mock call accounts
+
         mockMvc.perform(get("/api/v1/admin/accounts")
                         .header("Authorization", "Bearer " + jwtToken)
                         .contentType(MediaType.APPLICATION_JSON))
@@ -131,6 +138,7 @@ public class AccountIntegrationTest_ADMIN {
     //test get all accounts failure
     @Test
     void testGetAllAccounts_Failure() throws Exception {
+
         //delete accounts in database
         accountRepository.deleteAll();
         //mock call accounts
