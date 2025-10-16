@@ -41,13 +41,13 @@ public class OTPService {
         MailBodyDTO mailBodyDTO = MailBodyDTO.builder()
                 .to(email)
                 .subject("OTP for Forgot Password Request")
-                .text("Welcome to the Banking Application .You have forgot your Password :( . This is the OTP for your forgot Password Request. Please do not forget next time :|" + otp).build();
+                .text("Welcome to the Banking Application .\n  You have forgot your Password :( . This is the OTP for your forgot Password Request :  " + otp + "\n . Please do not forget next time. ").build();
 
         OTPEntity otpEntity = otpRepository.findByUser(user)
                 .orElse(new OTPEntity());
         otpEntity.setUser(user);
         otpEntity.setOtp(otp);
-        otpEntity.setExpirationTime(new Date(System.currentTimeMillis() + 180 * 1000));
+        otpEntity.setExpirationTime(new Date(System.currentTimeMillis() + 240 * 1000));
 
 
         emailService.sendMessage(mailBodyDTO);
@@ -75,10 +75,15 @@ public class OTPService {
         return false;
     }
 
-    @Scheduled(fixedRate = 240_000)
+    @Scheduled(fixedRate = 600_000)
     @Transactional
     public void cleanupExpiredOTP() {
-        otpRepository.deleteByExpirationTimeBefore(new Date());
-        log.info("[OTPService] cleanupExpiredOTP SUCCESS");
+        if (! otpRepository.findAll().isEmpty()) {
+            otpRepository.deleteByExpirationTimeBefore(new Date());
+            log.info("[OTP Service] cleanupExpiredOTP SUCCESS");
+        }
+        else {
+            log.info("[OTP Service]No OTPs found, skipping cleanup.");
+        }
     }
 }
