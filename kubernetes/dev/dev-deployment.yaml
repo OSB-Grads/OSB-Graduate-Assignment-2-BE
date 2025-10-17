@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: springboot-backend
-          image: backend:dev
+          image: backend:dev3
           imagePullPolicy: Never
           ports:
             - containerPort: 8080
@@ -73,3 +73,8 @@ spec:
               value: "true"
             - name: SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE
               value: "true"
+
+            - name: SERVER_ADDRESS
+              value: "0.0.0.0"
+            - name: SERVER_PORT
+              value: "8080"
