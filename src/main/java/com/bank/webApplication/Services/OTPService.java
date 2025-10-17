@@ -1,6 +1,6 @@
 package com.bank.webApplication.Services;
 
-import com.bank.webApplication.CustomException.UserNotFoundException;
+
 import com.bank.webApplication.Dto.MailBodyDTO;
 import com.bank.webApplication.Entity.OTPEntity;
 import com.bank.webApplication.Entity.UserEntity;
@@ -41,7 +41,11 @@ public class OTPService {
         MailBodyDTO mailBodyDTO = MailBodyDTO.builder()
                 .to(email)
                 .subject("OTP for Forgot Password Request")
-                .text("Welcome to the Banking Application .\n  You have forgot your Password :( . This is the OTP for your forgot Password Request :  " + otp + "\n . Please do not forget next time. ").build();
+                .text("Welcome to the Banking Application .\n\n\n" +
+                        "   We received a request to reset the password for your account associated with this email.\n " +
+                        "Please use the following One-Time Password (OTP) to proceed with the password reset :  " + otp +
+                        "\n\nThis OTP is valid for the next [5 minutes].\n" +
+                        "If you did not request a password reset, please ignore this email. No changes have been made to your account. ").build();
 
         OTPEntity otpEntity = otpRepository.findByUser(user)
                 .orElse(new OTPEntity());

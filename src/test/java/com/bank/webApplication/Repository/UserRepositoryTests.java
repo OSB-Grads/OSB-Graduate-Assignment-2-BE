@@ -19,19 +19,27 @@ public class UserRepositoryTests {
     @Mock
     private UserRepository userRepository;
 
-    //Testing SaveUser And FindById
-    @Test
-    void testSaveAndFindById() {
-        UUID id = UUID.randomUUID();
+    // Helper function for create user
+    private UserEntity createTestUser(UUID id) {
         UserEntity user = new UserEntity();
         user.setId(id);
         user.setName("zaid");
         user.setEmail("zargarzaid271@gmail.com");
         user.setPhone("7889689012");
         user.setRole(Role.USER);
-        user.setAddress("Delhi");
         user.setCreated_At("2025-09-03");
         user.setUpdated_At("2025-09-03");
+        user.setAddress("Delhi");
+        return user;
+    }
+
+    //Testing SaveUser And FindById
+    @Test
+    void testSaveAndFindById() {
+
+
+        UUID id = UUID.randomUUID();
+        UserEntity user = createTestUser(id);
 
         // Mock behavior for save
         when(userRepository.save(user)).thenReturn(user);
@@ -46,8 +54,9 @@ public class UserRepositoryTests {
         // Assert
         assertThat(savedUser).isNotNull();
         assertThat(foundUser).isPresent();
-        assertThat(foundUser.get().getName()).isEqualTo("zaid");
-        assertThat(foundUser.get().getEmail()).isEqualTo("zargarzaid271@gmail.com");
+        assertThat(foundUser.get().getId()).isEqualTo(id);
+        assertThat(foundUser.get().getName()).isEqualTo(user.getName());
+        assertThat(foundUser.get().getEmail()).isEqualTo(user.getEmail());
     }
 
 
@@ -66,29 +75,37 @@ public class UserRepositoryTests {
         assertThat(foundUser).isEmpty();
     }
 
-    private UserEntity createTestUser(UUID id) {
-        UserEntity user = new UserEntity();
-        user.setId(id);
-        user.setName("zaid");
-        user.setEmail("zargarzaid271@gmail.com");
-        user.setPhone("7889689012");
-        user.setRole(Role.USER);
-        user.setCreated_At("2025-09-03");
-        user.setUpdated_At("2025-09-03");
-        user.setAddress("Delhi");
-        return user;
-    }
 
+// FindByEmail  - User Exists
     @Test
     void testFindByEmail() {
         UUID id = UUID.randomUUID();
-        String email = "zargarzaid271@gmail.com";
         UserEntity user = createTestUser(id);
 
-        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
 
-        Optional<UserEntity> foundUser = userRepository.findByEmail(email);
+        Optional<UserEntity> foundUser = userRepository.findByEmail(user.getEmail());
+
         assertThat(foundUser).isPresent();
-        assertThat(foundUser.get().getEmail()).isEqualTo(email);
+        assertThat(foundUser).isNotNull();
+        assertThat(foundUser.get().getId()).isEqualTo(id);
+        assertThat(foundUser.get().getName()).isEqualTo(user.getName());
+        assertThat(foundUser.get().getEmail()).isEqualTo(user.getEmail());
     }
+
+    // FindByEmail - User doesn't exist
+    @Test
+    void testFindByEmail_NotFound(){
+
+        String userMail = "testUser@gmail.com";
+        when(userRepository.findByEmail(userMail)).thenReturn(Optional.empty());
+
+        Optional<UserEntity> user = userRepository.findByEmail(userMail);
+
+        assertThat(user).isEmpty();
+
+    }
+
+
+
 }

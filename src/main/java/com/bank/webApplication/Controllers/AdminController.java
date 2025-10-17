@@ -39,6 +39,7 @@ public class AdminController {
         return ResponseEntity.status(HttpStatus.OK).body(allUsersList);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(path = "/accounts")
     public ResponseEntity<?> getAllAccounts() {
         log.info("[ADMIN Controller] pinged getAllAccounts");
