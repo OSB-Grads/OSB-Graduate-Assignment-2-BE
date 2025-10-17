@@ -37,6 +37,6 @@ public class OTPEntity {
     private Date expirationTime;
 
     @OneToOne
-    @JoinColumn(name = "userEmail", referencedColumnName = "email", nullable = false)
+    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
     private UserEntity user;
 }
