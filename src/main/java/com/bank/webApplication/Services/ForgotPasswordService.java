@@ -1,22 +1,18 @@
 package com.bank.webApplication.Services;
 
-import com.bank.webApplication.CustomException.InvalidCredentialsException;
 import com.bank.webApplication.CustomException.UserNotFoundException;
-import com.bank.webApplication.Dto.MailBodyDTO;
 import com.bank.webApplication.Entity.LogEntity;
-import com.bank.webApplication.Entity.OTPEntity;
 import com.bank.webApplication.Entity.UserEntity;
-import com.bank.webApplication.Repository.AuthRepository;
+//import com.bank.webApplication.Repository.AuthRepository;
 import com.bank.webApplication.Repository.OTPRepository;
 import com.bank.webApplication.Repository.UserRepository;
-import com.bank.webApplication.Util.EmailService;
-import com.bank.webApplication.Util.OTPGenerator;
-import com.bank.webApplication.Util.PasswordHash;
+//import com.bank.webApplication.Util.EmailService;
+//import com.bank.webApplication.Util.OTPGenerator;
+//import com.bank.webApplication.Util.PasswordHash;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
 import java.util.UUID;
 
 @Slf4j

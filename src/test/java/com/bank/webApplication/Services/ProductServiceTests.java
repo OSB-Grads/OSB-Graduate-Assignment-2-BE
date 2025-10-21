@@ -13,8 +13,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -57,7 +57,7 @@ public class ProductServiceTests {
         verify(dtoEntityMapper,times(1)).convertToDto(product1, ProductDto.class);
     }
 
-    //Test - getProduct - when product doesnt exists
+    //Test - getProduct - when product does not exist
     @Test
     void testGetProduct_NotFound() {
 
@@ -65,9 +65,9 @@ public class ProductServiceTests {
         //Mock Behaviour
         when(productRepository.findByProductId(productId)).thenReturn(null);
         // Logic
-        ProductNotFoundException exception = assertThrows(ProductNotFoundException.class, () -> {
-            productService.getProduct(productId);
-        });
+        ProductNotFoundException exception = assertThrows(ProductNotFoundException.class, () ->
+            productService.getProduct(productId)
+        );
 
         //Assertions
         assertEquals(" Product Not Found, Invalid Id", exception.getMessage());
@@ -101,25 +101,26 @@ public class ProductServiceTests {
         verify(dtoEntityMapper, times(2)).convertToDto(any(ProductEntity.class), eq(ProductDto.class));
     }
 
-    //Tets - getAllProducts - When No records exists
+    //Tets - getAllProducts - When No records exist
     @Test
     void testGetAllProducts_ThrowsException() {
         // Mock Behaviour
         when(productRepository.findAll()).thenThrow(new RuntimeException("Error: No Products Found in Database. "));
 
         //Logic
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            productService.getAllProducts();
-        });
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+            productService.getAllProducts()
+        );
 
         //Assertions
+        assertEquals("Error: No Products Found in Database. ",exception.getMessage());
         verify(productRepository).findAll();
         verifyNoInteractions(dtoEntityMapper);
     }
 
     //Test - createProduct
     @Test
-    void testcreateProducts_Success() {
+    void testCreateProducts_Success() {
 
         when(dtoEntityMapper.convertToEntity(productDto1, ProductEntity.class)).thenReturn(product1);
         when(productRepository.save(product1)).thenReturn(product1);
@@ -133,13 +134,13 @@ public class ProductServiceTests {
 
     //Test - createProduct - product already exists
     @Test
-    void testcreateProducts_Failure() {
+    void testCreateProducts_Failure() {
 
         when(productRepository.findByProductId("FD0043")).thenReturn(product1);
         //mock
-        Exception ex = assertThrows(ProductAlreadyExistException.class, () -> {
-            productService.createProduct(productDto1);
-        });
+        Exception ex = assertThrows(ProductAlreadyExistException.class, () ->
+            productService.createProduct(productDto1)
+        );
 
         //assert
         assertEquals("Product Already Exists", ex.getMessage());
@@ -147,7 +148,7 @@ public class ProductServiceTests {
 
     //Test - update Products - Success
     @Test
-    void testupdateProducts_Success() {
+    void testUpdateProducts_Success() {
 
         when(productRepository.findByProductId("FD0043")).thenReturn(product1);
         product1.setProductName(productDto1.getProductName());
@@ -164,19 +165,18 @@ public class ProductServiceTests {
 
     //Test - updateProduct - User DoesNot Exist
     @Test
-    void testupdateProducts_Failure() {
+    void testUpdateProducts_Failure() {
 
         when(productRepository.findByProductId("FD0043")).thenReturn(null);
-        Exception e = assertThrows(RuntimeException.class, () -> {
-            productService.updateProduct("FD0043", productDto1);
-        });
+        Exception e = assertThrows(RuntimeException.class, () ->
+            productService.updateProduct("FD0043", productDto1));
         //assert
         assertEquals(" Product Not Found or does not exist in database", e.getMessage());
     }
 
     // Test - deleteProduct - Success
     @Test
-    void testdeleteProducts_Success() {
+    void testDeleteProducts_Success() {
 
         when(productRepository.findByProductId("FD0043")).thenReturn(product1);
 
@@ -187,13 +187,11 @@ public class ProductServiceTests {
 
     // Test - deleteProduct - User DoesNot Exist
     @Test
-    void testdeleteProducts_Failure() {
+    void testDeleteProducts_Failure() {
 
         when(productRepository.findByProductId("FD0043")).thenReturn(null);
-        Exception e = assertThrows(RuntimeException.class, () -> {
-            productService.deleteProduct("FD0043");
-            ;
-        });
+        Exception e = assertThrows(RuntimeException.class, () ->  productService.deleteProduct("FD0043")
+        );
         //assert
         assertEquals(" Product Not Found or does not exist in the database", e.getMessage());
     }
