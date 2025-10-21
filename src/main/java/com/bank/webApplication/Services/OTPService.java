@@ -1,6 +1,7 @@
 package com.bank.webApplication.Services;
 
 
+import com.bank.webApplication.CustomException.InvalidCredentialsException;
 import com.bank.webApplication.Dto.MailBodyDTO;
 import com.bank.webApplication.Entity.OTPEntity;
 import com.bank.webApplication.Entity.UserEntity;
@@ -28,15 +29,21 @@ public class OTPService {
     @Autowired
     private OTPRepository otpRepository;
 
-    private boolean isExpired(Date expirationTime) {
+    public boolean isExpired(Date expirationTime) {
         log.info("[OTPService]Entered into isExpired");
         return expirationTime.before(new Date());
     }
 
-
+    @Transactional
     public UUID sendOTP(String email, UserEntity user) {
         log.info("[OTPService] Entered into sendOTP");
         Integer otp = otpGenerator.generateOtp();
+
+        OTPEntity otpEntity = otpRepository.findByUser(user)
+                .orElse(new OTPEntity());
+        otpEntity.setUser(user);
+        otpEntity.setOtp(otp);
+        otpEntity.setExpirationTime(new Date(System.currentTimeMillis() + 240 * 1000));
 
         MailBodyDTO mailBodyDTO = MailBodyDTO.builder()
                 .to(email)
@@ -46,12 +53,6 @@ public class OTPService {
                         "Please use the following One-Time Password (OTP) to proceed with the password reset :  " + otp +
                         "\n\nThis OTP is valid for the next [5 minutes].\n" +
                         "If you did not request a password reset, please ignore this email. No changes have been made to your account. ").build();
-
-        OTPEntity otpEntity = otpRepository.findByUser(user)
-                .orElse(new OTPEntity());
-        otpEntity.setUser(user);
-        otpEntity.setOtp(otp);
-        otpEntity.setExpirationTime(new Date(System.currentTimeMillis() + 240 * 1000));
 
 
         emailService.sendMessage(mailBodyDTO);
@@ -67,8 +68,8 @@ public class OTPService {
         log.info("[OTPService] verifyOtp entered SUCCESS");
         OTPEntity otpEntity = otpRepository.findById(otpId)
                 .orElseThrow(() -> {
-                    log.error("[OTPService] verifyOtp : Invalid OTP ID FAILURE ");
-                    return new RuntimeException("Invalid OTP ID");
+                    log.error("[O`TPService] verifyOtp : Invalid OTP ID FAILURE ");
+                    return new InvalidCredentialsException("Invalid OTP ID");
                 });
 
         if (otpEntity.getOtp().equals(otp) && !isExpired(otpEntity.getExpirationTime())) {

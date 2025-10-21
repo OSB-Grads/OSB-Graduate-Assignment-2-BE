@@ -50,7 +50,7 @@ public class ForgotPasswordService {
         log.info("[ForgotPasswordService] verifyEmail  SUCCESS");
 
         UUID otpId = otpService.sendOTP(email, user);
-//        logService.logintoDB(user.getId(), LogEntity.Action.PROFILE_MANAGEMENT, "OTP Sent Successfully", user.getName(), LogEntity.Status.SUCCESS);
+       // logService.logintoDB(user.getId(), LogEntity.Action.AUTHENTICATION, "OTP Sent Successfully", user.getName(), LogEntity.Status.SUCCESS);
         return otpId;
     }
 
@@ -64,7 +64,7 @@ public class ForgotPasswordService {
 
         authService.updatePassword(password, userId);
         log.info("[ForgotPasswordService]  resetPassword  SUCCESS");
-//        logService.logintoDB(userId, LogEntity.Action.PROFILE_MANAGEMENT, "Password Reset SUCCESS", user.getEmail(), LogEntity.Status.SUCCESS);
+        logService.logintoDB(userId, LogEntity.Action.AUTHENTICATION, "Password Reset SUCCESS", user.getEmail(), LogEntity.Status.SUCCESS);
 
         return true;
     }

@@ -59,9 +59,6 @@ public class TransactionService {
         LocalDateTime createdAt = LocalDateTime.parse(account.getAccountCreated(), formatter);
         LocalDateTime now = LocalDateTime.now();
 
-//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-//        String formattedDate = now.format(formatter);
-
         int tenure = account.getProduct().getTenure();
         int fundingWindow = account.getProduct().getFundingWindow();
         int coolingPeriod = account.getProduct().getCoolingPeriod();
@@ -70,25 +67,25 @@ public class TransactionService {
         LocalDateTime fundingEndDate = createdAt.plusHours(fundingWindow);
         LocalDateTime coolingStartDate = tenureEndDate.minusHours(coolingPeriod);
 
-        // Funding period → deposits & withdrawals allowed
+        // Funding period - deposits & withdrawals allowed
         if (now.isBefore(fundingEndDate)) {
             log.info("[TransactionService] isLocked  SUCCESS");
             return false;
         }
 
-        // Maturity period → locked
+        // Maturity period - locked
         if (now.isAfter(fundingEndDate) && now.isBefore(coolingStartDate)) {
             log.info("[TransactionService] isLocked  SUCCESS");
             return true;
         }
 
-        // Cooling period → deposits & withdrawals allowed
+        // Cooling period - deposits & withdrawals allowed
         if (now.isAfter(coolingStartDate) && now.isBefore(tenureEndDate)) {
             log.info("[TransactionService] isLocked  SUCCESS");
             return false;
         }
 
-        // After full tenure → unlocked
+        // After full tenure - unlocked
         if (now.isAfter(tenureEndDate)) {
             log.info("[TransactionService] isLocked  SUCCESS");
             return false;
@@ -98,9 +95,8 @@ public class TransactionService {
     }
 
 
-    /**
-     * Helper method to update account balance safely and return DTO
-     */
+    //Helper method to update account balance safely and return DTO
+
     private DepositWithdrawDTO processTransaction(AccountEntity account, double amount, TransactionEntity.type type, String successMsg, String failureMsg) {
         log.info("[TransactionService] processTransaction entered  SUCCESS");
         try {
