@@ -57,34 +57,25 @@ public class AccountService {
 
         boolean created = false;
         int attempts = 0;
-
-
         LocalDateTime now = LocalDateTime.now();
-
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         String formattedDate = now.format(formatter);
 
         accountDto.setAccountCreated(formattedDate);
         accountDto.setAccountUpdated(formattedDate);
 
-
         while (!created && attempts < 5) {
             attempts++;
             String accountNumber = generateUniqueAccountNumberUUID();
             accountDto.setAccountNumber(accountNumber);
-
             AccountEntity accountEntity = dtoEntityMapper.convertToEntity(accountDto, AccountEntity.class);
             accountEntity.setUser(user);
             accountEntity.setProduct(product);
 
             try {
-
-
                 accountRepository.save(accountEntity);
                 log.info("[Account Service] CreateAccount SUCCESS ");
                 logService.logintoDB(id, LogEntity.Action.TRANSACTIONS, "Account Created  Successful", accountDto.getAccountCreated(), LogEntity.Status.SUCCESS);
-
-
                 created = true;
                 System.out.println("Account created successfully! Account Number: " + accountNumber);
 
@@ -98,12 +89,11 @@ public class AccountService {
                 }
             }
         }
-
         return accountDto;
 
     }
 
-    private String generateUniqueAccountNumberUUID() {
+    public String generateUniqueAccountNumberUUID() {
         log.info("[Account Service] generateUniqueAccountNumberUUID  SUCCESS ");
         return String.valueOf(Math.abs(UUID.randomUUID().getMostSignificantBits())).substring(0, 10);
     }
@@ -111,15 +101,16 @@ public class AccountService {
     public AccountDto getOneAccount(String accountNumber) {
         log.info("[Account Service] getOneAccount Entered SUCCESS ");
         AccountEntity accountEntity = accountRepository.findByAccountNumber(accountNumber);
-        double accountInterest = accountEntity.getProduct().getInterestRate();
         if (accountEntity == null) {
             log.error("[Account Service] getOneAccount:Account not exit FAILURE ");
             throw new AccountNotFoundException("Account not exit");
         }
-        UUID id = accountEntity.getUser().getId();
-        String curentUser = SecurityContextHolder.getContext().getAuthentication().getName();
+        double accountInterest = accountEntity.getProduct().getInterestRate();
 
-        if (id == UUID.fromString(curentUser)) {
+        UUID id = accountEntity.getUser().getId();
+        String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        if (id == UUID.fromString(currentUser)) {
             log.error("[Account Service] getOneAccount: Not authorized to access this account FAILURE ");
             throw new AccessDeniedException("You are not authorized to access this account");
         }
@@ -128,9 +119,7 @@ public class AccountService {
         log.info("[Account Service] getOneAccount  SUCCESS ");
         logService.logintoDB(id, LogEntity.Action.TRANSACTIONS, "Account Created  Successful", accountNumber, LogEntity.Status.SUCCESS);
 
-
         return dto;
-
     }
 
     public List<AccountDto> getAllAccountsByUserId(String userId) {
@@ -138,8 +127,6 @@ public class AccountService {
         UUID id = UUID.fromString(userId);
 
         List<AccountEntity> accounts = accountRepository.findAllByUserId(id);
-
-
         List<AccountDto> accountDtos = accounts.stream()
                 .map(account -> dtoEntityMapper.convertToDto(account, AccountDto.class))
                 .collect(Collectors.toList());
@@ -147,9 +134,7 @@ public class AccountService {
         log.info("[Account Service] getAllAccountsByUserId  SUCCESS ");
         logService.logintoDB(id, LogEntity.Action.TRANSACTIONS, "Account retrieval  Successful", "ALl Counts", LogEntity.Status.SUCCESS);
 
-
         return accountDtos;
-
     }
 
     public List<AccountDto> getAllAccounts() {

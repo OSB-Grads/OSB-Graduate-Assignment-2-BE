@@ -58,12 +58,12 @@ public class ProductService {
 
     //method to create a new Product
     public ProductDto createProduct(ProductDto productDto) {
-        log.info("[ProductService] createproduct entered SUCCESS");
+        log.info("[ProductService] createProduct entered SUCCESS");
         //check if the product is already present in the database
         ProductEntity product = productRepository.findByProductId(productDto.getProductId());
         if (product != null) {
             log.error("[ProductService] createProduct: Product Already Exists FAILURE");
-            throw new ProductAlreadyExistException(" Product Already Exists");
+            throw new ProductAlreadyExistException("Product Already Exists");
         }
         //convert from dto to entity
         ProductEntity productEntity = dtoEntityMapper.convertToEntity(productDto, ProductEntity.class);

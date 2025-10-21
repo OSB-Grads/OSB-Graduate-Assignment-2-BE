@@ -13,6 +13,5 @@ public interface OTPRepository  extends JpaRepository<OTPEntity, UUID> {
 
     Optional<OTPEntity> findByOtp(Integer otp);
     Optional<OTPEntity> findByUser(UserEntity user);
-
     void deleteByExpirationTimeBefore(Date now);
 }

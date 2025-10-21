@@ -33,14 +33,15 @@ public class AdminController {
     //Fetch all users for Admin
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/users")
-    public ResponseEntity<?> getAllUsers() {
+    public ResponseEntity<List<UserDto>> getAllUsers() {
         log.info("[ADMIN Controller] pinged getAllUsers");
         List<UserDto> allUsersList = userService.getAllUsers();
         return ResponseEntity.status(HttpStatus.OK).body(allUsersList);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(path = "/accounts")
-    public ResponseEntity<?> getAllAccounts() {
+    public ResponseEntity<List<AccountDto>> getAllAccounts() {
         log.info("[ADMIN Controller] pinged getAllAccounts");
         List<AccountDto> allAccountsList = accountService.getAllAccounts();
         return ResponseEntity.status(HttpStatus.OK).body(allAccountsList);

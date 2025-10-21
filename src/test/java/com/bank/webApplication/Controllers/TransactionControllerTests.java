@@ -16,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -93,21 +94,19 @@ public class TransactionControllerTests {
         responseDto.setAccountNumber("ACC789");
         responseDto.setAmount(800.0);
 
-        when(depositAndWithdrawalOrch.depositHandler(UUID.fromString(userId), "ACC789", 200.0)).thenReturn(responseDto);
-
+        when(depositAndWithdrawalOrch.WithdrawalHandler(UUID.fromString(userId), "ACC789",200.0))
+                .thenReturn(responseDto);
         // When
         ResponseEntity<?> response = transactionController.withdraw(request);
 
         // Then
         assertNotNull(response);
-        assertEquals(200, response.getStatusCodeValue());
-        assertTrue(response.getBody() instanceof DepositWithdrawDTO);
-
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(responseDto, response.getBody());
+        verify(depositAndWithdrawalOrch).WithdrawalHandler(UUID.fromString(userId), "ACC789",200.0);
         DepositWithdrawDTO returned = (DepositWithdrawDTO) response.getBody();
         assertEquals("ACC789", returned.getAccountNumber());
         assertEquals(800.0, returned.getAmount());
-
-        verify(depositAndWithdrawalOrch, times(1)).depositHandler(UUID.fromString(userId), "ACC789", 200.0);
     }
 
     @Test

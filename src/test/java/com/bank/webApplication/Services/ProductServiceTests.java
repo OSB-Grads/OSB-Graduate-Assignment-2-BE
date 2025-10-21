@@ -1,6 +1,6 @@
 package com.bank.webApplication.Services;
-
-
+import com.bank.webApplication.CustomException.ProductAlreadyExistException;
+import com.bank.webApplication.CustomException.ProductNotFoundException;
 import com.bank.webApplication.Dto.ProductDto;
 import com.bank.webApplication.Entity.ProductEntity;
 import com.bank.webApplication.Repository.ProductRepository;
@@ -13,8 +13,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -27,86 +27,59 @@ public class ProductServiceTests {
     private ProductRepository productRepository;
     @Mock
     private DtoEntityMapper dtoEntityMapper;
-    @Mock
-    private ProductDto productDto1;
-    @Mock
-    private ProductEntity product1;
+
+    public ProductDto productDto1, productDto2;
+    public ProductEntity product1, product2;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        productDto1 = new ProductDto();
-        productDto1.setProductId("FD0043");
-        productDto1.setProductName("3  pLAN");
-        productDto1.setInterestRate(1.0);
-        productDto1.setFundingWindow(3);
-        productDto1.setDescription("3 year plan with the interestRate of 6.1");
-        productDto1.setTenure(10);
-
-        product1 = new ProductEntity();
-        product1.setProductId("FD0043");
-        product1.setProductName("3  pLAN");
-        product1.setInterestRate(1.0);
-        product1.setFundingWindow(3);
-        product1.setDescription("3 year plan with the interestRate of 6.1");
-        product1.setTenure(10);
-        productRepository.save(product1);
+        productDto1 = new ProductDto("FD0043","3 plan",1.0,3,0,10,"3 year plan with the interestRate of 6.1");
+        product1 = new ProductEntity("FD0043","3 plan",1.0,3,0,10,"3 year plan with the interestRate of 6.1");
+//        productRepository.save(product1);
     }
 
-
+    //Test - getProduct - when product exists
     @Test
-    void testGetProduct() {
-
-        String productId = "FD01";
-        ProductEntity product = new ProductEntity();
-        product.setProductId(productId);
-
-        ProductDto productDto = new ProductDto();
-        productDto.setProductId(productId);
+    void testGetProduct_Success() {
 
         //Mock Behaviour
-        when(productRepository.findById(productId)).thenReturn(Optional.ofNullable(product));
-        when(dtoEntityMapper.convertToDto(product, ProductDto.class)).thenReturn(productDto);
+        when(productRepository.findByProductId(product1.getProductId())).thenReturn(product1);
+        when(dtoEntityMapper.convertToDto(product1, ProductDto.class)).thenReturn(productDto1);
 
         // Logic
-        ProductDto result = productService.getProduct(productId);
+        ProductDto result = productService.getProduct(product1.getProductId());
 
         //Assertions
         assertNotNull(result);
-        assertEquals(productId, result.getProductId());
-        verify(productRepository).findById(productId);
-        verify(dtoEntityMapper).convertToDto(product, ProductDto.class);
+        assertEquals(productDto1.getProductId(), result.getProductId());
+        verify(productRepository,times(1)).findByProductId(product1.getProductId());
+        verify(dtoEntityMapper,times(1)).convertToDto(product1, ProductDto.class);
     }
 
+    //Test - getProduct - when product does not exist
     @Test
     void testGetProduct_NotFound() {
 
         String productId = "1234";
-
         //Mock Behaviour
-        when(productRepository.findById(productId)).thenReturn(Optional.empty());
-
+        when(productRepository.findByProductId(productId)).thenReturn(null);
         // Logic
-        NullPointerException exception = assertThrows(NullPointerException.class, () -> {
-            productService.getProduct(productId);
-        });
+        ProductNotFoundException exception = assertThrows(ProductNotFoundException.class, () ->
+            productService.getProduct(productId)
+        );
 
         //Assertions
-        verify(productRepository).findById(productId);
+        assertEquals(" Product Not Found, Invalid Id", exception.getMessage());
+        verify(productRepository,times(1)).findByProductId(productId);
         verifyNoInteractions(dtoEntityMapper);
     }
-
+    //Test - getAllProducts - When records exist
     @Test
     void testGetAllProducts() {
-        ProductEntity product1 = new ProductEntity();
-        product1.setProductId("FD01");
-        ProductEntity product2 = new ProductEntity();
-        product2.setProductId("FD01");
 
-        ProductDto productDto1 = new ProductDto();
-        productDto1.setProductId("SV02");
-        ProductDto productDto2 = new ProductDto();
-        productDto2.setProductId("SV02");
+        product2 = new ProductEntity("FD0044","1 plan",1.0,3,0,10,"1 year plan with the interestRate of 6.1");
+        productDto2 = new ProductDto("FD0044","1 plan",1.0,3,0,10,"1 year plan with the interestRate of 6.1");
 
         //Mock Behaviour
         List<ProductEntity> products = List.of(product1, product2);
@@ -119,32 +92,35 @@ public class ProductServiceTests {
 
         //Assertions
         assertNotNull(result);
-        assertEquals(productDto1.getProductId(), result.getFirst().getProductId());
-        assertEquals(productDto2.getProductId(), result.get(1).getProductId());
         assertEquals(2, result.size());
-        verify(productRepository).findAll();
+        assertEquals(productDto1.getProductId(), result.get(0).getProductId());
+        assertEquals(productDto2.getProductId(), result.get(1).getProductId());
         verify(productRepository).findAll();
         verify(dtoEntityMapper).convertToDto(product1, ProductDto.class);
+        verify(dtoEntityMapper).convertToDto(product2, ProductDto.class);
         verify(dtoEntityMapper, times(2)).convertToDto(any(ProductEntity.class), eq(ProductDto.class));
     }
 
+    //Tets - getAllProducts - When No records exist
     @Test
     void testGetAllProducts_ThrowsException() {
         // Mock Behaviour
         when(productRepository.findAll()).thenThrow(new RuntimeException("Error: No Products Found in Database. "));
 
         //Logic
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            productService.getAllProducts();
-        });
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+            productService.getAllProducts()
+        );
 
         //Assertions
+        assertEquals("Error: No Products Found in Database. ",exception.getMessage());
         verify(productRepository).findAll();
         verifyNoInteractions(dtoEntityMapper);
     }
 
+    //Test - createProduct
     @Test
-    void testcreateProducts_Success() {
+    void testCreateProducts_Success() {
 
         when(dtoEntityMapper.convertToEntity(productDto1, ProductEntity.class)).thenReturn(product1);
         when(productRepository.save(product1)).thenReturn(product1);
@@ -156,22 +132,25 @@ public class ProductServiceTests {
 
     }
 
+    //Test - createProduct - product already exists
     @Test
-    void testcreateProducts_FailureUserAlreadyExist() {
+    void testCreateProducts_Failure() {
 
-        when(productRepository.findById("FD0043")).thenReturn(Optional.of(product1));
+        when(productRepository.findByProductId("FD0043")).thenReturn(product1);
         //mock
-        Exception e = assertThrows(RuntimeException.class, () -> {
-            productService.createProduct(productDto1);
-        });
+        Exception ex = assertThrows(ProductAlreadyExistException.class, () ->
+            productService.createProduct(productDto1)
+        );
+
         //assert
-        assertEquals(" Product Already Exists", e.getMessage());
+        assertEquals("Product Already Exists", ex.getMessage());
     }
 
+    //Test - update Products - Success
     @Test
-    void testupdateProducts_Success() {
+    void testUpdateProducts_Success() {
 
-        when(productRepository.findById("FD0043")).thenReturn(Optional.of(product1));
+        when(productRepository.findByProductId("FD0043")).thenReturn(product1);
         product1.setProductName(productDto1.getProductName());
         product1.setInterestRate(productDto1.getInterestRate());
         product1.setFundingWindow(productDto1.getFundingWindow());
@@ -184,33 +163,35 @@ public class ProductServiceTests {
         assertNotNull(response);
     }
 
+    //Test - updateProduct - User DoesNot Exist
     @Test
-    void testupdateProducts_FailureUserDoesNotExist() {
+    void testUpdateProducts_Failure() {
 
-        //mock dto
-        when(productRepository.findById("FD0043")).thenReturn(Optional.empty());
-        Exception e = assertThrows(RuntimeException.class, () -> {
-            productService.updateProduct("FD0043", productDto1);
-        });
+        when(productRepository.findByProductId("FD0043")).thenReturn(null);
+        Exception e = assertThrows(RuntimeException.class, () ->
+            productService.updateProduct("FD0043", productDto1));
         //assert
         assertEquals(" Product Not Found or does not exist in database", e.getMessage());
     }
 
+    // Test - deleteProduct - Success
     @Test
-    void testdeleteProducts_Success() {
+    void testDeleteProducts_Success() {
 
-        when(productRepository.findById("FD0043")).thenReturn(Optional.of(product1));
+        when(productRepository.findByProductId("FD0043")).thenReturn(product1);
+
         productService.deleteProduct("FD0043");
+
+        verify(productRepository).deleteById("FD0043");
     }
 
+    // Test - deleteProduct - User DoesNot Exist
     @Test
-    void testdeleteProducts_FailureUserDoesNotExist() {
+    void testDeleteProducts_Failure() {
 
-        when(productRepository.findById("FD0043")).thenReturn(Optional.empty());
-        Exception e = assertThrows(RuntimeException.class, () -> {
-            productService.deleteProduct("FD0043");
-            ;
-        });
+        when(productRepository.findByProductId("FD0043")).thenReturn(null);
+        Exception e = assertThrows(RuntimeException.class, () ->  productService.deleteProduct("FD0043")
+        );
         //assert
         assertEquals(" Product Not Found or does not exist in the database", e.getMessage());
     }
