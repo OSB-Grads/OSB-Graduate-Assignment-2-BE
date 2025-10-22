@@ -22,7 +22,7 @@ stages:
             - checkout: self
 
             # Run the CI script
-            - task: AzureCLI@2
+            - task: Bash@3
               inputs:
                 azureSubscription: "MyAzureServiceConnection"  # DevOps service connection
                 scriptType: bash
