@@ -1,0 +1,29 @@
+trigger:
+  branches:
+    include:
+      - main
+
+variables:
+  acrName: "acrbankingapp"           # Your ACR name
+  imageName: "backend"       # Docker image name
+  dockerfilePath: "Dockerfile"
+  imageTag: "$(Build.BuildId)"  # Unique tag per build
+
+stages:
+  - stage: Build
+    displayName: "CI - Build & Push Docker Image"
+    jobs:
+      - job: BuildAndPush
+        pool:
+          vmImage: "ubuntu-latest"
+        steps:
+          - checkout: self
+
+          # Run the CI script
+          - task: AzureCLI@2
+            inputs:
+              azureSubscription: "MyAzureServiceConnection"  # DevOps service connection
+              scriptType: bash
+              scriptLocation: scriptPath
+              scriptPath: "./ci-build-and-push.sh"
+              arguments: "$(acrName) $(imageName) $(dockerfilePath) $(imageTag)"
