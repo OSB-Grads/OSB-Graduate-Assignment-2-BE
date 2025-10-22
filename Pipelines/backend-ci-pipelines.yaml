@@ -27,7 +27,7 @@ stages:
           - task: Bash@3
             displayName: "Build & Push Docker Image"
             inputs:
-              filePath: './ci-build-and-push.sh'
+              filePath: './Pipelines/ci-build-and-push.sh'
               arguments: '$(acrName) $(imageName) $(dockerfilePath) $(imageTag)'
               workingDirectory: '$(Build.SourcesDirectory)'
               failOnStderr: false
