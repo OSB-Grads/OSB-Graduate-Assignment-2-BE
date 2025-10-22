@@ -30,7 +30,7 @@ stages:
     jobs:
       - job: DeployToAKS
         pool:
-          vmImage: "ubuntu-latest"
+          vmImage: "windows-latest"
         steps:
           - checkout: self
 
@@ -42,21 +42,22 @@ stages:
               RunAsPreJob: false
             displayName: "Fetch Secrets from Azure Key Vault"
 
-          - script: |
-              echo " Injecting secrets into YAML..."
-              sed -i "s|<DB_USER>|$(DB_USER)|g" $(secretFile)
-              sed -i "s|<DB_PASSWORD>|$(DB_PASSWORD)|g" $(secretFile)
-              sed -i "s|<DB_NAME>|$(DB_NAME)|g" $(secretFile)
-              sed -i "s|<MAIL_USERNAME>|$(MAIL_USERNAME)|g" $(secretFile)
-              sed -i "s|<MAIL_PASSWORD>|$(MAIL_PASSWORD)|g" $(secretFile)
-              sed -i "s|<JWT_SECRET_KEY>|$(JWT_SECRET_KEY)|g" $(secretFile)
-            displayName: "Replace Secret Placeholders"
+          - powershell: |
+              Write-Host "Injecting secrets into YAML..."
+              (Get-Content "$(secretFile)") `
+                  -replace "<DB_USER>", "$(DB_USER)" `
+                  -replace "<DB_PASSWORD>", "$(DB_PASSWORD)" `
+                  -replace "<DB_NAME>", "$(DB_NAME)" `
+                  -replace "<MAIL_USERNAME>", "$(MAIL_USERNAME)" `
+                  -replace "<MAIL_PASSWORD>", "$(MAIL_PASSWORD)" `
+                  -replace "<JWT_SECRET_KEY>", "$(JWT_SECRET_KEY)" | Set-Content "$(secretFile)"
+              displayName: "Replace Secret Placeholders"
 
-          - task: PowerShell@2
+          - task: AzurePowerShell@5
             inputs:
               azureSubscription: "$(azureServiceConnection)"
-              scriptType: bash
+              scriptType: 'FilePath'
               scriptLocation: scriptPath
-              scriptPath: "./Pipelines/Backend-CD.ps1"
+              scriptPath: "'$(Build.SourcesDirectory)/Backend-CD.ps1"
               arguments: "$(resourceGroup) $(aksCluster) $(namespace) $(deploymentFile) $(secretFile) $(acrName) $(imageName) $(imageTag)"
             displayName: "Deploy Backend to AKS"
