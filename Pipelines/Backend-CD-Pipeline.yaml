@@ -52,11 +52,11 @@ stages:
               sed -i "s|<JWT_SECRET_KEY>|$(JWT_SECRET_KEY)|g" $(secretFile)
             displayName: "Replace Secret Placeholders"
 
-          - task: AzureCLI@2
+          - task: PowerShell@2
             inputs:
               azureSubscription: "$(azureServiceConnection)"
               scriptType: bash
               scriptLocation: scriptPath
-              scriptPath: "./Backend-CD.sh"
+              scriptPath: "./Pipelines/Backend-CD.ps1"
               arguments: "$(resourceGroup) $(aksCluster) $(namespace) $(deploymentFile) $(secretFile) $(acrName) $(imageName) $(imageTag)"
             displayName: "Deploy Backend to AKS"
