@@ -24,10 +24,10 @@ stages:
           - checkout: self
 
           # Run the Bash script
-          - task: Bash@3
+          - task: PowerShell@2
             displayName: "Build & Push Docker Image"
             inputs:
-              filePath: './Pipelines/ci-build-and-push.sh'
+              filePath: './Pipelines/ci-build-and-push.ps1'
               arguments: '$(acrName) $(imageName) $(dockerfilePath) $(imageTag)'
               workingDirectory: '$(Build.SourcesDirectory)'
               failOnStderr: false
