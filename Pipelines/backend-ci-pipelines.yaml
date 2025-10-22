@@ -4,28 +4,30 @@ trigger:
       - main
 
 variables:
-  acrName: "acrbankingapp"           # Your ACR name
-  imageName: "backend"       # Docker image name
+  System.Debug: true       # Enable detailed logs
+  acrName: "acrbankingapp"
+  imageName: "backend"
   dockerfilePath: "Dockerfile"
-  imageTag: "$(Build.BuildId)"  # Unique tag per build
+  imageTag: "$(Build.BuildId)"
 
 stages:
   - stage: Build
     displayName: "CI - Build & Push Docker Image"
     jobs:
       - job: BuildAndPush
+        displayName: "Build & Push Docker Image Job"
         pool:
           name: Default
           demands:
             - docker
-          steps:
-            - checkout: self
+        steps:
+          - checkout: self
 
-            # Run the CI script
-            - task: Bash@3
-              inputs:
-                azureSubscription: "MyAzureServiceConnection"  # DevOps service connection
-                scriptType: bash
-                scriptLocation: scriptPath
-                scriptPath: "./ci-build-and-push.sh"
-                arguments: "$(acrName) $(imageName) $(dockerfilePath) $(imageTag)"
+          # Run the Bash script
+          - task: Bash@3
+            displayName: "Build & Push Docker Image"
+            inputs:
+              filePath: './ci-build-and-push.sh'
+              arguments: '$(acrName) $(imageName) $(dockerfilePath) $(imageTag)'
+              workingDirectory: '$(Build.SourcesDirectory)'
+              failOnStderr: false
