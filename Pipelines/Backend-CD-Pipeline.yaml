@@ -1,0 +1,62 @@
+trigger:
+  branches:
+    include:
+      - main
+
+resources:
+  pipelines:
+    - pipeline: backend-ci
+      source: backend-ci
+      trigger:
+        branches:
+          include:
+            - main
+
+variables:
+  azureServiceConnection: "MyAzureServiceConnection"
+  resourceGroup: "rg-banking-app"
+  aksCluster: "aks-banking-cluster"
+  namespace: "default"
+  deploymentFile: "kubernetes/prod/deployment.yaml"
+  secretFile: "kubernetes/prod/secret.yaml"
+  acrName: "acrbankingapp"
+  imageName: "backend-CI"
+  imageTag: "v1"
+  keyVaultName: "kv-banking-app"
+
+stages:
+  - stage: Deploy
+    displayName: "Deploy Backend to AKS"
+    jobs:
+      - job: DeployToAKS
+        pool:
+          vmImage: "ubuntu-latest"
+        steps:
+          - checkout: self
+
+          - task: AzureKeyVault@2
+            inputs:
+              azureSubscription: "$(azureServiceConnection)"
+              KeyVaultName: "$(keyVaultName)"
+              SecretsFilter: '*'
+              RunAsPreJob: false
+            displayName: "Fetch Secrets from Azure Key Vault"
+
+          - script: |
+              echo " Injecting secrets into YAML..."
+              sed -i "s|<DB_USER>|$(DB_USER)|g" $(secretFile)
+              sed -i "s|<DB_PASSWORD>|$(DB_PASSWORD)|g" $(secretFile)
+              sed -i "s|<DB_NAME>|$(DB_NAME)|g" $(secretFile)
+              sed -i "s|<MAIL_USERNAME>|$(MAIL_USERNAME)|g" $(secretFile)
+              sed -i "s|<MAIL_PASSWORD>|$(MAIL_PASSWORD)|g" $(secretFile)
+              sed -i "s|<JWT_SECRET_KEY>|$(JWT_SECRET_KEY)|g" $(secretFile)
+            displayName: "Replace Secret Placeholders"
+
+          - task: AzureCLI@2
+            inputs:
+              azureSubscription: "$(azureServiceConnection)"
+              scriptType: bash
+              scriptLocation: scriptPath
+              scriptPath: "./Backend-CD.sh"
+              arguments: "$(resourceGroup) $(aksCluster) $(namespace) $(deploymentFile) $(secretFile) $(acrName) $(imageName) $(imageTag)"
+            displayName: "Deploy Backend to AKS"
