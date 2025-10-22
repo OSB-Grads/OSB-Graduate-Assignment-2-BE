@@ -1,4 +1,4 @@
-Monica Chinnappa 10/23/2025 1:50 AM • # Exit on any error
+
 $ErrorActionPreference = "Stop"
 
 # Function to log messages and flush immediately
