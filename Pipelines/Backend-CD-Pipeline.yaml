@@ -35,6 +35,7 @@ stages:
         steps:
           - checkout: self
 
+          # Fetch all secrets from Key Vault
           - task: AzureKeyVault@2
             inputs:
               azureSubscription: "$(azureServiceConnection)"
@@ -43,22 +44,33 @@ stages:
               RunAsPreJob: false
             displayName: "Fetch Secrets from Azure Key Vault"
 
+          # Replace placeholders in secret YAML
           - powershell: |
               Write-Host "Injecting secrets into YAML..."
-              (Get-Content "$(secretFile)") `
-                  -replace "<DB_USER>", "$(DB_USER)" `
-                  -replace "<DB_PASSWORD>", "$(DB_PASSWORD)" `
-                  -replace "<DB_NAME>", "$(DB_NAME)" `
-                  -replace "<MAIL_USERNAME>", "$(MAIL_USERNAME)" `
-                  -replace "<MAIL_PASSWORD>", "$(MAIL_PASSWORD)" `
-                  -replace "<JWT_SECRET_KEY>", "$(JWT_SECRET_KEY)" | Set-Content "$(secretFile)"
-              displayName: "Replace Secret Placeholders"
+              $secretFile = "$(secretFile)"
+              
+              $DB_USER = $env:DB_USER
+              $DB_PASSWORD = $env:DB_PASSWORD
+              $DB_NAME = $env:DB_NAME
+              $MAIL_USERNAME = $env:MAIL_USERNAME
+              $MAIL_PASSWORD = $env:MAIL_PASSWORD
+              $JWT_SECRET_KEY = $env:JWT_SECRET_KEY
 
+              (Get-Content $secretFile) `
+                -replace "<DB_USER>", $DB_USER `
+                -replace "<DB_PASSWORD>", $DB_PASSWORD `
+                -replace "<DB_NAME>", $DB_NAME `
+                -replace "<MAIL_USERNAME>", $MAIL_USERNAME `
+                -replace "<MAIL_PASSWORD>", $MAIL_PASSWORD `
+                -replace "<JWT_SECRET_KEY>", $JWT_SECRET_KEY | Set-Content $secretFile
+            displayName: "Replace Secret Placeholders"
+
+          # Deploy to AKS using PowerShell script
           - task: AzurePowerShell@5
             inputs:
               azureSubscription: "$(azureServiceConnection)"
               scriptType: 'FilePath'
-              scriptLocation: scriptPath
-              scriptPath: "'$(Build.SourcesDirectory)/Backend-CD.ps1"
+              scriptLocation: 'scriptPath'
+              scriptPath: "$(Build.SourcesDirectory)/Backend-CD.ps1"
               arguments: "$(resourceGroup) $(aksCluster) $(namespace) $(deploymentFile) $(secretFile) $(acrName) $(imageName) $(imageTag)"
             displayName: "Deploy Backend to AKS"
