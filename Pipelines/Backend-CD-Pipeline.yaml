@@ -30,7 +30,7 @@ stages:
     jobs:
       - job: DeployToAKS
         pool:
-          vmImage: "windows-latest"
+          vmImage: "local-ci-agent"
         steps:
           - checkout: self
 
