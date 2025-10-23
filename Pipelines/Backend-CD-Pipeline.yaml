@@ -30,7 +30,8 @@ stages:
     jobs:
       - job: DeployToAKS
         pool:
-          name: "local-ci-agent"
+          name: Default
+
         steps:
           - checkout: self
 
