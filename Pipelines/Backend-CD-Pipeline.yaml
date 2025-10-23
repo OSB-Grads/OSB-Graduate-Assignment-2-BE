@@ -19,9 +19,9 @@ variables:
   namespace: "default"
   deploymentFile: "kubernetes/prod/deployment.yaml"
   secretFile: "kubernetes/prod/secret.yaml"
-  acrName: "acrbankingapp"
-  imageName: "backend-CI"
-  imageTag: "v1"
+  acrName: "acrbankingapp.azurecr.io"
+  imageName: "backend"
+  imageTag: "$(Build.BuildId)"
   keyVaultName: "kv-banking-app"
 
 stages:
@@ -30,10 +30,11 @@ stages:
     jobs:
       - job: DeployToAKS
         pool:
-          vmImage: "windows-latest"
+          name: Default            # <-- ensure this pool is authorized for the project
         steps:
           - checkout: self
 
+          # Fetch all secrets from Key Vault
           - task: AzureKeyVault@2
             inputs:
               azureSubscription: "$(azureServiceConnection)"
@@ -42,22 +43,63 @@ stages:
               RunAsPreJob: false
             displayName: "Fetch Secrets from Azure Key Vault"
 
+          # Replace placeholders in secret YAML and deployment YAML (single step)
           - powershell: |
-              Write-Host "Injecting secrets into YAML..."
-              (Get-Content "$(secretFile)") `
-                  -replace "<DB_USER>", "$(DB_USER)" `
-                  -replace "<DB_PASSWORD>", "$(DB_PASSWORD)" `
-                  -replace "<DB_NAME>", "$(DB_NAME)" `
-                  -replace "<MAIL_USERNAME>", "$(MAIL_USERNAME)" `
-                  -replace "<MAIL_PASSWORD>", "$(MAIL_PASSWORD)" `
-                  -replace "<JWT_SECRET_KEY>", "$(JWT_SECRET_KEY)" | Set-Content "$(secretFile)"
-              displayName: "Replace Secret Placeholders"
+              Write-Host "Injecting secrets into YAML and replacing deployment placeholders..."
 
+              $secretFile = "$(secretFile)"
+              $deploymentFile = "$(deploymentFile)"
+
+              # Secrets fetched by AzureKeyVault@2 are available as environment variables
+              $DB_USER      = $env:DB_USER
+              $DB_PASSWORD  = $env:DB_PASSWORD
+              $DB_NAME      = $env:DB_NAME
+              $MAIL_USERNAME = $env:MAIL_USERNAME
+              $MAIL_PASSWORD = $env:MAIL_PASSWORD
+              $JWT_SECRET_KEY = $env:JWT_SECRET_KEY
+
+              # Pipeline variables (expanded by Azure DevOps at runtime)
+              $ACR_NAME = "$(acrName)"
+              $IMAGE_NAME = "$(imageName)"
+              $IMAGE_TAG = "$(imageTag)"
+
+              if (-not (Test-Path $secretFile)) {
+                Write-Error "Secret file not found: $secretFile"
+                exit 1
+              }
+              if (-not (Test-Path $deploymentFile)) {
+                Write-Error "Deployment file not found: $deploymentFile"
+                exit 1
+              }
+
+              # Replace placeholders in secret YAML
+              (Get-Content $secretFile -Raw) `
+                -replace "<DB_USER>", [RegEx]::Escape($DB_USER) `
+                -replace "<DB_PASSWORD>", [RegEx]::Escape($DB_PASSWORD) `
+                -replace "<DB_NAME>", [RegEx]::Escape($DB_NAME) `
+                -replace "<MAIL_USERNAME>", [RegEx]::Escape($MAIL_USERNAME) `
+                -replace "<MAIL_PASSWORD>", [RegEx]::Escape($MAIL_PASSWORD) `
+                -replace "<JWT_SECRET_KEY>", [RegEx]::Escape($JWT_SECRET_KEY) |
+                Set-Content $secretFile -Force
+
+              Write-Host "Replaced secrets in $secretFile"
+
+              # Replace ACR/image details in deployment YAML
+              (Get-Content $deploymentFile -Raw) `
+                -replace "<ACR_NAME>", $ACR_NAME `
+                -replace "<IMAGE_NAME>", $IMAGE_NAME `
+                -replace "<TAG>", $IMAGE_TAG |
+                Set-Content $deploymentFile -Force
+
+              Write-Host "Replaced image details in $deploymentFile"
+            displayName: "Replace Secret & Deployment Placeholders"
+
+          # Deploy to AKS using PowerShell script
           - task: AzurePowerShell@5
             inputs:
               azureSubscription: "$(azureServiceConnection)"
-              scriptType: 'FilePath'
-              scriptLocation: scriptPath
-              scriptPath: "'$(Build.SourcesDirectory)/Backend-CD.ps1"
-              arguments: "$(resourceGroup) $(aksCluster) $(namespace) $(deploymentFile) $(secretFile) $(acrName) $(imageName) $(imageTag)"
+              ScriptType: 'FilePath'
+              ScriptPath: './Pipelines/Backend-CD.ps1'
+              ScriptArguments: '$(resourceGroup) $(aksCluster) $(namespace) $(deploymentFile) $(secretFile) $(acrName) $(imageName) $(imageTag)'
+              azurePowerShellVersion: 'LatestVersion'
             displayName: "Deploy Backend to AKS"
