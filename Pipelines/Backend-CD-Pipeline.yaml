@@ -69,8 +69,8 @@ stages:
           - task: AzurePowerShell@5
             inputs:
               azureSubscription: "$(azureServiceConnection)"
-              scriptType: 'FilePath'
-              scriptLocation: 'scriptPath'
-              scriptPath: "$(Build.SourcesDirectory)/Backend-CD.ps1"
-              arguments: "$(resourceGroup) $(aksCluster) $(namespace) $(deploymentFile) $(secretFile) $(acrName) $(imageName) $(imageTag)"
+              ScriptType: 'FilePath'
+              ScriptPath: '$(Build.SourcesDirectory)/Backend-CD.ps1'
+              ScriptArguments: '$(resourceGroup) $(aksCluster) $(namespace) $(deploymentFile) $(secretFile) $(acrName) $(imageName) $(imageTag)'
+              azurePowerShellVersion: 'LatestVersion'
             displayName: "Deploy Backend to AKS"
