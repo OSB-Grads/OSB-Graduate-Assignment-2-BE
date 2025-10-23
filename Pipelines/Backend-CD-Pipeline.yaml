@@ -48,6 +48,7 @@ stages:
           - powershell: |
               Write-Host "Injecting secrets into YAML..."
               $secretFile = "$(secretFile)"
+              $deploymentFile = "$(deploymentFile)"
               
               $DB_USER = $env:DB_USER
               $DB_PASSWORD = $env:DB_PASSWORD
@@ -55,6 +56,9 @@ stages:
               $MAIL_USERNAME = $env:MAIL_USERNAME
               $MAIL_PASSWORD = $env:MAIL_PASSWORD
               $JWT_SECRET_KEY = $env:JWT_SECRET_KEY
+              $ACR_NAME = "$(acrName)"
+              $IMAGE_NAME = "$(imageName)"
+              $IMAGE_TAG = "$(imageTag)"
 
               (Get-Content $secretFile) `
                 -replace "<DB_USER>", $DB_USER `
@@ -64,6 +68,13 @@ stages:
                 -replace "<MAIL_PASSWORD>", $MAIL_PASSWORD `
                 -replace "<JWT_SECRET_KEY>", $JWT_SECRET_KEY | Set-Content $secretFile
             displayName: "Replace Secret Placeholders"
+
+              # Replace ACR details in deployment.yaml
+              (Get-Content $deploymentFile) `
+                -replace "<ACR_NAME>", $ACR_NAME `
+                -replace "<IMAGE_NAME>", $IMAGE_NAME `
+                -replace "<TAG>", $IMAGE_TAG | Set-Content $deploymentFile
+             displayName: "Replace Deployment Placeholders"
 
           # Deploy to AKS using PowerShell script
           - task: AzurePowerShell@5
