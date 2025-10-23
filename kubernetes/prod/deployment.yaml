@@ -56,20 +56,20 @@ spec:
             - name: SPRING_JWT_SECRET_KEY
               valueFrom:
                 secretKeyRef:
-                  name: jwt-secret-dev
+                  name: azure-postgres-secret-prod
                   key: JWT_SECRET_KEY
 
             # === Mail configuration ===
             - name: SPRING_MAIL_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: mail-secret-dev
+                  name: azure-postgres-secret-prod
                   key: MAIL_USERNAME
 
             - name: SPRING_MAIL_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: mail-secret-dev
+                  name: azure-postgres-secret-prod
                   key: MAIL_PASSWORD
 
             - name: SPRING_MAIL_HOST
