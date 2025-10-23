@@ -6,7 +6,7 @@ metadata:
     app: springboot-backend
     env: prod
 spec:
-  replicas: 2   # Multiple pods for high availability
+  replicas: 3   # Multiple pods for high availability
   selector:
     matchLabels:
       app: springboot-backend
