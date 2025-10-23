@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: springboot-backend
-          image:  <ACR_NAME>.azurecr.io/<IMAGE_NAME>:<TAG>   # ACR image
+          image:  <ACR_NAME>/<IMAGE_NAME>:<TAG>   # ACR image
           ports:
             - containerPort: 8080
           resources:
