@@ -21,6 +21,7 @@ variables:
   secretFile: "kubernetes/prod/secret.yaml"
   acrName: "acrbankingapp"
   imageName: "backend"
+  imageTag: "$(resources.pipeline.backendCI.runId)"
   keyVaultName: "kv-banking-app"
 
 stages:
@@ -60,7 +61,7 @@ stages:
               # Pipeline variables (expanded by Azure DevOps at runtime)
               $ACR_NAME = "$(acrName)"
               $IMAGE_NAME = "$(imageName)"
-              $IMAGE_TAG = $[ resources.pipeline.backendCI.runId ]
+              $IMAGE_TAG = "$(imageTag)"
 
               if (-not (Test-Path $secretFile)) {
                 Write-Error "Secret file not found: $secretFile"
