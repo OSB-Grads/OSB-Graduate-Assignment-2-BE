@@ -19,7 +19,7 @@ variables:
   namespace: "default"
   deploymentFile: "kubernetes/prod/deployment.yaml"
   secretFile: "kubernetes/prod/secret.yaml"
-  acrName: "acrbankingapp"
+  acrName: "acrbankingapp.azurecr.io"
   imageName: "backend"
   imageTag: "$(Build.BuildId)"
   keyVaultName: "kv-banking-app"
