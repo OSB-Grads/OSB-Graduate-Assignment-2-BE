@@ -21,7 +21,7 @@ variables:
   secretFile: "kubernetes/prod/secret.yaml"
   acrName: "acrbankingapp"
   imageName: "backend"
-  imageTag:  $[resources.pipeline.backendCI.runId]
+  imageTag: "$(resources.pipeline.backendCI.runId)"
   keyVaultName: "kv-banking-app"
 
 stages:
