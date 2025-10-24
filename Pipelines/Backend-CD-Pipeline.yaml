@@ -75,12 +75,13 @@ stages:
 
               # Replace placeholders in secret YAML
               $content = Get-Content $secretFile -Raw
-              $content = $content -replace "<DB_USER>", $DB_USER
-              $content = $content -replace "<DB_PASSWORD>", $DB_PASSWORD
-              $content = $content -replace "<DB_URL>", $DB_URL
-              $content = $content -replace "<MAIL_USERNAME>", $MAIL_USERNAME
-              $content = $content -replace "<MAIL_PASSWORD>", $MAIL_PASSWORD                -replace "<JWT_SECRET_KEY>", $JWT_SECRET_KEY |
-              $content = $content -replace "<JWT_SECRET_KEY>", $JWT_SECRET_KEY
+              $content = ($content -replace "<DB_USER>", $DB_USER)
+              $content = ($content -replace "<DB_PASSWORD>", $DB_PASSWORD)
+              $content = ($content -replace "<DB_URL>", $DB_URL)
+              $content = ($content -replace "<MAIL_USERNAME>", $MAIL_USERNAME)
+              $content = ($content -replace "<MAIL_PASSWORD>", $MAIL_PASSWORD)                
+              $content = ($content -replace "<JWT_SECRET_KEY>", $JWT_SECRET_KEY)
+              
               Set-Content -Path $secretFile -Value $content -Force
 
               Write-Host "Replaced secrets in $secretFile"
