@@ -1,11 +1,11 @@
-trigger:
-  branches:
-    include:
-      - main
+#trigger:
+#  branches:
+#    include:
+#      - main
 
 resources:
   pipelines:
-    - pipeline: backend-ci
+    - pipeline: backendCI
       source: backend-ci
       trigger:
         branches:
@@ -19,14 +19,15 @@ variables:
   namespace: "default"
   deploymentFile: "kubernetes/prod/deployment.yaml"
   secretFile: "kubernetes/prod/secret.yaml"
-  acrName: "acrbankingapp.azurecr.io"
+  acrName: "acrbankingapp"
   imageName: "backend"
-  imageTag: "$(Build.BuildId)"
+  imageTag: "$(resources.pipeline.backendCI.runId)"
   keyVaultName: "kv-banking-app"
 
 stages:
   - stage: Deploy
     displayName: "Deploy Backend to AKS"
+#    condition: succeeded('resources.pipeline.backendCI')
     jobs:
       - job: DeployToAKS
         pool:
@@ -53,7 +54,7 @@ stages:
               # Secrets fetched by AzureKeyVault@2 are available as environment variables
               $DB_USER      = $env:DB_USER
               $DB_PASSWORD  = $env:DB_PASSWORD
-              $DB_NAME      = $env:DB_NAME
+              $DB_URL      = $env:DB_URL
               $MAIL_USERNAME = $env:MAIL_USERNAME
               $MAIL_PASSWORD = $env:MAIL_PASSWORD
               $JWT_SECRET_KEY = $env:JWT_SECRET_KEY
@@ -73,14 +74,14 @@ stages:
               }
 
               # Replace placeholders in secret YAML
-              (Get-Content $secretFile -Raw) `
-                -replace "<DB_USER>", [RegEx]::Escape($DB_USER) `
-                -replace "<DB_PASSWORD>", [RegEx]::Escape($DB_PASSWORD) `
-                -replace "<DB_NAME>", [RegEx]::Escape($DB_NAME) `
-                -replace "<MAIL_USERNAME>", [RegEx]::Escape($MAIL_USERNAME) `
-                -replace "<MAIL_PASSWORD>", [RegEx]::Escape($MAIL_PASSWORD) `
-                -replace "<JWT_SECRET_KEY>", [RegEx]::Escape($JWT_SECRET_KEY) |
-                Set-Content $secretFile -Force
+              $content = Get-Content $secretFile -Raw
+              $content = $content -replace "<DB_USER>", $DB_USER
+              $content = $content -replace "<DB_PASSWORD>", $DB_PASSWORD
+              $content = $content -replace "<DB_URL>", $DB_URL
+              $content = $content -replace "<MAIL_USERNAME>", $MAIL_USERNAME
+              $content = $content -replace "<MAIL_PASSWORD>", $MAIL_PASSWORD                -replace "<JWT_SECRET_KEY>", $JWT_SECRET_KEY |
+              $content = $content -replace "<JWT_SECRET_KEY>", $JWT_SECRET_KEY
+              Set-Content -Path $secretFile -Value $content -Force
 
               Write-Host "Replaced secrets in $secretFile"
 
