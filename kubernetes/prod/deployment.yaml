@@ -6,7 +6,7 @@ metadata:
     app: springboot-backend
     env: prod
 spec:
-  replicas: 2   # Multiple pods for high availability
+  replicas: 1   # Multiple pods for high availability
   selector:
     matchLabels:
       app: springboot-backend
@@ -22,13 +22,13 @@ spec:
           image:  <ACR_NAME>.azurecr.io/<IMAGE_NAME>:<TAG>   # ACR image
           ports:
             - containerPort: 8080
-          resources:
-            requests:
-              cpu: "250m"
-              memory: "512Mi"
-            limits:
-              cpu: "500m"
-              memory: "1Gi"
+#          resources:
+#            requests:
+#              cpu: "250m"
+#              memory: "512Mi"
+#            limits:
+#              cpu: "500m"
+#              memory: "1Gi"
           env:
             # === Database connection variables ===
             - name: SPRING_DATASOURCE_URL
@@ -56,20 +56,20 @@ spec:
             - name: SPRING_JWT_SECRET_KEY
               valueFrom:
                 secretKeyRef:
-                  name: jwt-secret-dev
+                  name: azure-postgres-secret-prod
                   key: JWT_SECRET_KEY
 
             # === Mail configuration ===
             - name: SPRING_MAIL_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: mail-secret-dev
+                  name: azure-postgres-secret-prod
                   key: MAIL_USERNAME
 
             - name: SPRING_MAIL_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: mail-secret-dev
+                  name: azure-postgres-secret-prod
                   key: MAIL_PASSWORD
 
             - name: SPRING_MAIL_HOST
