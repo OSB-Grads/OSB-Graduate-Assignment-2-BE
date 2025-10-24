@@ -1,7 +1,7 @@
-# trigger:
-#   branches:
-#     include:
-#       - main
+#trigger:
+#  branches:
+#    include:
+#      - main
 
 resources:
   pipelines:
@@ -52,17 +52,17 @@ stages:
               $deploymentFile = "$(deploymentFile)"
 
               # Secrets fetched by AzureKeyVault@2 are available as environment variables
-              $DB_USER       = $env:DB_USER
-              $DB_PASSWORD   = $env:DB_PASSWORD
-              $DB_URL        = $env:DB_URL
+              $DB_USER      = $env:DB_USER
+              $DB_PASSWORD  = $env:DB_PASSWORD
+              $DB_URL      = $env:DB_URL
               $MAIL_USERNAME = $env:MAIL_USERNAME
               $MAIL_PASSWORD = $env:MAIL_PASSWORD
               $JWT_SECRET_KEY = $env:JWT_SECRET_KEY
 
               # Pipeline variables (expanded by Azure DevOps at runtime)
-              $ACR_NAME   = "$(acrName)"
+              $ACR_NAME = "$(acrName)"
               $IMAGE_NAME = "$(imageName)"
-              $IMAGE_TAG  = "$(imageTag)"
+              $IMAGE_TAG = "$(imageTag)"
 
               if (-not (Test-Path $secretFile)) {
                 Write-Error "Secret file not found: $secretFile"
@@ -72,7 +72,6 @@ stages:
                 Write-Error "Deployment file not found: $deploymentFile"
                 exit 1
               }
-
               # List all environment variables fetched from Key Vault (DB, MAIL, JWT, etc.)
               Get-ChildItem Env: | Where-Object { $_.Name -match 'DB|MAIL|JWT' } | Sort-Object Name | Format-Table -AutoSize
 
@@ -85,13 +84,13 @@ stages:
               Write-Host "MAIL_PASSWORD: $(MAIL_PASSWORD)"
               Write-Host "JWT_SECRET_KEY: $(JWT_SECRET_KEY)"
 
-              # Replace placeholders in secret YAML
+    # Replace placeholders in secret YAML
               $content = Get-Content $secretFile -Raw
               $content = ($content -replace "<DB_USER>", $DB_USER)
               $content = ($content -replace "<DB_PASSWORD>", $DB_PASSWORD)
               $content = ($content -replace "<DB_URL>", $DB_URL)
               $content = ($content -replace "<MAIL_USERNAME>", $MAIL_USERNAME)
-              $content = ($content -replace "<MAIL_PASSWORD>", $MAIL_PASSWORD)
+              $content = ($content -replace "<MAIL_PASSWORD>", $MAIL_PASSWORD)                
               $content = ($content -replace "<JWT_SECRET_KEY>", $JWT_SECRET_KEY)
               
               Set-Content -Path $secretFile -Value $content -Force
