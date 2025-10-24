@@ -5,7 +5,7 @@ trigger:
 
 resources:
   pipelines:
-    - pipeline: backend-ci
+    - pipeline: backendCI
       source: backend-ci
       trigger:
         branches:
@@ -19,7 +19,7 @@ variables:
   namespace: "default"
   deploymentFile: "kubernetes/prod/deployment.yaml"
   secretFile: "kubernetes/prod/secret.yaml"
-  acrName: "acrbankingapp.azurecr.io"
+  acrName: "acrbankingapp"
   imageName: "backend"
   imageTag: "$(resources.pipeline.backendCI.runId)"
   keyVaultName: "kv-banking-app"
@@ -53,7 +53,7 @@ stages:
               # Secrets fetched by AzureKeyVault@2 are available as environment variables
               $DB_USER      = $env:DB_USER
               $DB_PASSWORD  = $env:DB_PASSWORD
-              $DB_NAME      = $env:DB_NAME
+              $DB_URL      = $env:DB_URL
               $MAIL_USERNAME = $env:MAIL_USERNAME
               $MAIL_PASSWORD = $env:MAIL_PASSWORD
               $JWT_SECRET_KEY = $env:JWT_SECRET_KEY
