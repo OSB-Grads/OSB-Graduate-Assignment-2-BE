@@ -86,7 +86,7 @@ stages:
                     Set-Content $deploymentFile -Force
                 Write-Host "Replaced image details in $deploymentFile"
 
-#            azurePowerShellVersion: 'LatestVersion'
+            azurePowerShellVersion: ''7.7.0''
             displayName: "Fetch KeyVault Secrets & Replace YAML"
 
           # Deploy to AKS using PowerShell script
@@ -96,5 +96,5 @@ stages:
               ScriptType: 'FilePath'
               ScriptPath: './Pipelines/Backend-CD.ps1'
               ScriptArguments: '$(resourceGroup) $(aksCluster) $(namespace) $(deploymentFile) $(secretFile) $(acrName) $(imageName) $(imageTag)'
-              azurePowerShellVersion: 'LatestVersion'
+              azurePowerShellVersion: ''7.7.0''
             displayName: "Deploy Backend to AKS"
