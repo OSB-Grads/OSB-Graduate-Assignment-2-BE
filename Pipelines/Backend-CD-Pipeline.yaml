@@ -34,75 +34,60 @@ stages:
         steps:
           - checkout: self
 
-          # Install Az.KeyVault module if not present
-          - powershell: |
-              if (-not (Get-Module -ListAvailable -Name Az.KeyVault)) {
-                  Install-Module -Name Az.KeyVault -Force -Scope CurrentUser
-              }
-            displayName: "Ensure Az.KeyVault module is installed"
+          # Fetch secrets and replace placeholders
+          - task: AzurePowerShell@5
+            inputs:
+              azureSubscription: "$(azureServiceConnection)"
+              ScriptType: 'InlineScript'
+              Inline: |
+                Write-Host "Fetching secrets from Key Vault and replacing YAML placeholders..."
 
-          # Fetch secrets dynamically and replace YAML placeholders
-          - powershell: |
-              Write-Host "Injecting secrets into YAML and replacing deployment placeholders..."
+                $keyVaultName = "$(keyVaultName)"
+                $secretFile = "$(secretFile)"
+                $deploymentFile = "$(deploymentFile)"
 
-              $secretFile = "$(secretFile)"
-              $deploymentFile = "$(deploymentFile)"
-              $keyVaultName = "$(keyVaultName)"
+                # Fetch secrets from Key Vault
+                $DB_USER       = (Get-AzKeyVaultSecret -VaultName $keyVaultName -Name "DB_USER").SecretValueText
+                $DB_PASSWORD   = (Get-AzKeyVaultSecret -VaultName $keyVaultName -Name "DB_PASSWORD").SecretValueText
+                $DB_URL        = (Get-AzKeyVaultSecret -VaultName $keyVaultName -Name "DB_URL").SecretValueText
+                $MAIL_USERNAME = (Get-AzKeyVaultSecret -VaultName $keyVaultName -Name "MAIL_USERNAME").SecretValueText
+                $MAIL_PASSWORD = (Get-AzKeyVaultSecret -VaultName $keyVaultName -Name "MAIL_PASSWORD").SecretValueText
+                $JWT_SECRET_KEY= (Get-AzKeyVaultSecret -VaultName $keyVaultName -Name "JWT_SECRET_KEY").SecretValueText
 
-              # Validate files
-              if (-not (Test-Path $secretFile)) {
-                  Write-Error "Secret file not found: $secretFile"
-                  exit 1
-              }
-              if (-not (Test-Path $deploymentFile)) {
-                  Write-Error "Deployment file not found: $deploymentFile"
-                  exit 1
-              }
+                # Debug: confirm fetched values (optional, remove in production)
+                Write-Host "`n--- Fetched Secrets ---"
+                Write-Host "DB_USER: $DB_USER"
+                Write-Host "DB_PASSWORD: $DB_PASSWORD"
+                Write-Host "DB_URL: $DB_URL"
+                Write-Host "MAIL_USERNAME: $MAIL_USERNAME"
+                Write-Host "MAIL_PASSWORD: $MAIL_PASSWORD"
+                Write-Host "JWT_SECRET_KEY: $JWT_SECRET_KEY"
 
-              # Authenticate to Azure using the service connection environment variables
-              Connect-AzAccount -ServicePrincipal -Tenant $env:AZURE_TENANT_ID `
-                  -Credential (New-Object PSCredential($env:AZURE_CLIENT_ID,(ConvertTo-SecureString $env:AZURE_CLIENT_SECRET -AsPlainText -Force)))
+                # Replace placeholders in secret YAML
+                $content = Get-Content $secretFile -Raw
+                $content = ($content -replace "<DB_USER>", $DB_USER)
+                $content = ($content -replace "<DB_PASSWORD>", $DB_PASSWORD)
+                $content = ($content -replace "<DB_URL>", $DB_URL)
+                $content = ($content -replace "<MAIL_USERNAME>", $MAIL_USERNAME)
+                $content = ($content -replace "<MAIL_PASSWORD>", $MAIL_PASSWORD)
+                $content = ($content -replace "<JWT_SECRET_KEY>", $JWT_SECRET_KEY)
+                Set-Content -Path $secretFile -Value $content -Force
+                Write-Host "Replaced secrets in $secretFile"
 
-              # Fetch secrets dynamically
-              $DB_USER       = (Get-AzKeyVaultSecret -VaultName $keyVaultName -Name "DB_USER").SecretValueText
-              $DB_PASSWORD   = (Get-AzKeyVaultSecret -VaultName $keyVaultName -Name "DB_PASSWORD").SecretValueText
-              $DB_URL        = (Get-AzKeyVaultSecret -VaultName $keyVaultName -Name "DB_URL").SecretValueText
-              $MAIL_USERNAME = (Get-AzKeyVaultSecret -VaultName $keyVaultName -Name "MAIL_USERNAME").SecretValueText
-              $MAIL_PASSWORD = (Get-AzKeyVaultSecret -VaultName $keyVaultName -Name "MAIL_PASSWORD").SecretValueText
-              $JWT_SECRET_KEY= (Get-AzKeyVaultSecret -VaultName $keyVaultName -Name "JWT_SECRET_KEY").SecretValueText
+                # Replace image details in deployment YAML
+                $ACR_NAME   = "$(acrName)"
+                $IMAGE_NAME = "$(imageName)"
+                $IMAGE_TAG  = "$(imageTag)"
 
-              # Debug: confirm values fetched
-              Write-Host "`n--- Fetched Secrets ---"
-              Write-Host "DB_USER: $DB_USER"
-              Write-Host "DB_PASSWORD: $DB_PASSWORD"
-              Write-Host "DB_URL: $DB_URL"
-              Write-Host "MAIL_USERNAME: $MAIL_USERNAME"
-              Write-Host "MAIL_PASSWORD: $MAIL_PASSWORD"
-              Write-Host "JWT_SECRET_KEY: $JWT_SECRET_KEY"
+                (Get-Content $deploymentFile -Raw) `
+                    -replace "<ACR_NAME>", $ACR_NAME `
+                    -replace "<IMAGE_NAME>", $IMAGE_NAME `
+                    -replace "<TAG>", $IMAGE_TAG |
+                    Set-Content $deploymentFile -Force
+                Write-Host "Replaced image details in $deploymentFile"
 
-              # Replace placeholders in secret YAML
-              $content = Get-Content $secretFile -Raw
-              $content = ($content -replace "<DB_USER>", $DB_USER)
-              $content = ($content -replace "<DB_PASSWORD>", $DB_PASSWORD)
-              $content = ($content -replace "<DB_URL>", $DB_URL)
-              $content = ($content -replace "<MAIL_USERNAME>", $MAIL_USERNAME)
-              $content = ($content -replace "<MAIL_PASSWORD>", $MAIL_PASSWORD)
-              $content = ($content -replace "<JWT_SECRET_KEY>", $JWT_SECRET_KEY)
-              Set-Content -Path $secretFile -Value $content -Force
-              Write-Host "Replaced secrets in $secretFile"
-
-              # Replace ACR/image details in deployment YAML
-              $ACR_NAME   = "$(acrName)"
-              $IMAGE_NAME = "$(imageName)"
-              $IMAGE_TAG  = "$(imageTag)"
-
-              (Get-Content $deploymentFile -Raw) `
-                  -replace "<ACR_NAME>", $ACR_NAME `
-                  -replace "<IMAGE_NAME>", $IMAGE_NAME `
-                  -replace "<TAG>", $IMAGE_TAG |
-                  Set-Content $deploymentFile -Force
-              Write-Host "Replaced image details in $deploymentFile"
-            displayName: "Fetch KeyVault Secrets and Replace YAML Placeholders"
+            azurePowerShellVersion: 'LatestVersion'
+            displayName: "Fetch KeyVault Secrets & Replace YAML"
 
           # Deploy to AKS using PowerShell script
           - task: AzurePowerShell@5
