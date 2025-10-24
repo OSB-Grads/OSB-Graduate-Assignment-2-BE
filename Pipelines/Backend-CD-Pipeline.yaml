@@ -72,8 +72,19 @@ stages:
                 Write-Error "Deployment file not found: $deploymentFile"
                 exit 1
               }
+              # List all environment variables fetched from Key Vault (DB, MAIL, JWT, etc.)
+              Get- ChildItem Env: | Where-Object { $_.Name -match 'DB|MAIL|JWT' } | Sort-Object Name | Format-Table -AutoSize
 
-              # Replace placeholders in secret YAML
+          # Optional: print specific ones clearly
+              Write-Host "`n--- Specific Secret Values ---"
+              Write-Host "DB_USER: $env:DB_USER"
+              Write-Host "DB_PASSWORD: $env:DB_PASSWORD"
+              Write-Host "DB_URL: $env:DB_URL"
+              Write-Host "MAIL_USERNAME: $env:MAIL_USERNAME"
+              Write-Host "MAIL_PASSWORD: $env:MAIL_PASSWORD"
+              Write-Host "JWT_SECRET_KEY: $env:JWT_SECRET_KEY"
+
+    # Replace placeholders in secret YAML
               $content = Get-Content $secretFile -Raw
               $content = ($content -replace "<DB_USER>", $DB_USER)
               $content = ($content -replace "<DB_PASSWORD>", $DB_PASSWORD)
