@@ -5,7 +5,7 @@ trigger:
 
 resources:
   pipelines:
-    - pipeline: backendCI
+    - pipeline: backend-ci
       source: backend-ci
       trigger:
         branches:
@@ -19,7 +19,7 @@ variables:
   namespace: "default"
   deploymentFile: "kubernetes/prod/deployment.yaml"
   secretFile: "kubernetes/prod/secret.yaml"
-  acrName: "acrbankingapp"
+  acrName: "acrbankingapp.azurecr.io"
   imageName: "backend"
   imageTag: "$(resources.pipeline.backendCI.runId)"
   keyVaultName: "kv-banking-app"
@@ -74,12 +74,12 @@ stages:
 
               # Replace placeholders in secret YAML
               (Get-Content $secretFile -Raw) `
-                -replace "<DB_USER>", [RegEx]::Escape($DB_USER) `
-                -replace "<DB_PASSWORD>", [RegEx]::Escape($DB_PASSWORD) `
-                -replace "<DB_URL>", [RegEx]::Escape($DB_URL) `
-                -replace "<MAIL_USERNAME>", [RegEx]::Escape($MAIL_USERNAME) `
-                -replace "<MAIL_PASSWORD>", [RegEx]::Escape($MAIL_PASSWORD) `
-                -replace "<JWT_SECRET_KEY>", [RegEx]::Escape($JWT_SECRET_KEY) |
+                .Replace("<DB_USER>", $DB_USER)
+                .Replace("<DB_PASSWORD>", $DB_PASSWORD)
+                .Replace("<DB_URL>", $DB_URL)
+                .Replace("<MAIL_USERNAME>", $MAIL_USERNAME)
+                .Replace("<MAIL_PASSWORD>", $MAIL_PASSWORD)
+                .Replace("<JWT_SECRET_KEY>", $JWT_SECRET_KEY) |
                 Set-Content $secretFile -Force
 
               Write-Host "Replaced secrets in $secretFile"
