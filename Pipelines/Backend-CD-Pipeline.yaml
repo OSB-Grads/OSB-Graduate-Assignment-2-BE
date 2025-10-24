@@ -13,7 +13,7 @@ resources:
             - main
 
 variables:
-  azureServiceConnection: "MyAzureServiceConnection"
+  myServiceConnection: "MyServiceConnection"
   resourceGroup: "rg-banking-app"
   aksCluster: "aks-banking-cluster"
   namespace: "default"
@@ -22,7 +22,7 @@ variables:
   acrName: "acrbankingapp"
   imageName: "backend"
   imageTag: "$(resources.pipeline.backendCI.runId)"
-  keyVaultName: "kv-banking-app"
+  keyVaultName: "kvBankingApp"
 
 stages:
   - stage: Deploy
@@ -38,7 +38,7 @@ stages:
           # Fetch all secrets from Key Vault
           - task: AzureKeyVault@2
             inputs:
-              azureSubscription: "$(azureServiceConnection)"
+              azureSubscription: "$(myServiceConnection)"
               KeyVaultName: "$(keyVaultName)"
               SecretsFilter: 'DB_USER,DB_PASSWORD,DB_URL,MAIL_USERNAME,MAIL_PASSWORD,JWT_SECRET_KEY'
               RunAsPreJob: false
