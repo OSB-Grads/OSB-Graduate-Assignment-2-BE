@@ -117,7 +117,7 @@ stages:
           # Deploy to AKS using PowerShell script
           - task: AzurePowerShell@5
             inputs:
-              azureSubscription: "$(azureServiceConnection)"
+              azureSubscription: "$(myServiceConnection)"
               ScriptType: 'FilePath'
               ScriptPath: './Pipelines/Backend-CD.ps1'
               ScriptArguments: '$(resourceGroup) $(aksCluster) $(namespace) $(deploymentFile) $(secretFile) $(acrName) $(imageName) $(imageTag)'
