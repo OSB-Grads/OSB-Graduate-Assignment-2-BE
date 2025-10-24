@@ -3,6 +3,8 @@ trigger:
     include:
       - main
 
+pr: none
+
 variables:
   System.Debug: true       # Enable detailed logs
   acrName: "acrbankingapp"
