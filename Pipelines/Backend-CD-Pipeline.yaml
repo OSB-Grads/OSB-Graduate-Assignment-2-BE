@@ -86,7 +86,7 @@ stages:
                     Set-Content $deploymentFile -Force
                 Write-Host "Replaced image details in $deploymentFile"
 
-            azurePowerShellVersion: 'LatestVersion'
+#            azurePowerShellVersion: 'LatestVersion'
             displayName: "Fetch KeyVault Secrets & Replace YAML"
 
           # Deploy to AKS using PowerShell script
