@@ -40,19 +40,25 @@ stages:
             inputs:
               azureSubscription: "$(azureServiceConnection)"
               KeyVaultName: "$(keyVaultName)"
-              SecretsFilter: '*'
+              SecretsFilter: 'DB_USER,DB_PASSWORD,DB_URL,MAIL_USERNAME,MAIL_PASSWORD,JWT_SECRET_KEY'
               RunAsPreJob: false
             displayName: "Fetch Secrets from Azure Key Vault"
+
+          - powershell: |
+              Write-Host "=== Debug: Environment Variables with DB/MAIL/JWT ==="
+              Get-ChildItem Env: | Where-Object { $_.Name -match 'DB|MAIL|JWT' } | Sort-Object Name | Format-Table -AutoSize
+            displayName: "Debug - Check Secrets from Key Vault"
+
 
           # Replace placeholders in secret YAML and deployment YAML
           - powershell: |
               Write-Host "Injecting secrets into YAML and replacing deployment placeholders..."
-
               $secretFile = "$(secretFile)"
               $deploymentFile = "$(deploymentFile)"
 
               # Secrets fetched by AzureKeyVault@2 are available as environment variables
-              $DB_USER       = $env:DB_USER
+              $DB_USER = $env:DB_USER
+              if (-not $DB_USER) { $DB_USER = $env:"DB-USER" }
               $DB_PASSWORD   = $env:DB_PASSWORD
               $DB_URL        = $env:DB_URL
               $MAIL_USERNAME = $env:MAIL_USERNAME
