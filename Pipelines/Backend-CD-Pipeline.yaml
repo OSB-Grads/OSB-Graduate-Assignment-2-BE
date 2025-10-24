@@ -27,7 +27,7 @@ variables:
 stages:
   - stage: Deploy
     displayName: "Deploy Backend to AKS"
-    condition: succeeded('resources.pipeline.backendCI')
+#    condition: succeeded('resources.pipeline.backendCI')
     jobs:
       - job: DeployToAKS
         pool:
