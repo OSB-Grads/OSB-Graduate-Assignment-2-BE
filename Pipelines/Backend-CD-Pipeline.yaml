@@ -27,11 +27,11 @@ variables:
 stages:
   - stage: Deploy
     displayName: "Deploy Backend to AKS"
-    # condition: succeeded('resources.pipeline.backendCI')
+#    condition: succeeded('resources.pipeline.backendCI')
     jobs:
       - job: DeployToAKS
         pool:
-          name: Default    # <-- ensure this pool is authorized for the project
+          name: Default            # <-- ensure this pool is authorized for the project
         steps:
           - checkout: self
 
@@ -95,6 +95,7 @@ stages:
               $content = ($content -replace "<JWT_SECRET_KEY>", $JWT_SECRET_KEY)
               
               Set-Content -Path $secretFile -Value $content -Force
+
               Write-Host "Replaced secrets in $secretFile"
 
               # Replace ACR/image details in deployment YAML
