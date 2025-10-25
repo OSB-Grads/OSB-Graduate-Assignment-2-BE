@@ -78,6 +78,7 @@ stages:
             displayName: "Apply secret.yaml to AKS"
             inputs:
               azureSubscription: "$(myServiceConnection)"
+              azureSubscriptionEndpoint: "$(myServiceConnection)"
               connectionType: "Azure Resource Manager"
               azureResourceGroup: "$(resourceGroup)"
               kubernetesCluster: "$(aksCluster)"
