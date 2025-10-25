@@ -40,7 +40,7 @@ stages:
             inputs:
               azureSubscription: "$(myServiceConnection)"
               KeyVaultName: "$(keyVaultName)"
-              # Key Vault secret names cannot contain underscores. Use hyphenated secret names here.
+              # Key Vault secret names
               SecretsFilter: 'DB-USER,DB-PASSWORD,DB-URL,MAIL-USERNAME,MAIL-PASSWORD,JWT-SECRET-KEY'
               RunAsPreJob: false
             displayName: "Fetch Secrets from Azure Key Vault"
@@ -89,12 +89,44 @@ stages:
 
               # Print presence/masked info for the specific secrets (avoid printing values)
               Write-Host "`n--- Secret Presence (masked) ---"
-              Write-Host ("DB_USER: " + (if ($DB_USER) { "[SET]" } else { "<missing>" }))
-              Write-Host ("DB_PASSWORD: " + (if ($DB_PASSWORD) { "[SET]" } else { "<missing>" }))
-              Write-Host ("DB_URL: " + (if ($DB_URL) { "[SET]" } else { "<missing>" }))
-              Write-Host ("MAIL_USERNAME: " + (if ($MAIL_USERNAME) { "[SET]" } else { "<missing>" }))
-              Write-Host ("MAIL_PASSWORD: " + (if ($MAIL_PASSWORD) { "[SET]" } else { "<missing>" }))
-              Write-Host ("JWT_SECRET_KEY: " + (if ($JWT_SECRET_KEY) { "[SET]" } else { "<missing>" }))
+              # assign statuses explicitly to avoid inline conditional expressions
+              if ($DB_USER) {
+                  $dbUserStatus = '[SET]'
+              } else {
+                  $dbUserStatus = '<missing>'
+              }
+              if ($DB_PASSWORD) {
+                  $dbPasswordStatus = '[SET]'
+              } else {
+                  $dbPasswordStatus = '<missing>'
+              }
+              if ($DB_URL) {
+                  $dbUrlStatus = '[SET]'
+              } else {
+                  $dbUrlStatus = '<missing>'
+              }
+              if ($MAIL_USERNAME) {
+                  $mailUserStatus = '[SET]'
+              } else {
+                  $mailUserStatus = '<missing>'
+              }
+              if ($MAIL_PASSWORD) {
+                  $mailPasswordStatus = '[SET]'
+              } else {
+                  $mailPasswordStatus = '<missing>'
+              }
+              if ($JWT_SECRET_KEY) {
+                  $jwtStatus = '[SET]'
+              } else {
+                  $jwtStatus = '<missing>'
+              }
+
+              Write-Host "DB_USER: $dbUserStatus"
+              Write-Host "DB_PASSWORD: $dbPasswordStatus"
+              Write-Host "DB_URL: $dbUrlStatus"
+              Write-Host "MAIL_USERNAME: $mailUserStatus"
+              Write-Host "MAIL_PASSWORD: $mailPasswordStatus"
+              Write-Host "JWT_SECRET_KEY: $jwtStatus"
 
               # Replace placeholders in secret YAML (only when the secret value exists)
               $content = Get-Content $secretFile -Raw
