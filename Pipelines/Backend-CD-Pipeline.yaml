@@ -41,7 +41,7 @@ stages:
             inputs:
               azureSubscription: "$(myServiceConnection)"
               KeyVaultName: "$(keyVaultName)"
-              SecretsFilter: '*'
+              SecretsFilter: 'DB-USER,DB-PASSWORD,DB-URL,MAIL-USERNAME,MAIL-PASSWORD,JWT-SECRET-KEY'
               RunAsPreJob: true
             displayName: "Fetch Secrets from Azure Key Vault"
 
@@ -68,7 +68,7 @@ stages:
             displayName: "Get AKS credentials"
             inputs:
               azureSubscription: "$(myServiceConnection)"
-              scriptType: bash
+              scriptType: ps
               scriptLocation: inlineScript
               inlineScript: |
                 az aks get-credentials --resource-group $(resourceGroup) --name $(aksCluster) --overwrite-existing
