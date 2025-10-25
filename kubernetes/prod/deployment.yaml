@@ -35,19 +35,19 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: azure-postgres-secret-prod
-                  key: DB-URL
+                  key: DB_URL
 
             - name: SPRING_DATASOURCE_USERNAME
               valueFrom:
                 secretKeyRef:
                   name: azure-postgres-secret-prod
-                  key: DB-USER
+                  key: DB_USER
 
             - name: SPRING_DATASOURCE_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: azure-postgres-secret-prod
-                  key: DB-PASSWORD
+                  key: DB_PASSWORD
 
             - name: SPRING_JPA_HIBERNATE_DDL_AUTO
               value: "update"
@@ -57,20 +57,20 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: azure-postgres-secret-prod
-                  key: JWT-SECRET-KEY
+                  key: JWT_SECRET_KEY
 
             # === Mail configuration ===
             - name: SPRING_MAIL_USERNAME
               valueFrom:
                 secretKeyRef:
                   name: azure-postgres-secret-prod
-                  key: MAIL-USERNAME
+                  key: MAIL_USERNAME
 
             - name: SPRING_MAIL_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: azure-postgres-secret-prod
-                  key: MAIL-PASSWORD
+                  key: MAIL_PASSWORD
 
             - name: SPRING_MAIL_HOST
               value: "smtp.gmail.com"
@@ -85,6 +85,7 @@ spec:
               value: "true"
 
               #===active profile defining===
+
             - name: SPRING_PROFILES_ACTIVE
               value: "prod"
 
