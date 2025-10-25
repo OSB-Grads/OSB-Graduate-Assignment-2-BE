@@ -77,8 +77,8 @@ stages:
           - task: Kubernetes@1
             displayName: "Apply secret.yaml to AKS"
             inputs:
-              connectionType: "Azure Resource Manager"
               azureSubscription: "$(myServiceConnection)"
+              connectionType: "Azure Resource Manager"
               azureResourceGroup: "$(resourceGroup)"
               kubernetesCluster: "$(aksCluster)"
               command: "apply"
