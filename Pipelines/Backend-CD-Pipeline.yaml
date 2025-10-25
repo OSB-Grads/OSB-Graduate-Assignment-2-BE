@@ -53,6 +53,7 @@ stages:
           - task: FileTransform@1
             displayName: "File Transform - Apply secret.yaml"
             inputs:
+              azureSubscription: "$(myServiceConnection)"
               folderPath: "kubernetes/prod"
               fileType: "yaml"
               targetFiles: "$(secretFile)"
@@ -62,6 +63,7 @@ stages:
           - task: Kubernetes@1
             displayName: "Apply secret.yaml to AKS"
             inputs:
+              azureSubscriptionEndpoint: "$(myServiceConnection)"
               connectionType: "Azure Resource Manager"
               azureSubscription: "$(myServiceConnection)"
               azureResourceGroup: "$(resourceGroup)"
