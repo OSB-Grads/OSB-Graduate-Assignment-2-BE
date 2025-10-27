@@ -7,7 +7,7 @@ pr: none
 
 variables:
   System.Debug: true       # Enable detailed logs
-  acrName: "BankingACR"
+  acrName: "bankingacr"
   imageName: "backend-ci"
   dockerfilePath: "Dockerfile"
   imageTag: "v$(Build.BuildId)"
@@ -23,6 +23,7 @@ stages:
           demands:
             - docker
         steps:
+          steps:
             # Checkout code
           - checkout: self
 
