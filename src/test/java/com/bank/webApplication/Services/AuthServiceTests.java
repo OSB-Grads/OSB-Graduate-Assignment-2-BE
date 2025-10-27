@@ -195,5 +195,8 @@ public class AuthServiceTests {
                 .thenReturn("updatedHashedPassword");
         authService.updatePassword("Updatepassword", id);
         assertEquals("updatedHashedPassword", authEntity.getPassword());
+        //verify
+        verify(logService, times(1)).logintoDB(eq(id), eq(LogEntity.Action.AUTHENTICATION),
+                eq("Password Updation SUCCESS"), eq("testuser"), eq(LogEntity.Status.SUCCESS));
     }
 }
