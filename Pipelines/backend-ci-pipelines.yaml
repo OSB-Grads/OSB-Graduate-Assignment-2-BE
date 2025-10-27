@@ -26,16 +26,6 @@ stages:
             # Checkout code
           - checkout: self
 
-            # Azure CLI login (ensure service connection is set up in DevOps)
-          - task: AzureCLI@2
-            displayName: "Login to Azure"
-            inputs:
-              azureSubscription: 'MyAzureServiceConnection'
-              scriptLocation: 'inlineScript'
-              inlineScript: |
-                echo "Logging in to Azure..."
-                az acr login --name $(acrName)
-
           # Run the Bash script
           - task: PowerShell@2
             displayName: "Build & Push Docker Image"
