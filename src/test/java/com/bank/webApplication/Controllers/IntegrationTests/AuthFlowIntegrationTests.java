@@ -242,7 +242,7 @@ public class AuthFlowIntegrationTests {
         MvcResult res = mockMvc.perform(post("/api/v1/auth/refreshtoken")
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("Refreshtoken", invalidToken))
-                .andExpect(status().isInternalServerError())
+                .andExpect(status().is4xxClientError())
                 .andExpect(result1 ->
                         assertTrue(result1.getResolvedException() instanceof RuntimeException))
                 .andExpect(result1 ->
@@ -286,7 +286,7 @@ public class AuthFlowIntegrationTests {
         MvcResult res = mockMvc.perform(post("/api/v1/auth/refreshtoken")
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("Refreshtoken", refreshToken))
-                .andExpect(status().isInternalServerError())
+                .andExpect(status().is4xxClientError())
                 .andExpect(result1 ->
                         assertTrue(result1.getResolvedException() instanceof RuntimeException))
                 .andExpect(result1 ->

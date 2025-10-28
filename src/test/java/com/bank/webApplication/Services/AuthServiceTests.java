@@ -1,5 +1,6 @@
 package com.bank.webApplication.Services;
 
+import com.bank.webApplication.CustomException.RefreshTokenExpired;
 import com.bank.webApplication.Dto.AuthDto;
 import com.bank.webApplication.Dto.JwtResponseDto;
 import com.bank.webApplication.Dto.UserDto;
@@ -54,10 +55,11 @@ public class AuthServiceTests {
     @Mock
     private AuthEntity authEntity;
 
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
         authEntity = AuthEntity.builder()
                 .id(id)
                 .username("testuser")
@@ -67,7 +69,7 @@ public class AuthServiceTests {
         refreshTokenEntity = RefreshTokenEntity.builder()
                 .refreshToken(UUID.randomUUID().toString())
                 .authEntity(authEntity)
-                .expiry(Instant.now().plusSeconds(604800))
+                .expiry(Instant.now().plusSeconds(2))
                 .build();
         refreshTokenRepository.save(refreshTokenEntity);
 
@@ -179,13 +181,22 @@ public class AuthServiceTests {
         assertEquals("new-jwt-access-token", response.getToken());
         assertEquals(refreshTokenEntity.getRefreshToken(), response.getRefreshToken());
     }
-
     @Test
     void RefreshAccessToken_tokenexpired() {
-        refreshTokenEntity.setExpiry(Instant.now().minusSeconds(10));
-        when(refreshTokenRepository.findByRefreshToken(refreshTokenEntity.getRefreshToken())).thenReturn(Optional.of(refreshTokenEntity));
-        assertThrows(RuntimeException.class, () -> authService.RefreshAccessToken(refreshTokenEntity.getRefreshToken()));
+        refreshTokenEntity.setExpiry(Instant.now().minusSeconds(200));
+        // Mock repository methods
+        when(refreshTokenRepository.findByRefreshToken(refreshTokenEntity.getRefreshToken()))
+                .thenReturn(Optional.of(refreshTokenEntity));
+        when(refreshTokenRepository.deleteByRefreshToken(refreshTokenEntity.getRefreshToken()))
+                .thenReturn(1);
+        assertThrows(RefreshTokenExpired.class,
+                () -> authService.RefreshAccessToken(refreshTokenEntity.getRefreshToken()));
+        verify(refreshTokenRepository, times(1))
+                .deleteByRefreshToken(refreshTokenEntity.getRefreshToken());
+        verify(refreshTokenRepository, times(1)).flush();
     }
+
+
 
     @Test
     void updatePassword() {
@@ -196,7 +207,8 @@ public class AuthServiceTests {
         authService.updatePassword("Updatepassword", id);
         assertEquals("updatedHashedPassword", authEntity.getPassword());
         //verify
-        verify(logService, times(1)).logintoDB(eq(id), eq(LogEntity.Action.AUTHENTICATION),
-                eq("Password Updation SUCCESS"), eq("testuser"), eq(LogEntity.Status.SUCCESS));
+        verify(logService, times(1)).logintoDB(eq(id), eq(LogEntity.Action.PROFILE_MANAGEMENT),
+                eq("Password Updation SUCCESS"), eq(id.toString()), eq(LogEntity.Status.SUCCESS));
+
     }
 }

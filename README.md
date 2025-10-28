@@ -151,26 +151,3 @@ OSB-Graduate-Assignment-2-BE
         ├── pom.xml                                  # Maven configuration
         └── README.md                                # Project documentation
 ```
-
-## Contribution Guidelines :
-
-- Fork the project
-- Create a feature branch (git checkout -b yourbranchname)
-- Commit changes (git commit -m "commit message")
-- Push to branch (git push origin yourbranchname)
-- Create Pull Request
-
-
-
-
-
-
-
-
-
-
- 
-
-
-
- 
