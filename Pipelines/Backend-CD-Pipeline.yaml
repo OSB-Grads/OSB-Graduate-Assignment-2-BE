@@ -13,7 +13,7 @@ resources:
             - main
 
 variables:
-  myServiceConnection: "MyServiceConnection"
+  myServiceConnection: "MyAzureServiceConnection"
   resourceGroup: "rg-banking-app"
   aksCluster: "bankcluster"
   namespace: "default"
