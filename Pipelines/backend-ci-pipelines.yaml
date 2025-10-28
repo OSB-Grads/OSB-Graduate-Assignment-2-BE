@@ -23,7 +23,7 @@ stages:
           demands:
             - docker
         steps:
-            # Checkout code
+          # Checkout code
           - checkout: self
 
           # Run the Bash script

@@ -13,21 +13,23 @@ resources:
             - main
 
 variables:
-  myServiceConnection: "MyServiceConnection"
+  myServiceConnection: "MyAzureServiceConnection"
   resourceGroup: "rg-banking-app"
-  aksCluster: "aks-banking-cluster"
+  aksCluster: "bankcluster"
   namespace: "default"
   deploymentFile: "kubernetes/prod/deployment.yaml"
   secretFile: "kubernetes/prod/secret.yaml"
-  acrName: "acrbankingapp"
-  imageName: "backend"
+  acrName: "bankingacr"
+  imageName: "backend-ci"
   imageTag: "$(resources.pipeline.backendCI.runId)"
-  keyVaultName: "kvBankingApp"
+
+
+  # Secret pipeline variables (mark as secret in Azure DevOps UI)
+  # DB_USER, DB_PASSWORD, DB_URL, MAIL_USERNAME, MAIL_PASSWORD, JWT_SECRET_KEY
 
 stages:
   - stage: Deploy
     displayName: "Deploy Backend to AKS"
-    #condition: succeeded('resources.pipeline.backendCI')
     jobs:
       - job: DeployToAKS
         pool:
@@ -35,33 +37,37 @@ stages:
         steps:
           - checkout: self
 
-          # Fetch all secrets from Key Vault
-          - task: AzureKeyVault@2
-            name: FetchSecrets
-            inputs:
-              azureSubscription: "$(myServiceConnection)"
-              KeyVaultName: "$(keyVaultName)"
-              SecretsFilter: 'DB-USER,DB-PASSWORD,DB-URL,MAIL-USERNAME,MAIL-PASSWORD,JWT-SECRET-KEY'
-              RunAsPreJob: true
-            displayName: "Fetch Secrets from Azure Key Vault"
-
-          # Map Key Vault secrets (with hyphens) to uppercase variables
+          # Replace tokens in secret.yaml using pipeline variables
           - powershell: |
-              Write-Host "Mapping Key Vault secrets to uppercase tokens..."
-              echo "##vso[task.setvariable variable=DB_USER;issecret=true]$(db-user)"
-              echo "##vso[task.setvariable variable=DB_PASSWORD;issecret=true]$(db-password)"
-              echo "##vso[task.setvariable variable=DB_URL;issecret=true]$(db-url)"
-              echo "##vso[task.setvariable variable=MAIL_USERNAME;issecret=true]$(mail-username)"
-              echo "##vso[task.setvariable variable=MAIL_PASSWORD;issecret=true]$(mail-password)"
-              echo "##vso[task.setvariable variable=JWT_SECRET_KEY;issecret=true]$(jwt-secret-key)"
-            displayName: "Map Key Vault secrets to ReplaceTokens variables"
+              Write-Host "Replacing tokens in secret.yaml using pipeline variables..."
+              $secretFile = "$(secretFile)"
 
-          # Replace tokens in secret.yaml (using ReplaceTokens marketplace task)
-          - task: qetza.replacetokens.replacetokens-task.Replacetokens@3
-            displayName: "Replace tokens in secret.yaml"
-            inputs:
-              targetFiles: "$(secretFile)"
-              tokenPattern: "<\\w+>"
+              (Get-Content $secretFile -Raw) `
+                -replace "<DB_USER>", $env:DB_USER `
+                -replace "<DB_PASSWORD>", $env:DB_PASSWORD `
+                -replace "<DB_URL>", $env:DB_URL `
+                -replace "<MAIL_USERNAME>", $env:MAIL_USERNAME `
+                -replace "<MAIL_PASSWORD>", $env:MAIL_PASSWORD `
+                -replace "<JWT_SECRET_KEY>", $env:JWT_SECRET_KEY |
+                Set-Content $secretFile -Force
+
+              Write-Host "Token replacement complete for $secretFile"
+            displayName: "Replace secrets in secret.yaml"
+
+          # ----- NEW: Print secrets (for debugging) -----
+          # WARNING: This will output secret values to the pipeline log.
+          # If variables are marked secret in Azure DevOps they will be masked in the log,
+          # but avoid leaving this step in production pipelines.
+          - powershell: |
+              Write-Host "Printing secrets (they should be masked if marked secret in pipeline settings)..."
+              Write-Host "DB_USER = $(DB_USER)"
+              Write-Host "DB_PASSWORD = $(DB_PASSWORD)"
+              Write-Host "DB_URL = $(DB_URL)"
+              Write-Host "MAIL_USERNAME = $(MAIL_USERNAME)"
+              Write-Host "MAIL_PASSWORD = $(MAIL_PASSWORD)"
+              Write-Host "JWT_SECRET_KEY = $(JWT_SECRET_KEY)"
+              Write-Host "Finished printing secrets."
+            displayName: "Print secrets (DEBUG) - REMOVE AFTER DEBUGGING"
 
           # Get AKS credentials
           - task: AzureCLI@2
@@ -112,4 +118,3 @@ stages:
               ScriptPath: "./Pipelines/Backend-CD.ps1"
               ScriptArguments: "$(resourceGroup) $(aksCluster) $(namespace) $(deploymentFile) $(secretFile) $(acrName) $(imageName) $(imageTag)"
               azurePowerShellVersion: "LatestVersion"
-

@@ -105,8 +105,8 @@ public class AuthService {
         String hashedPassword = PasswordHash.HashPass(password);
         authrepository.findById(userId).get().setPassword(hashedPassword);
         log.info("[AuthService] Password Updation SUCCESS");
-//        logService.logintoDB(userId, LogEntity.Action.PROFILE_MANAGEMENT, "Password Updation SUCCESS",userId.toString()
-//                ,LogEntity.Status.SUCCESS);
+        logService.logintoDB(userId, LogEntity.Action.PROFILE_MANAGEMENT, "Password Updation SUCCESS",userId.toString()
+                ,LogEntity.Status.SUCCESS);
     }
 
     @Transactional(noRollbackFor = RefreshTokenExpired.class)
