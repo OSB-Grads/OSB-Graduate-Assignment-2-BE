@@ -216,7 +216,8 @@ public class ProductFlow_AdminIntegrationTests {
                 //expect error
                 .andExpect(status().is4xxClientError())
                 //expect error message
-                .andExpect(jsonPath("$.message").value(" Product Already Exists"))
+                .andExpect(jsonPath("$.message").value("" +
+                        "Product Already Exists"))
                 .andReturn();
 
 
@@ -229,7 +230,6 @@ public class ProductFlow_AdminIntegrationTests {
         //mock json
         String json = """
                 {
-                  "productId": "P002",
                   "productName": "Fixed Deposit",
                   "interestRate": 7.2,
                   "fundingWindow": 2,
@@ -238,7 +238,7 @@ public class ProductFlow_AdminIntegrationTests {
                   "tenure": 15
                 }
                 """;
-        MvcResult result = mockMvc.perform(put("/api/v1/product/update/POO2")
+        MvcResult result = mockMvc.perform(put("/api/v1/product/update/P001")
                         .header("Authorization", "Bearer " + jwtToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
@@ -251,7 +251,7 @@ public class ProductFlow_AdminIntegrationTests {
         ProductDto productDto = objectMapper.readValue(responseJson, ProductDto.class);
         //assert
         assertNotNull(productDto);
-        assertEquals("P002", productDto.getProductId());
+        assertEquals("P001", productDto.getProductId());
         assertEquals("Fixed Deposit", productDto.getProductName());
         assertEquals(7.2, productDto.getInterestRate());
         assertEquals(2, productDto.getFundingWindow());

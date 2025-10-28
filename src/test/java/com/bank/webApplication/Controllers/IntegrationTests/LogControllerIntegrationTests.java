@@ -62,7 +62,7 @@ public class LogControllerIntegrationTests {
         authRepository.deleteAll();
         logRepository.deleteAll();
 
-        AuthEntity user = new AuthEntity(null, "test", PasswordHash.HashPass("test123"), Role.USER);
+        AuthEntity user = new AuthEntity(null, "test", PasswordHash.HashPass("test123"), Role.ADMIN);
         authRepository.save(user);
         user.setId(user.getId());
         userid=user.getId();
@@ -104,7 +104,7 @@ public class LogControllerIntegrationTests {
                 .header("Authorization", "Bearer " + jwtToken)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(3)))
+                .andExpect(jsonPath("$", hasSize(4)))
                 .andExpect(jsonPath("$[0].details", is("Testing Log 1")))
                 .andExpect(jsonPath("$[1].details", is("Testing Log 2")))
                 .andExpect(jsonPath("$[2].timestamp", is("28/09/2025")));
@@ -130,7 +130,7 @@ public class LogControllerIntegrationTests {
                         .header("Authorization", "Bearer " + jwtToken)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(3)))
+                .andExpect(jsonPath("$", hasSize(4)))
                 .andExpect(jsonPath("$[0].details", is("Testing Log 1")))
                 .andExpect(jsonPath("$[1].details", is("Testing Log 2")))
                 .andExpect(jsonPath("$[2].timestamp", is("28/09/2025")));
