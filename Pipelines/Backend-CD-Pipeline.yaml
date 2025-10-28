@@ -43,12 +43,12 @@ stages:
               $secretFile = "$(secretFile)"
 
               (Get-Content $secretFile -Raw) `
-                -replace "<DB_USER>", $env:DB_USER `
-                -replace "<DB_PASSWORD>", $env:DB_PASSWORD `
-                -replace "<DB_URL>", $env:DB_URL `
-                -replace "<MAIL_USERNAME>", $env:MAIL_USERNAME `
-                -replace "<MAIL_PASSWORD>", $env:MAIL_PASSWORD `
-                -replace "<JWT_SECRET_KEY>", $env:JWT_SECRET_KEY |
+                -replace "<DB_USER>", "$(DB_USER)" `
+                -replace "<DB_PASSWORD>", "$(DB_PASSWORD)" `
+                -replace "<DB_URL>", "$(DB_URL)" `
+                -replace "<MAIL_USERNAME>", "$(MAIL_USERNAME)" `
+                -replace "<MAIL_PASSWORD>", "$(MAIL_PASSWORD)" `
+                -replace "<JWT_SECRET_KEY>", "$(JWT_SECRET_KEY)" |
                 Set-Content $secretFile -Force
 
               Write-Host "Token replacement complete for $secretFile"
@@ -60,12 +60,12 @@ stages:
           # but avoid leaving this step in production pipelines.
           - powershell: |
               Write-Host "Printing secrets (they should be masked if marked secret in pipeline settings)..."
-              Write-Host "DB_USER = $(DB_USER)"
-              Write-Host "DB_PASSWORD = $(DB_PASSWORD)"
-              Write-Host "DB_URL = $(DB_URL)"
-              Write-Host "MAIL_USERNAME = $(MAIL_USERNAME)"
-              Write-Host "MAIL_PASSWORD = $(MAIL_PASSWORD)"
-              Write-Host "JWT_SECRET_KEY = $(JWT_SECRET_KEY)"
+              Write-Host "DB_USER = $env:DB_USER"
+              Write-Host "DB_PASSWORD = $env:DB_PASSWORD"
+              Write-Host "DB_URL = $env:DB_URL"
+              Write-Host "MAIL_USERNAME = $env:MAIL_USERNAME"
+              Write-Host "MAIL_PASSWORD = $env:MAIL_PASSWORD"
+              Write-Host "JWT_SECRET_KEY = $env:JWT_SECRET_KEY"
               Write-Host "Finished printing secrets."
             displayName: "Print secrets (DEBUG) - REMOVE AFTER DEBUGGING"
 
