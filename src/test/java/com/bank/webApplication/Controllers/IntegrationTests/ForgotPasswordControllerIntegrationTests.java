@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.UUID;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -46,35 +47,31 @@ public class ForgotPasswordControllerIntegrationTests {
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     private UserEntity testUser;
-    private AuthEntity testAuth;
+    private AuthEntity authUser;
     private OTPEntity testOtp;
     private String jwtToken;
+    private String refreshToken;
 
     @BeforeEach
     void setup() throws Exception {
+        userRepository.deleteAll();
+        authRepository.deleteAll();
 
-        String uniqueUsername = "forgotUser_" + System.currentTimeMillis();
+        authUser = new AuthEntity(UUID.randomUUID(), "testUser", PasswordHash.HashPass("oldPassword123"), Role.USER);
+        authRepository.save(authUser);
 
-        // Create auth
-        testAuth = new AuthEntity();
-        testAuth.setUsername(uniqueUsername);
-        testAuth.setPassword(PasswordHash.HashPass("oldPassword123"));
-        testAuth.setRole(Role.USER);
-        testAuth = authRepository.saveAndFlush(testAuth);
-
-        // Create user
         testUser = new UserEntity();
-        testUser.setId(testAuth.getId());
+        testUser.setId(authUser.getId());
         testUser.setName("Forgot User");
-        testUser.setEmail(uniqueUsername + "@example.com");
-        testUser = userRepository.saveAndFlush(testUser);
+        testUser.setEmail(authUser.getUsername() + "@example.com");
+        testUser = userRepository.save(testUser);
 
         // Create OTP
         testOtp = new OTPEntity();
         testOtp.setOtp(123456);
         testOtp.setExpirationTime(new Date(System.currentTimeMillis() + 5 * 60 * 1000));
         testOtp.setUser(testUser);
-        testOtp = otpRepository.saveAndFlush(testOtp);
+        testOtp = otpRepository.save(testOtp);
 
         // Login to get JWT
         String loginJson = String.format("""
@@ -82,7 +79,7 @@ public class ForgotPasswordControllerIntegrationTests {
                   "username": "%s",
                   "password": "oldPassword123"
                 }
-                """, uniqueUsername);
+                """, authUser.getUsername());
 
         MvcResult loginResult = mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
