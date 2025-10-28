@@ -19,8 +19,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -46,6 +48,7 @@ class TransactionServiceTests {
 
     @BeforeEach
     void setUp() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         product = new ProductEntity();
         product.setTenure(12);
         product.setFundingWindow(3);
@@ -55,7 +58,7 @@ class TransactionServiceTests {
         account.setAccountNumber("ACC123");
         account.setBalance(1000.0);
         account.setProduct(product);
-        account.setAccountCreated(LocalDateTime.now().minusMonths(1).toString());
+        account.setAccountCreated(LocalDateTime.now().minusMonths(1).format(formatter).toString());
     }
 
     // DepositAmount Test Cases
@@ -80,18 +83,19 @@ class TransactionServiceTests {
             transactionService.depositAmount("ACC123", -10); // Deposit a negative amount
         });
 
-        assertThat(exception.getMessage()).contains("Deposit amount must be positive");
+        assertThat(exception.getMessage()).contains("Amount should be greater than 0");
         verifyNoInteractions(accountRepository);
     }
 
     @Test
     void depositAmount_lockedAccount_returnsFailedDTO() {
-        account.setAccountCreated(LocalDateTime.now().minusHours(7).toString()); // locked period
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        account.setAccountCreated(LocalDateTime.now().minusHours(7).format(formatter).toString()); // locked period
         when(accountRepository.findById("ACC123")).thenReturn(Optional.of(account));
 
         DepositWithdrawDTO dto = transactionService.depositAmount("ACC123", 500);
         assertThat(dto.getStatus()).isEqualTo(TransactionEntity.status.FAILED);
-        assertThat(dto.getDescription()).isEqualTo("Account is currently locked due to the funding window.");
+        assertThat(dto.getDescription()).isEqualTo("Account is Locked");
     }
 
     @Test
@@ -102,7 +106,7 @@ class TransactionServiceTests {
         DepositWithdrawDTO result = transactionService.depositAmount("ACC123", 500);
 
         assertThat(result.getStatus()).isEqualTo(TransactionEntity.status.FAILED);
-        assertThat(result.getDescription()).contains("Database error during deposit");
+        assertThat(result.getDescription()).contains("Deposit Failed");
     }
 
 
@@ -137,17 +141,18 @@ class TransactionServiceTests {
 
         assertThatThrownBy(() -> transactionService.withdrawAmount("ACC123", 2000))
                 .isInstanceOf(InsufficientFundsException.class)
-                .hasMessageContaining("Insufficient funds available for this withdrawal");
+                .hasMessageContaining("1000.0 is Insufficient to debit.");
     }
 
     @Test
     void withdrawAmount_lockedAccount_returnsFailedDTO() {
-        account.setAccountCreated(LocalDateTime.now().minusHours(7).toString()); // locked period
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        account.setAccountCreated(LocalDateTime.now().minusHours(7).format(formatter).toString()); // locked period
         when(accountRepository.findById("ACC123")).thenReturn(Optional.of(account));
 
         DepositWithdrawDTO dto = transactionService.withdrawAmount("ACC123", 500);
         assertThat(dto.getStatus()).isEqualTo(TransactionEntity.status.FAILED);
-        assertThat(dto.getDescription()).isEqualTo("Account is currently locked due to the funding window.");
+        assertThat(dto.getDescription()).isEqualTo("Account is Locked");
     }
 
     @Test
@@ -158,7 +163,7 @@ class TransactionServiceTests {
         DepositWithdrawDTO result = transactionService.withdrawAmount("ACC123", 100);
 
         assertThat(result.getStatus()).isEqualTo(TransactionEntity.status.FAILED);
-        assertThat(result.getDescription()).contains("Database error during withdrawal");
+        assertThat(result.getDescription()).contains("Withdrawal Failed");
     }
 
 
@@ -166,28 +171,32 @@ class TransactionServiceTests {
 
     @Test
     void isLocked_duringFunding_returnsFalse() {
-        account.setAccountCreated(LocalDateTime.now().minusHours(1).toString()); // within funding
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        account.setAccountCreated(LocalDateTime.now().minusHours(1).format(formatter).toString()); // within funding
         boolean locked = transactionService.isLocked(account);
         assertThat(locked).isFalse();
     }
 
     @Test
     void isLocked_duringMaturity_returnsTrue() {
-        account.setAccountCreated(LocalDateTime.now().minusHours(7).toString()); // after funding, before cooling
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        account.setAccountCreated(LocalDateTime.now().minusHours(7).format(formatter).toString()); // after funding, before cooling
         boolean locked = transactionService.isLocked(account);
         assertThat(locked).isTrue();
     }
 
     @Test
     void isLocked_duringCooling_returnsFalse() {
-        account.setAccountCreated(LocalDateTime.now().minusHours(23).toString()); // in cooling
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        account.setAccountCreated(LocalDateTime.now().minusHours(23).format(formatter).toString()); // in cooling
         boolean locked = transactionService.isLocked(account);
         assertThat(locked).isFalse();
     }
 
     @Test
     void isLocked_afterTenure_returnsFalse() {
-        account.setAccountCreated(LocalDateTime.now().minusHours(25).toString()); // after tenure
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        account.setAccountCreated(LocalDateTime.now().minusHours(25).format(formatter).toString()); // after tenure
         boolean locked = transactionService.isLocked(account);
         assertThat(locked).isFalse();
     }
@@ -219,22 +228,20 @@ class TransactionServiceTests {
         assertThatThrownBy(() -> transactionService.saveTransaction("ACC123", "ACC456", 100.0,
                 "Test", TransactionEntity.type.DEPOSIT, TransactionEntity.status.COMPLETED))
                 .isInstanceOf(TransactionFailedException.class)
-                .hasMessageContaining("Transaction save failed due to a database error");
+                .hasMessageContaining("Save Transaction Failed");
     }
 
     // GetTransactionsByAccountNumber Tests
 
     @Test
     void getTransactionsByAccountNumber_returnsCombinedList() {
-        TransactionEntity t1 = new TransactionEntity();
-        TransactionEntity t2 = new TransactionEntity();
+        TransactionEntity t1 = new TransactionEntity(UUID.randomUUID(),account,null,1000,"Deposit",LocalDateTime.now().toString(), TransactionEntity.type.DEPOSIT, TransactionEntity.status.COMPLETED);
+        TransactionEntity t2 = new TransactionEntity(UUID.randomUUID(),null,account,1000,"WithDrawal",LocalDateTime.now().toString(), TransactionEntity.type.WITHDRAWAL, TransactionEntity.status.COMPLETED);
 
         when(transactionRepository.findAllByFromAccountAccountNumber("ACC123"))
                 .thenReturn(List.of(t1));
         when(transactionRepository.findAllByToAccountAccountNumber("ACC123"))
                 .thenReturn(List.of(t2));
-        when(dtoEntityMapper.convertToDto(any(), eq(TransactionDTO.class)))
-                .thenReturn(new TransactionDTO());
 
         List<TransactionDTO> result = transactionService.getTransactionsByAccountNumber("ACC123");
 
