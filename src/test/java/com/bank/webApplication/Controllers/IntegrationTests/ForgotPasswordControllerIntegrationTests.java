@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.UUID;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -52,21 +53,17 @@ public class ForgotPasswordControllerIntegrationTests {
 
     @BeforeEach
     void setup() throws Exception {
-
-        String uniqueUsername = "forgotUser_" + System.currentTimeMillis();
-
         // Create auth
-        testAuth = new AuthEntity();
-        testAuth.setUsername(uniqueUsername);
-        testAuth.setPassword(PasswordHash.HashPass("oldPassword123"));
-        testAuth.setRole(Role.USER);
-        testAuth = authRepository.saveAndFlush(testAuth);
+        authRepository.deleteAll();
+        userRepository.deleteAll();
+        testAuth=new AuthEntity(null,"testUser",PasswordHash.HashPass("oldPassword123"),Role.USER);
+        authRepository.saveAndFlush(testAuth);
 
         // Create user
         testUser = new UserEntity();
         testUser.setId(testAuth.getId());
         testUser.setName("Forgot User");
-        testUser.setEmail(uniqueUsername + "@example.com");
+        testUser.setEmail(testAuth.getUsername()+ "@example.com");
         testUser = userRepository.saveAndFlush(testUser);
 
         // Create OTP
@@ -82,7 +79,7 @@ public class ForgotPasswordControllerIntegrationTests {
                   "username": "%s",
                   "password": "oldPassword123"
                 }
-                """, uniqueUsername);
+                """, testAuth.getUsername());
 
         MvcResult loginResult = mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)

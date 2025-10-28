@@ -37,3 +37,5 @@ resources/application-dev.properties
 Bank.db
 
 BankTest.db
+
+application.test.properties
