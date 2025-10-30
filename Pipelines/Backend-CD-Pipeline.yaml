@@ -11,6 +11,7 @@ resources:
         branches:
           include:
             - main
+
 pr: none
 
 variables:
@@ -24,14 +25,6 @@ variables:
   imageName: "backend-ci"
   imageTag: "$(resources.pipeline.backendCI.runId)"
 
-  # Add your DB/email/JWT secrets as pipeline variables (mark as secret in Azure DevOps)
-  DB_USER: $(DB_USER)
-  DB_PASSWORD: $(DB_PASSWORD)
-  DB_URL: $(DB_URL)
-  MAIL_USERNAME: $(MAIL_USERNAME)
-  MAIL_PASSWORD: $(MAIL_PASSWORD)
-  JWT_SECRET_KEY: $(JWT_SECRET_KEY)
-
 stages:
   - stage: Deploy
     displayName: "Deploy Backend to AKS"
@@ -44,34 +37,25 @@ stages:
 
           # Replace tokens in secret.yaml using pipeline variables
           - task: PowerShell@2
-            displayName: "Replace tokens in secret.yaml"
             inputs:
               targetType: 'inline'
               script: |
                 Write-Host "Replacing tokens in secret.yaml..."
                 $secretContent = Get-Content "$(secretFile)" -Raw
-                $secretContent = $secretContent -replace "<DB_USER>", "$(DB_USER)"
-                $secretContent = $secretContent -replace "<DB_PASSWORD>", "$(DB_PASSWORD)"
-                $secretContent = $secretContent -replace "<DB_URL>", "$(DB_URL)"
-                $secretContent = $secretContent -replace "<MAIL_USERNAME>", "$(MAIL_USERNAME)"
-                $secretContent = $secretContent -replace "<MAIL_PASSWORD>", "$(MAIL_PASSWORD)"
-                $secretContent = $secretContent -replace "<JWT_SECRET_KEY>", "$(JWT_SECRET_KEY)"
+                $secretContent = $secretContent -replace "DB_USER", "$(DB_USER)"
+                $secretContent = $secretContent -replace "DB_PASSWORD", "$(DB_PASSWORD)"
                 Set-Content -Path "$(secretFile)" -Value $secretContent
 
-          # Print secrets for debug (masked in logs if marked secret)
-          - task: PowerShell@2
-            displayName: "Print secrets (DEBUG)"
-            inputs:
-              targetType: 'inline'
-              script: |
-                Write-Host "Printing secrets..."
-                Write-Host "DB_USER = $(DB_USER)"
-                Write-Host "DB_PASSWORD = $(DB_PASSWORD)"
-                Write-Host "DB_URL = $(DB_URL)"
-                Write-Host "MAIL_USERNAME = $(MAIL_USERNAME)"
-                Write-Host "MAIL_PASSWORD = $(MAIL_PASSWORD)"
-                Write-Host "JWT_SECRET_KEY = $(JWT_SECRET_KEY)"
-                Write-Host "Finished printing secrets."
+          - powershell: |
+              Write-Host "Printing secrets (they should be masked if marked secret in pipeline settings)..."
+              Write-Host "DB_USER = $env:DB_USER"
+              Write-Host "DB_PASSWORD = $env:DB_PASSWORD"
+              Write-Host "DB_URL = $env:DB_URL"
+              Write-Host "MAIL_USERNAME = $env:MAIL_USERNAME"
+              Write-Host "MAIL_PASSWORD = $env:MAIL_PASSWORD"
+              Write-Host "JWT_SECRET_KEY = $env:JWT_SECRET_KEY"
+              Write-Host "Finished printing secrets."
+            displayName: "Print secrets (DEBUG) - REMOVE AFTER DEBUGGING"
 
           # Get AKS credentials
           - task: AzureCLI@2
@@ -88,6 +72,7 @@ stages:
             displayName: "Apply secret.yaml to AKS"
             inputs:
               azureSubscription: "$(myServiceConnection)"
+              azureSubscriptionEndpoint: "$(myServiceConnection)"
               connectionType: "Azure Resource Manager"
               azureResourceGroup: "$(resourceGroup)"
               kubernetesCluster: "$(aksCluster)"
@@ -95,22 +80,24 @@ stages:
               useConfigurationFile: true
               configuration: "$(secretFile)"
 
-          # Replace image placeholders in deployment YAML
-          - task: PowerShell@2
-            displayName: "Replace image placeholders in deployment YAML"
-            inputs:
-              targetType: 'inline'
-              script: |
-                Write-Host "Replacing image placeholders in deployment YAML..."
-                $deploymentFile = "$(deploymentFile)"
-                (Get-Content $deploymentFile -Raw) `
-                  -replace "<ACR_NAME>", "$(acrName)" `
-                  -replace "<IMAGE_NAME>", "$(imageName)" `
-                  -replace "<TAG>", "$(imageTag)" |
-                  Set-Content $deploymentFile -Force
-                Write-Host "Updated deployment YAML: $deploymentFile"
+          # Replace image details in deployment YAML
+          - powershell: |
+              Write-Host "Replacing image placeholders in deployment YAML..."
+              $deploymentFile = "$(deploymentFile)"
+              $ACR_NAME = "$(acrName)"
+              $IMAGE_NAME = "$(imageName)"
+              $IMAGE_TAG = "$(imageTag)"
 
-          # Deploy backend to AKS via PS script
+              (Get-Content $deploymentFile -Raw) `
+                -replace "<ACR_NAME>", $ACR_NAME `
+                -replace "<IMAGE_NAME>", $IMAGE_NAME `
+                -replace "<TAG>", $IMAGE_TAG |
+                Set-Content $deploymentFile -Force
+
+              Write-Host "Replaced image details in $deploymentFile"
+            displayName: "Replace Secret & Deployment Placeholders"
+
+          # Deploy backend to AKS via PowerShell
           - task: AzurePowerShell@5
             displayName: "Deploy Backend to AKS"
             inputs:
