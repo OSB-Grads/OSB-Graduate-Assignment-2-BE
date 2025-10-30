@@ -5,7 +5,7 @@
 
 resources:
   pipelines:
-    - pipeline: backendCI
+    - pipeline: backend-ci
       source: backend-ci
       trigger:
         branches:
@@ -23,7 +23,7 @@ variables:
   secretFile: "kubernetes/prod/secret.yaml"
   acrName: "bankingacr"
   imageName: "backend-ci"
-  imageTag: "$(resources.pipeline.backendCI.runId)"
+  imageTag: "v$(resources.pipeline.backend-ci.runId)"
 
 stages:
   - stage: Deploy
