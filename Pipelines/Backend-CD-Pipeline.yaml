@@ -80,6 +80,11 @@ stages:
               useConfigurationFile: true
               configuration: "$(secretFile)"
 
+          - script: |
+             echo "Fetching updated secret from AKS..."
+             kubectl get secret azure-postgres-secret-prod -o yaml
+            displayName: "Print updated secret in terminal"
+
           # Replace image details in deployment YAML
           - powershell: |
               Write-Host "Replacing image placeholders in deployment YAML..."
