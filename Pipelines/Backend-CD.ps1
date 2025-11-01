@@ -64,4 +64,5 @@ kubectl apply -f $DEPLOYMENT_FILE -n $NAMESPACE
 kubectl apply -f $SERVICE_FILE -n $NAMESPACE
 
 Log "Deployment completed successfully!"
-Log "-------------------------------------------"
+Log "-----------------------------
+--------------"

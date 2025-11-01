@@ -42,15 +42,20 @@ stages:
               targetType: 'inline'
               script: |
                 Write-Host "Replacing tokens in secret.yaml..."
-                $secretContent = Get-Content "$(secretFile)" -Raw
-                $secretContent = $secretContent -replace "DB_USER", "$(DB_USER)"
-                $secretContent = $secretContent -replace "DB_PASSWORD", "$(DB_PASSWORD)"
-                Set-Content -Path "$(secretFile)" -Value $secretContent
+                $secretPath = "$(secretFile)"
+                $content = Get-Content $secretPath -Raw
+                $content = $content -replace "DB_USER", "${env:DB_USER}"
+                $content = $content -replace "DB_PASSWORD", "${env:DB_PASSWORD}"
+                $content = $content -replace "MAIL_USERNAME", "${env:MAIL_USERNAME}"
+                $content = $content -replace "MAIL_PASSWORD", "${env:MAIL_PASSWORD}"
+                $content = $content -replace "DB_URL", "${env:DB_URL}"
+                $content = $content -replace "JWT_SECRET_KEY", "${env:JWT_SECRET_KEY}"
+                Set-Content -Path $secretPath -Value $content -Force
 
           - powershell: |
               Write-Host "Printing secrets (they should be masked if marked secret in pipeline settings)..."
               Write-Host "DB_USER = $env:DB_USER"
-              Write-Host "DB_PASSWORD = $env:DB_PASSWORD"
+              Write-Host "DB_PASSWORD = $env:DB_PASSWORD" 
               Write-Host "DB_URL = $env:DB_URL"
               Write-Host "MAIL_USERNAME = $env:MAIL_USERNAME"
               Write-Host "MAIL_PASSWORD = $env:MAIL_PASSWORD"
