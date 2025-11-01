@@ -14,10 +14,11 @@ $RESOURCE_GROUP = $args[0]
 $AKS_CLUSTER    = $args[1]
 $NAMESPACE      = $args[2]
 $DEPLOYMENT_FILE= $args[3]
-$SECRET_FILE    = $args[4]
-$ACR_NAME       = $args[5]
-$IMAGE_NAME     = $args[6]
-$IMAGE_TAG      = $args[7]
+$SERVICE_FILE   = $args[4]
+$SECRET_FILE    = $args[5]
+$ACR_NAME       = $args[6]
+$IMAGE_NAME     = $args[7]
+$IMAGE_TAG      = $args[8]
 
 Log "-------------------------------------------"
 Log "Starting AKS Deployment"
@@ -60,6 +61,8 @@ kubectl apply -f $SECRET_FILE -n $NAMESPACE
 # ------------------------------
 Log "Deploying backend using $DEPLOYMENT_FILE..."
 kubectl apply -f $DEPLOYMENT_FILE -n $NAMESPACE
+kubectl apply -f $SERVICE_FILE -n $NAMESPACE
 
 Log "Deployment completed successfully!"
-Log "-------------------------------------------"
+Log "-----------------------------
+--------------"

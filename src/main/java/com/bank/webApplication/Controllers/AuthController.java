@@ -17,7 +17,7 @@ public class AuthController {
     private final AuthService authService;
     //mapping for signup
     @PostMapping("/register")
-    public ResponseEntity<JwtResponseDto> register(@RequestBody AuthDto request){
+    public ResponseEntity<JwtResponseDto> register(@RequestBody AuthDto request ){
         log.info("[AuthController] pinged register");
         return ResponseEntity.ok(authService.Signup(request));
     }
