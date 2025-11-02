@@ -38,19 +38,45 @@ stages:
 
           # Replace tokens in secret.yaml using pipeline variables
           - task: PowerShell@2
+            displayName: "Replace tokens in secret.yaml"
             inputs:
               targetType: 'inline'
               script: |
-                Write-Host "Replacing tokens in secret.yaml..."
+                Write-Host "Starting safe placeholder replacement in $(secretFile)..."
+
                 $secretPath = "$(secretFile)"
+
+                if (-not (Test-Path $secretPath)) {
+                    throw "Secret file not found: $secretPath"
+                }
+
+                # Read the file as raw text
                 $content = Get-Content $secretPath -Raw
-                $content = $content -replace "DB_USER", "${env:DB_USER}"
-                $content = $content -replace "DB_PASSWORD", "${env:DB_PASSWORD}"
-                $content = $content -replace "MAIL_USERNAME", "${env:MAIL_USERNAME}"
-                $content = $content -replace "MAIL_PASSWORD", "${env:MAIL_PASSWORD}"
-                $content = $content -replace "DB_URL", "${env:DB_URL}"
-                $content = $content -replace "JWT_SECRET_KEY", "${env:JWT_SECRET_KEY}"
+
+                # Placeholders to replace (add more variable names here if needed)
+                $placeholders = @("DB_USER","DB_PASSWORD","DB_URL","MAIL_USERNAME","MAIL_PASSWORD","JWT_SECRET_KEY")
+
+                foreach ($v in $placeholders) {
+                    # pattern matches the literal text: $(VARNAME)
+                    $pattern = "\$\(" + [regex]::Escape($v) + "\)"
+
+                    # read the environment variable from the pipeline (secret variables are available in env)
+                    $val = (Get-Item -Path "Env:$v" -ErrorAction SilentlyContinue).Value
+
+                    if ($null -eq $val) {
+                        Write-Host "##[warning]Environment variable '$v' is empty or not defined. Replacing with empty string."
+                        $val = ""
+                    }
+
+                    # Use MatchEvaluator to ensure verbatim insertion (no special processing)
+                    $evaluator = [System.Text.RegularExpressions.MatchEvaluator]{ param($m) return $val }
+                    $content = [regex]::Replace($content, $pattern, $evaluator)
+                }
+
+                # Write the updated content back to the file
                 Set-Content -Path $secretPath -Value $content -Force
+                Write-Host "Token replacement complete for $secretPath"          
+          
 
           - powershell: |
               Write-Host "Printing secrets (they should be masked if marked secret in pipeline settings)..."
