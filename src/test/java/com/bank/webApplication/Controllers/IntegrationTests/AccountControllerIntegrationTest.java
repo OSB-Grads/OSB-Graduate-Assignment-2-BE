@@ -194,7 +194,7 @@ class AccountControllerIntegrationTest {
         mockMvc.perform(get("/api/v1/accounts/{accountNumber}", nonExistentAccountNumber)
                         .header("Authorization", "Bearer " + jwtToken)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().is4xxClientError()); // Service throws AccountNotFoundException
+                .andExpect(status().isNotFound()); // Service throws AccountNotFoundException
     }
 
     @Test
