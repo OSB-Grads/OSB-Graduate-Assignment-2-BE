@@ -87,7 +87,7 @@ class UserControllerIntegrationTest {
                 new UsernamePasswordAuthenticationToken(
                         userId,
                         null,
-                        Collections.singletonList(new SimpleGrantedAuthority("USER"))
+                        Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
                 );
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
