@@ -18,7 +18,7 @@ import java.util.UUID;
 
 
 @RestController
-@RequestMapping(value = "api/v1/forgotPassword")
+@RequestMapping(value = "/api/v1/forgotPassword")
 public class ForgotPasswordController {
 
     @Autowired
