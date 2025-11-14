@@ -70,7 +70,13 @@ private final JwtFilter jwtFilter;
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("*")); // React dev server
+
+        configuration.setAllowedOrigins(List.of("*"));
+        // React dev server
+        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
+        // React prod server
+        configuration.setAllowedOrigins(List.of("http://banking-app-azbxavg8fdgcdpbp.centralindia-01.azurewebsites.net"));
+        configuration.setAllowedOrigins(List.of("https://banking-app-azbxavg8fdgcdpbp.centralindia-01.azurewebsites.net"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
